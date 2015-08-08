@@ -9,5 +9,5 @@ will be able to quickly and easily perform complex tasks and data transformation
 more you embrace using it, the more you will find you don't want to use Windows without it.
 
 | Automate Tasks | Interact with and control Windows |
-| ============== | --------------------------------- |
-| * Perform repetive tasks easily * Assign actions to any keystrokes * Eliminate common typing mistakes * Easily reproduce repetitive text * Produce templates * Create aliases for common phrases * Quickly search anything, anywhere * Automate any functionality within Windows | line 1|
+| -------------- | --------------------------------- |
+| <ul><li>Perform repetive tasks easily</li><li>Assign actions to any keystrokes</li><li>Eliminate common typing mistakes</li><li>Easily reproduce repetitive text</li><li>Produce templates</li><li>Create aliases for common phrases</li><li>Quickly search anything, anywhere</li><li>Automate any functionality within Windows</li></ul>| <ul><li>Move and resize windows with simple keystrokes</li><li>Zoom any portion of the screen</li><li>Preview the Windows clipboard</li><li>Excellent multi-monitor support</li><li>Control the mouse pointer from the keyboard</li><li>Force a window to always be on top</li><li>Hide/restore any window</li><li>Hide/restore icons on the Desktop</li></ul> |
