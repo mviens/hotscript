@@ -10,11 +10,11 @@ more you embrace using it, the more you will find you don't want to use Windows 
 
 | Automate Tasks |
 | -------------- |
-| * Perform repetive tasks easily |
-| * Assign actions to any keystrokes |
-| * Eliminate common typing mistakes |
-| * Easily reproduce repetitive text |
-| * Produce templates |
-| * Create aliases for common phrases |
-| * Quickly search anything, anywhere |
-| * Automate any functionality within Windows |
+| * Perform repetive tasks easily
+ * Assign actions to any keystrokes 
+ * Eliminate common typing mistakes 
+ * Easily reproduce repetitive text 
+ * Produce templates 
+ * Create aliases for common phrases 
+ * Quickly search anything, anywhere 
+ * Automate any functionality within Windows |
