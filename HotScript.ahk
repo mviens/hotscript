@@ -41,7 +41,7 @@ Full help screen
 COMMENT_HEADER_LINE := " " . repeatStr("-", 70)
 LINE_SEP := repeatStr("·", 165)
 MENU_SEP := "-"
-MY_VERSION := "20131203.beta1"
+MY_VERSION := "20131205.beta1"
 MY_TITLE := "Mike's HotScript"
 QUICK_SPLASH_TITLE := "QuickSplash"
 USER_KEYS := A_ScriptDir . "\HotScriptKeys.ahk"
@@ -929,12 +929,12 @@ init()
     wheelleft:: ;; move the current window to the left monitor
     #left:: ;; move the current window to the left monitor
         addHotKey()
-        moveToScreen("A", -1)
+        moveToMonitor("A", -1)
         return
     wheelright:: ;; move the current window to the right monitor
-    #right:: ;; move the current window to the left monitor
+    #right:: ;; move the current window to the right monitor
         addHotKey()
-        moveToScreen("A", 1)
+        moveToMonitor("A", 1)
         return
     #down:: ;; minimize the current window
         addHotKey()
@@ -1130,56 +1130,53 @@ ask(title, prompt, width:=250, height:=125, defaultValue:="") {
     return value
 }
 
-centerWindow(title:="A", monitor:="A") {
+centerWindow(title:="A") {
     WinGetPos, winX, winY, winW, winH, %title%
     coord := getCenter(winW, winH)
     WinMove, %title%,, coord.x, coord.y
 }
 
-compareNumStrAsc(a, b) {
-    return compareNumStr(a, b, "A")
+compareStrAsc(a, b) {
+    return compareStr(a, b, "A")
 }
 
-compareNumStrDesc(a, b) {
-    return compareNumStr(a, b, "D")
+compareStrDesc(a, b) {
+    return compareStr(a, b, "D")
 }
 
-compareNumStr(a, b, dir:="A",dirList:="A|D") {
+compareStr(a, b, direction:="A") {
     static regexComp := "(\d+|\D+)(.*)"
     result := 0
-    dir := setCase(dir, "U")
-    dir := (dir == "D" ? "D" : "A")
+    direction := setCase(direction, "U")
+    direction := (direction == "D" ? "D" : "A")
     a := stripEol(a)
     b := stripEol(b)
     if (RegExMatch(a, regexComp, a) + RegExMatch(b, regexComp, b)) {
-        if (dir == "A") {
-            result := a1 > b1 ? 1 : a1 < b1 ? -1 : CompareNumStr(a2, b2, dir)
+        if (direction == "A") {
+            result := a1 > b1 ? 1 : a1 < b1 ? -1 : compareStr(a2, b2, direction)
         }
         else {
-            result := a1 > b1 ? -1 : a1 < b1 ? 1 : CompareNumStr(a2, b2, dir)
+            result := a1 > b1 ? -1 : a1 < b1 ? 1 : compareStr(a2, b2, direction)
         }
     }
     return result
 }
 
 contains(str, values*) {
-    if (IsObject(str)) {
-        for key1, input in str {
-            for key, value in values {
-                if (InStr(input, value)) {
-                    return 1
+    result := false
+    for index, value in values {
+        if (IsObject(value)) {
+            for key, val in value {
+                if (InStr(val, str)) {
+                    result := true
                 }
             }
         }
-    }
-    else {
-        for key, val in values {
-            if (InStr(str, value)) {
-                return 1
-            }
+        else {
+            result := InStr(value, str)
         }
-   }
-   return 0
+    }
+    return result
 }
 
 createUserFiles() {
@@ -1266,9 +1263,9 @@ crypt(text) {
 }
 
 cryptSelected() {
-    getSelectedText(text)
-    if (text != "") {
-        replaceSelected(crypt(text))
+    selText := getSelectedText()
+    if (selText != "") {
+        replaceSelected(crypt(selText))
     }
 }
 
@@ -1413,29 +1410,26 @@ getListSize(list, delim:="") {
     return tmpCount
 }
 
-getSelectedText(ByRef text:="") {
+getSelectedText() {
     prevClipboard := ClipboardAll
     Clipboard :=
     Sleep 20
     Send ^c
     ClipWait, 0
-    text := (ErrorLevel ? "" : Clipboard)
+    selText := (ErrorLevel ? "" : Clipboard)
     Clipboard := prevClipboard
     prevClipboard :=
-    return text
+    return selText
 }
 
-getSelectedTextOrPrompt(title, ByRef text:="") {
-    getSelectedText(text)
-    if (text == "") {
+getSelectedTextOrPrompt(title) {
+    selText := getSelectedText()
+    if (selText == "") {
         hWnd := WinExist("A")
-        coord := getCenter(250, 125)
-        x := coord.x
-        y := coord.y
-        text := ask(title, "Please enter a phrase or value...", 500)
+        selText := ask(title, "Please enter a phrase or value...", 500)
         WinActivate, ahk_id %hWnd%
     }
-    return text
+    return selText
 }
 
 hideWindow() {
@@ -1505,13 +1499,13 @@ isWindow(hWnd) {
 }
 
 lineUnwrapSelected() {
-    getSelectedText(text)
-    StringReplace text, text, %A_Space%`r`n, %A_Space%, All
-    pasteText(text)
+    selText := getSelectedText()
+    StringReplace selText, selText, %A_Space%`r`n, %A_Space%, All
+    pasteText(selText)
 }
 
 lineWrapSelected() {
-    getSelectedText(text)
+    selText := getSelectedText()
     static width := 80
     tmpWidth := ask("Enter Width", "Maximum number of characters per line:", width)
     if (ErrorLevel) {
@@ -1519,11 +1513,11 @@ lineWrapSelected() {
     }
     width := tmpWidth
     tmpWidth := "(?=.{" . width + 1 . ",})(.{1," . width - 1 . "}[^ ]) +"
-    text := RegExReplace(text, tmpWidth, "$1 `r`n")
-    pasteText(text)
+    selText := RegExReplace(selText, tmpWidth, "$1 `r`n")
+    pasteText(selText)
 }
 
-listToArray(list, ByRef arr, delim:="") {
+listToArray(list, delim:="") {
     delim := (delim == "" ? "`r`n" : delim)
     arr := Object()
     Loop, Parse, list, %delim%
@@ -1678,7 +1672,7 @@ minimize(hWnd:="") {
     }
 }
 
-moveToScreen(hWnd:="", direction:=1, KeepRelativeSize:=1) {
+moveToMonitor(hWnd:="", direction:=1, keepRelativeSize:=true) {
     hWnd := setCase(Trim(hWnd), "U")
     if (hWnd == "" || hWnd == "A") {
         hWnd := WinExist("A")
@@ -1686,10 +1680,10 @@ moveToScreen(hWnd:="", direction:=1, KeepRelativeSize:=1) {
     else if (hWnd == "M") {
         MouseGetPos, MouseX, MouseY, hWnd
     }
-
+    direction := (direction == -1 ? -1 : 1)
     if (!WinExist("ahk_id " . hWnd)) {
         SoundPlay, *64
-        ;MsgBox, 16, moveToScreen() - Error, Specified window does not exist.`nWindow ID = %hWnd%
+        ;MsgBox, 16, moveToMonitor() - Error, Specified window does not exist.`nWindow ID = %hWnd%
         return 0
     }
 
@@ -1734,7 +1728,7 @@ moveToScreen(hWnd:="", direction:=1, KeepRelativeSize:=1) {
     WinMoveX := (WinX - Monitor%curMonitor%Left) * Monitor%NextMonitor%Width // Monitor%curMonitor%Width + Monitor%NextMonitor%Left
     WinMoveY := (WinY - Monitor%curMonitor%Top) * Monitor%NextMonitor%Height // Monitor%curMonitor%Height + Monitor%NextMonitor%Top
 
-    if (KeepRelativeSize) {
+    if (keepRelativeSize) {
         WinMoveW := WinW * Monitor%NextMonitor%Width // Monitor%curMonitor%Width
         WinMoveH := WinH * Monitor%NextMonitor%Height // Monitor%curMonitor%Height
     }
@@ -1751,16 +1745,16 @@ moveToScreen(hWnd:="", direction:=1, KeepRelativeSize:=1) {
 }
 
 numberRemoveSelected() {
-    getSelectedText(text)
-    if (text == "") {
+    selText := getSelectedText()
+    if (selText == "") {
         Send, {End}{Home}+{End}
-        getSelectedText(text)
+        selText := getSelectedText()
     }
-    if (text != "") {
-        eol := getEol(text)
+    if (selText != "") {
+        eol := getEol(selText)
         first := true
         newText :=
-        Loop, Parse, text, `n, `r
+        Loop, Parse, selText, `n, `r
         {
             if (first) {
                 first := false
@@ -1775,21 +1769,21 @@ numberRemoveSelected() {
 }
 
 numberSelected(start:="1") {
-    getSelectedText(text)
-    if (text == "") {
+    selText := getSelectedText()
+    if (selText == "") {
         Send, {End}{Home}+{End}
-        getSelectedText(text)
+        selText := getSelectedText()
     }
-    if (text != "") {
-        eol := getEol(text)
-        hasEol := endsWith(text, eol)
+    if (selText != "") {
+        eol := getEol(selText)
+        hasEol := endsWith(selText, eol)
         if (hasEol) {
-            text := SubStr(text, 1, StrLen(text) - StrLen(eol))
+            selText := SubStr(selText, 1, StrLen(selText) - StrLen(eol))
         }
         first := true
         newText :=
         count := start
-        Loop, Parse, text, `n, `r
+        Loop, Parse, selText, `n, `r
         {
             newText .= count . ". " . A_LoopField . eol
             count++
@@ -1818,7 +1812,7 @@ numberSelectedPrompt() {
     }
 }
 
-pasteText(text)
+pasteText(text:="")
 {
     if (text != "") {
         prevClipboard := ClipboardAll
@@ -2016,14 +2010,15 @@ restoreHiddenWindows() {
     hiddenWindows :=
 }
 
-reverse(value) {
+reverse(str) {
     result :=
-    StringReplace, value, value, `r`n, % Chr(29), All
-    Loop, parse, value
+    eol := getEol(str)
+    StringReplace, str, str, %eol%, % Chr(29), All
+    Loop, parse, str
     {
         result := A_LoopField . result
     }
-    StringReplace, result, result, % Chr(29), `r`n, All
+    StringReplace, result, result, % Chr(29), %eol%, All
     return result
 }
 
@@ -2120,7 +2115,7 @@ runPerforce() {
 runQuickLookup() {
     global configUser
     global quickText
-    getSelectedTextOrPrompt("Quick Lookup", quickText)
+    quickText := getSelectedTextOrPrompt("Quick Lookup")
     quickText := Trim(quickText, " `t`r`n")
     if (quickText != "") {
         quickText := urlEncode(quickText)
@@ -2152,17 +2147,17 @@ runRegexBuddy() {
 }
 
 runSelectedText() {
-    getSelectedTextOrPrompt("Google Search", text)
-    text := Trim(text, " `t`r`n")
-    if (text != "") {
-        if (isUrl(text)) {
-            if (!startsWith(text, "http", true) && !startsWith(text, "ftp", true) && !startsWith(text, "www.", true)) {
-                text := "http://" . text
+    selText := getSelectedTextOrPrompt("Google Search")
+    selText := Trim(selText, " `t`r`n")
+    if (selText != "") {
+        if (isUrl(selText)) {
+            if (!startsWith(selText, "http", true) && !startsWith(selText, "ftp", true) && !startsWith(selText, "www.", true)) {
+                selText := "http://" . selText
             }
-            Run, %text%
+            Run, %selText%
         }
         else {
-            searchText := urlEncode(text)
+            searchText := urlEncode(selText)
             Run, http://www.google.com/search?q=%searchText%
         }
     }
@@ -2466,7 +2461,7 @@ showFullHelp() {
 
     activeMon := getActiveMonitor()
     Gui, Show, , %helpTitle%
-    centerWindow("A", activeMon)
+    centerWindow("A")
 }
 
 showQuickHelp(waitforKey) {
@@ -2625,14 +2620,10 @@ showQuickHelp(waitforKey) {
     hkCol3 := hkXformHelp
     hkCol4 := hkDosHelp . "`n" . hkEppHelp
 
-    hkArr1 :=
-    hkArr2 :=
-    hkArr3 :=
-    hkArr4 :=
-    listToArray(hkCol1, hkArr1)
-    listToArray(hkCol2, hkArr2)
-    listToArray(hkCol3, hkArr3)
-    listToArray(hkCol4, hkArr4)
+    hkArr1 := listToArray(hkCol1)
+    hkArr2 := listToArray(hkCol2)
+    hkArr3 := listToArray(hkCol3)
+    hkArr4 := listToArray(hkCol4)
 
     hkResult :=
     for key, value in hkArr1
@@ -2777,15 +2768,11 @@ showQuickHelp(waitforKey) {
     ;hsCol4 := hsJiraHelp . "`n" . hsSqlHelp . "`n" . hsDosHelp
     hsCol4 := hsJiraHelp . "`n" . hsSqlHelp
 
-    hsArr1 :=
-    hsArr2 :=
-    hsArr3 :=
-    hsArr4 :=
-    listToArray(hsCol1, hsArr1)
-    listToArray(hsCol2, hsArr2)
-    listToArray(hsCol3, hsArr3)
-    listToArray(hsCol4, hsArr4)
-
+    hsArr1 := listToArray(hsCol1)
+    hsArr2 := listToArray(hsCol2)
+    hsArr3 := listToArray(hsCol3)
+    hsArr4 := listToArray(hsCol4)
+    
     hsResult :=
     for key, value in hsArr1 {
         hsResult .= RTrim(value . hsArr2[key] . hsArr3[key] . hsArr4[key]) . "`n"
@@ -2803,21 +2790,21 @@ showQuickHelp(waitforKey) {
     return
 }
 
-showSplash(msg) {
+showSplash(msg,timeout:=500) {
     global QUICK_SPLASH_TITLE
     SplashImage,, b1 cwff9999 fs12, %msg%,, %QUICK_SPLASH_TITLE%
     centerWindow(QUICK_SPLASH_TITLE)
-    Sleep, 500
+    Sleep, %timeout%
     SplashImage, off
 }
 
 sortSelected(direction:="") {
     direction := setCase(direction, "L")
-    method := "CompareNumStr" . (direction == "d" ? "Desc" : "Asc")
-    getSelectedText(text)
-    if (text != "") {
-        Sort, text, F %method%
-        replaceSelected(text)
+    method := "compareStr" . (direction == "d" ? "Desc" : "Asc")
+    selText := getSelectedText()
+    if (selText != "") {
+        Sort, selText, F %method%
+        replaceSelected(selText)
     }
 }
 
@@ -2848,10 +2835,10 @@ stripEol(str) {
 }
 
 tagifySelected() {
-    getSelectedText(text)
-    if (text != "") {
-        moveLeft := "{Left " . (StrLen(text) + 3) . "}"
-        sendText("<" . text . "></" . text . ">", moveLeft)
+    selText := getSelectedText()
+    if (selText != "") {
+        moveLeft := "{Left " . (StrLen(selText) + 3) . "}"
+        sendText("<" . selText . "></" . selText . ">", moveLeft)
     }
 }
 
@@ -2859,17 +2846,18 @@ toBool(value)
 {
     StringLower, value, value
     value := Trim(value)
-    result := 1
-    falseList := ",0,disabled,f,false,inactive,n,no,off"
-    if value in %falseList%
+    result := false
+    trueList := "1,active,enabled,on,t,true,y,yes"
+    if value in %trueList%
     {
-        result := 0
+        result := true
     }
     return result
 }
 
 toComma(value) {
     value := RegExReplace(value, "(\d)(?=(?:\d{3})+(?:\.|$))", "$1,")
+;    value := RegExReplace(value, "[1-9](?:\d{0,2})((?:,\d{3})*)(?:\.\d*[0-9])?|0?\.\d*[0-9]|0", "$1,")
     return value
 }
 
@@ -2887,8 +2875,7 @@ toggleAlwaysOnTop() {
         title := (startsWith(currentTitle, marker) ? SubStr(currentTitle, StrLen(marker) + 1) : currentTitle)
     }
     WinSetTitle, A, , %title%
-    text := "'Always-on-top' mode is " . state . "..."
-    showSplash(text)
+    showSplash("'Always-on-top' mode is " . state . "...")
 }
 
 toggleDesktopIcons() {
@@ -2916,31 +2903,31 @@ transformSelected(type,types:="I|L|R|S|T|U") {
         MsgBox, 16, transformSelected() - Invalid parameter, illegal value for 'type' specified as: [%type%]
         return 0
     }
-    getSelectedText(text)
-    if (text != "") {
+    selText := getSelectedText()
+    if (selText != "") {
         if (type == "r") {
-            replaceSelected(reverse(text))
+            replaceSelected(reverse(selText))
         }
         else {
-            replaceSelected(setCase(text, type))
+            replaceSelected(setCase(selText, type))
         }
     }
 }
 
 untagifySelected() {
-    getSelectedText(text)
-    if (text != "") {
-        pasteText(RegExReplace(text, "(<[^>]+>)", ""))
+    selText := getSelectedText()
+    if (selText != "") {
+        pasteText(RegExReplace(selText, "(<[^>]+>)", ""))
     }
 }
 
 upperCaseOracle() {
-    getSelectedText(text)
-    if (text != "") {
+    selText := getSelectedText()
+    if (selText != "") {
         oracleWords := "i)\b(ACCESS|ACCOUNT|ACTIVATE|ADD|ADMIN|ADVISE|AFTER|ALL|ALL_ROWS|ALLOCATE|ALTER|ANALYZE|AND|ANY|ARCHIVE|ARCHIVELOG|ARRAY|ARRAYLEN|AS|ASC|AT|AUDIT|AUTHENTICATED|AUTHORIZATION|AUTOEXTEND|AUTOMATIC|AVG|BACKUP|BECOME|BEFORE|BEGIN|BETWEEN|BFILE|BITMAP|BLOB|BLOCK|BODY|BY|CACHE|CACHE_INSTANCES|CANCEL|CASCADE|CAST|CFILE|CHAINED|CHANGE|CHAR|CHAR_CS|CHARACTER|CHECK|CHECKPOINT|CHOOSE|CHUNK|CLEAR|CLOB|CLONE|CLOSE|CLOSE_CACHED_OPEN_CURSORS|CLUSTER|COALESCE|COBOL|COLUMN|COLUMNS|COMMENT|COMMIT|COMMITTED|COMPATIBILITY|COMPILE|COMPLETE|COMPOSITE_LIMIT|COMPRESS|COMPUTE|CONNECT|CONNECT_TIME|CONSTRAINT|CONSTRAINTS|CONTENTS|CONTINUE|CONTROLFILE|CONVERT|COST|COUNT|CPU_PER_CALL|CPU_PER_SESSION|CREATE|CURREN_USER|CURRENT|CURRENT_SCHEMA|CURSOR|CYCLE|DANGLING|DATABASE|DATAFILE|DATAFILES|DATAOBJNO|DATE|DBA|DBHIGH|DBLOW|DBMAC|DEALLOCATE|DEBUG|DEC|DECIMAL|DECLARE|DEFAULT|DEFERRABLE|DEFERRED|DEGREE|DELETE|DEREF|DESC|DIRECTORY|DISABLE|DISCONNECT|DISMOUNT|DISTINCT|DISTRIBUTED|DML|DOUBLE|DROP|DUMP|EACH|ELSE|ELSIF|ENABLE|END|ENFORCE|ENTRY|ESCAPE|EVENTS|EXCEPT|EXCEPTIONS|EXCHANGE|EXCLUDING|EXCLUSIVE|EXEC|EXECUTE|EXISTS|EXPIRE|EXPLAIN|EXTENT|EXTENTS|EXTERNALLY|FAILED_LOGIN_ATTEMPTS|FALSE|FAST|FETCH|FILE|FIRST_ROWS|FLAGGER|FLOAT|FLOB|FLUSH|FOR|FORCE|FOREIGN|FORTRAN|FOUND|FREELIST|FREELISTS|FROM|FULL|FUNCTION|GLOBAL|GLOBAL_NAME|GLOBALLY|GO|GOTO|GRANT|GROUP|GROUPS|HASH|HASHKEYS|HAVING|HEADER|HEAP|IDENTIFIED|IDGENERATORS|IDLE_TIME|IF|IMMEDIATE|IN|INCLUDING|INCREMENT|IND_PARTITION|INDEX|INDEXED|INDEXES|INDICATOR|INITIAL|INITIALLY|INITRANS|INNER|INSERT|INSTANCE|INSTANCES|INSTEAD|INT|INTEGER|INTERMEDIATE|INTERSECT|INTO|IS|ISOLATION|ISOLATION_LEVEL|JOIN|KEEP|KEY|KILL|LABEL|LANGUAGE|LAYER|LEFT|LESS|LEVEL|LIBRARY|LIKE|LIMIT|LINK|LIST|LISTS|LOB|LOCAL|LOCK|LOCKED|LOG|LOGFILE|LOGGING|LOGICAL_READS_PER_CALL|LOGICAL_READS_PER_SESSION|LONG|LOOP|MANAGE|MANUAL|MASTER|MAX|MAXARCHLOGS|MAXDATAFILES|MAXEXTENTS|MAXINSTANCES|MAXLOGFILES|MAXLOGHISTORY|MAXLOGMEMBERS|MAXSIZE|MAXTRANS|MAXVALUE|MEMBER|MIN|MINEXTENTS|MINIMUM|MINUS|MINVALUE|MLS_LABEL_FORMAT|MLSLABEL|MODE|MODIFY|MODULE|MOUNT|MOVE|MTS_DISPATCHERS|MULTISET|NATIONAL|NCHAR|NCHAR_CS|NCLOB|NEEDED|NESTED|NETWORK|NEW|NEXT|NOARCHIVELOG|NOAUDIT|NOCACHE|NOCOMPRESS|NOCYCLE|NOFORCE|NOLOGGING|NOMAXVALUE|NOMINVALUE|NONE|NOORDER|NOOVERRIDE|NOPARALLEL|NOPARALLEL|NORESETLOGS|NOREVERSE|NORMAL|NOSORT|NOT|NOTFOUND|NOTHING|NOWAIT|NULL|NUMBER|NUMERIC|NVARCHAR2|OBJECT|OBJNO|OBJNO_REUSE|OF|OFF|OFFLINE|OID|OIDINDEX|OLD|ON|ONLINE|ONLY|OPCODE|OPEN|OPTIMAL|OPTIMIZER_GOAL|OPTION|OR|ORDER|ORGANIZATION|OSLABEL|OUTER|OVERFLOW|OWN|PACKAGE|PARALLEL|PARTITION|PASSWORD|PASSWORD_GRACE_TIME|PASSWORD_LIFE_TIME|PASSWORD_LOCK_TIME|PASSWORD_REUSE_MAX|PASSWORD_REUSE_TIME|PASSWORD_VERIFY_FUNCTION|PCTFREE|PCTINCREASE|PCTTHRESHOLD|PCTUSED|PCTVERSION|PERCENT|PERMANENT|PLAN|PLSQL_DEBUG|POST_TRANSACTION|PRECISION|PRESERVE|PRIMARY|PRIOR|PRIVATE|PRIVATE_SGA|PRIVILEGE|PRIVILEGES|PROCEDURE|PROFILE|PUBLIC|PURGE|QUEUE|QUOTA|RANGE|RAW|RBA|READ|READUP|REAL|REBUILD|RECOVER|RECOVERABLE|RECOVERY|REF|REFERENCES|REFERENCING|REFRESH|RENAME|REPLACE|RESET|RESETLOGS|RESIZE|RESOURCE|RESTRICTED|RETURN|RETURNING|REUSE|REVERSE|REVOKE|RIGHT|ROLE|ROLES|ROLLBACK|ROW|ROWID|ROWLABEL|ROWNUM|ROWS|RULE|SAMPLE|SAVEPOINT|SB4|SCAN_INSTANCES|SCHEMA|SCN|SCOPE|SD_ALL|SD_INHIBIT|SD_SHOW|SECTION|SEG_BLOCK|SEG_FILE|SEGMENT|SELECT|SEQUENCE|SERIALIZABLE|SESSION|SESSION_CACHED_CURSORS|SESSIONS_PER_USER|SET|SHARE|SHARED|SHARED_POOL|SHRINK|SIZE|SKIP|SKIP_UNUSABLE_INDEXES|SMALLINT|SNAPSHOT|SOME|SORT|SPECIFICATION|SPLIT|SQL|SQL_TRACE|SQLBUF|SQLCODE|SQLERROR|SQLSTATE|STANDBY|START|STATEMENT_ID|STATISTICS|STOP|STORAGE|STORE|STRUCTURE|SUCCESSFUL|SUM|SWITCH|SYNONYM|SYSDATE|SYSDBA|SYSOPER|SYSTEM|TABLE|TABLES|TABLESPACE|TABLESPACE_NO|TABNO|TEMPORARY|THAN|THE|THEN|THREAD|TIME|TIMESTAMP|TO|TOPLEVEL|TRACE|TRACING|TRANSACTION|TRANSITIONAL|TRIGGER|TRIGGERS|TRUE|TRUNCATE|TX|TYPE|UB2|UBA|UID|UNDER|UNION|UNIQUE|UNLIMITED|UNLOCK|UNRECOVERABLE|UNTIL|UNUSABLE|UNUSED|UPDATABLE|UPDATE|USAGE|USE|USER|USING|VALIDATE|VALIDATION|VALUE|VALUES|VARCHAR|VARCHAR2|VARYING|VIEW|WHEN|WHENEVER|WHERE|WITH|WITHOUT|WORK|WRITE|WRITEDOWN|WRITEUP|XID|YEAR|ZONE)\b"
         inComment := false
         upper :=
-        Loop, Parse, text, `n
+        Loop, Parse, selText, `n
         {
             if (inComment) {
                 pos := InStr(A_LoopField, "*/")
@@ -3009,12 +2996,12 @@ urlEncode(text) {
 }
 
 wrapSelected(start, end) {
-    getSelectedText(text)
-    if (text == "") {
+    selText := getSelectedText()
+    if (selText == "") {
         Send, {End}{Home}+{End}
-        getSelectedText(text)
+        selText := getSelectedText()
     }
-    newText := start . text . end
+    newText := start . selText . end
     pair := start . end
     if (newText != pair) {
         replaceSelected(newText)
@@ -3173,4 +3160,8 @@ zoomWindowChange:
         zoomWindowDimension := 0
     }
     GoSub, zoomRepaint
+    return
+
+#f8::
+    pasteText(toComma(getSelectedText()))
     return
