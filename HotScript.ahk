@@ -1155,15 +1155,12 @@ hkActionWindowsSnip() {
 
 hkCustomDeleteToEol() {
     if (hs.config.user.enableHkEpp && WinActive("ahk_exe i)EditPadPro\d*\.exe")) {
-        debug("EPP: Delete EOL...")
         hkEppDeleteToEol()
     }
     else if (hs.config.user.enableHkDos && WinActive("ahk_class ConsoleWindowClass")) {
-        debug("DOS: Delete EOL...")
         hkDosDeleteToEol()
     }
     else {
-        debug("Other: Sending Ctrl-Delete...")
         SendInput, ^{Delete}
     }
 }
@@ -1369,6 +1366,10 @@ hkTextMoveCurrentLineUp() {
 
 hkTransformEncrypt() {
     cryptSelected()
+}
+
+hkTransformEscape() {
+    escapeText()
 }
 
 hkTransformInvertCase() {
@@ -3020,6 +3021,28 @@ findOnPath(filename) {
     return target
 }
 
+escapeText(text:="") {
+    isSelected := false
+    if (text == "") {
+        text := getSelectedText()
+        debug("Getting selected text...")
+        isSelected := true
+    }
+    if (text != "") {
+        debug("Escaping text: `n" . text)
+        text := StringReplace(text, "``", "````", "All")
+        text := StringReplace(text, "%", "``%", "All")
+        text := StringReplace(text, "(", "``(", "All")
+        text := StringReplace(text, ")", "``)", "All")
+        if (isSelected) {
+            replaceSelected(text)
+        }
+    }
+    if (!isSelected) {
+        return text
+    }
+}
+
 findOrRunByExe(name) {
     exe := name . ".exe"
     regExe := "i)" . exe
@@ -3170,6 +3193,7 @@ getDefaultHotKeyDefs(type) {
     }
     else if (type == "hkTransform") {
         hk["hkTransformEncrypt"] := "^+e"
+        hk["hkTransformEscape"] := "^+``"
         hk["hkTransformInvertCase"] := "^+i"
         hk["hkTransformLowerCase"] := "$^+l"
         hk["hkTransformNumberPrepend"] := "^+n"
@@ -3428,7 +3452,7 @@ init() {
 }
 
 initInternalVars() {
-    hs.VERSION := "1.20150818.1"
+    hs.VERSION := "1.20150819.2"
     hs.TITLE := "HotScript"
     hs.BASENAME := A_ScriptDir . "\" . hs.TITLE
 
@@ -3978,6 +4002,11 @@ numberSelectedPrompt() {
 }
 
 pasteTemplate(template, tokens:="", keys:="", delay:=250) {
+    eol := getEol(template)
+    if (eol == hs.const.EOL_NIX) {
+        ; because templates are often from a continuation section, convert EOLs to Windows (CRLF)
+        template := StringReplace(template, hs.const.EOL_NIX, hs.const.EOL_WIN, "All")
+    }
     for name, value in tokens {
         token := "{" . name . "}"
         template := StringReplace(template, token, value, "All")
@@ -3985,12 +4014,11 @@ pasteTemplate(template, tokens:="", keys:="", delay:=250) {
     sendText(template, keys, delay)
 }
 
-pasteText(text:="", delay:=250)
-{
+pasteText(text:="", delay:=250) {
     if (text != "") {
-        ; this has been giving some trouble "ConsoleWindowClass" worked for a long time, then stopped working on my home system then my laptop.
+        ; this has been giving some trouble... "ConsoleWindowClass" worked for a long time, then stopped working on my home system then my laptop.
         ; after switching to cmd.exe checking, then this stopped working on Paul's Win2012 system.
-        ; so, now we are going to try BOTH...
+        ; so, now we are going to try BOTH!
         if (WinActive("ahk_class ConsoleWindowClass") || WinActive("ahk_exe cmd.exe")) {
             SendInput, {RAW}%text%
         }
@@ -4990,6 +5018,7 @@ showQuickHelp(waitforKey) {
     ( LTrim
         Transform hotkeys`t`t`t
         %colLine%
+        CtrlShift-```tEscape text`t`t
         CtrlShift-A`tSort ascending`t`t
         CtrlShift-D`tSort descending`t`t
         CtrlShift-E`tEncrypt text`t`t
