@@ -8,7 +8,7 @@ To add user-defined variables, edit the file  : HotScriptVariables.ahk
 To override default settings, copy values from: HotScriptDefault.ini to HotScriptUser.ini
 
 For further information, assistance or bug-reporting,
-please contact Mike Viens. (mike.viens@pearson.com)
+please contact Mike Viens. (mikeviens@gmail.com)
 */
 
 #Include %A_ScriptDir%
@@ -16,7 +16,9 @@ please contact Mike Viens. (mike.viens@pearson.com)
 #MaxHotkeysPerInterval 200
 #NoEnv
 #SingleInstance force
-#Warn
+#Warn All
+#Warn UseUnsetGlobal, OutputDebug
+#Warn UseUnsetLocal, OutputDebug
 Autotrim, off
 DetectHiddenWindows, on
 ListLines, off
@@ -28,43 +30,8 @@ SetWinDelay, 0
 StringCaseSense On
 
 ;__________________________________________________
-;private variables
-global COMMENT_HEADER_LINE := " " . repeatStr("-", 70)
-global EOL_MAC := "`r"
-global EOL_NIX := "`n"
-global EOL_WIN := "`r`n"
-global EOL_REGEX := "(\r\n|\n|\r)"
-global LINE_SEP := repeatStr("·", 157)
-global MARKER := {
-    (LTrim Join
-        always_on_top: "† ",
-        click_through: "‡ ",
-        transparent: "±"
-    )}
-global MENU_SEP := "-"
-global HOTSCRIPT_TITLE := "HotScript"
-global HOTSCRIPT_BASENAME := A_ScriptDir . "\" . HOTSCRIPT_TITLE
-global HOTSCRIPT_VERSION := "1.20150808.1"
-global SPLASH_TITLE := HOTSCRIPT_TITLE . "Splash"
-global USER_FUNCTIONS_FILE := HOTSCRIPT_BASENAME . "Functions.ahk"
-global USER_KEYS_FILE := HOTSCRIPT_BASENAME . "Keys.ahk"
-global USER_STRINGS_FILE := HOTSCRIPT_BASENAME . "Strings.ahk"
-global USER_VARIABLES_FILE := HOTSCRIPT_BASENAME . "Variables.ahk"
-global VIRTUAL_SPACE := " " ; this is not a space, but Alt+0160
-
-global configDefault := new OldConfig(HOTSCRIPT_TITLE)
-configDefault.file := HOTSCRIPT_BASENAME . "Default.ini"
-global configUser := new OldConfig
-configUser.file := HOTSCRIPT_BASENAME . "User.ini"
-global hiddenWindows := ""
-global lvKeys := ""
-global lvStrings := ""
-global monitors := {}
-global uniqueId := "_" . A_YEAR . "_" . A_COMPUTERNAME
-
-
-;__________________________________________________
-;Auto-run code goes here
+;Initialization
+global hs := {}
 init()
 
 ;__________________________________________________
@@ -75,12 +42,10 @@ init()
 ;__________________________________________________
 ;HotStrings
 #Include *i HotScriptStrings.ahk
+
 ; Aliases
 ;--------
-;#if, toBool(configUser.enableHsAlias)
-    ;regexHotString("O)(B|b)i(\d+)" . EOL_REGEX, "hsBackInX")
-;#if
-#if, toBool(configUser.enableHsAlias)
+#if, toBool(hs.config.user.enableHsAlias)
     :*ch:bbl:: ;; be back later
         addHotString()
         sendText("be back later")
@@ -104,9 +69,9 @@ init()
     :*c:chh:: ;; Comment header for HTML
        addHotString()
        sendText("<!--", "{Enter}")
-       sendText(COMMENT_HEADER_LINE, "{Enter}")
+       sendText(hs.const.COMMENT_HEADER_LINE, "{Enter}")
        sendText("    ", "{Enter}")
-       sendText(COMMENT_HEADER_LINE, "{Enter}")
+       sendText(hs.const.COMMENT_HEADER_LINE, "{Enter}")
        sendText("-->", "{Enter}{Up 3}{End}")
        return
     :*c:chj:: ;; Comment header for Java or JavaScript
@@ -117,15 +82,15 @@ init()
        return
     :*c:chp:: ;; Comment header for Perl
        addHotString()
-       sendText("#" . COMMENT_HEADER_LINE, "{Enter}")
+       sendText("#" . hs.const.COMMENT_HEADER_LINE, "{Enter}")
        sendText("#  ", "{Enter}")
-       sendText("#" . COMMENT_HEADER_LINE, "{Enter}{Up 2}{End}")
+       sendText("#" . hs.const.COMMENT_HEADER_LINE, "{Enter}{Up 2}{End}")
        return
     :*c:chs:: ;; Comment header for SQL
        addHotString()
-       sendText("--" . COMMENT_HEADER_LINE, "{Enter}")
+       sendText("--" . hs.const.COMMENT_HEADER_LINE, "{Enter}")
        sendText("--  ", "{Enter}")
-       sendText("--" . COMMENT_HEADER_LINE, "{Enter}{Up 2}{End}")
+       sendText("--" . hs.const.COMMENT_HEADER_LINE, "{Enter}{Up 2}{End}")
        return
     :*c:g2g:: ;; Good to go.
         addHotString()
@@ -186,7 +151,7 @@ init()
 #if
 ; Auto-correct
 ;-------------
-#if, toBool(configUser.enableHsAutoCorrect)
+#if, toBool(hs.config.user.enableHsAutoCorrect)
     :*c:cL:: ;; change "cL" to "c:"
         addHotString()
         SendInput, c{:}
@@ -232,7 +197,7 @@ init()
 #if
 ;Code
 ;----
-#if, toBool(configUser.enableHsCode)
+#if, toBool(hs.config.user.enableHsCode)
     :*b0:for(:: ;; auto-completion of a 'for' block
     :*b0:for (:: ;; auto-completion of a 'for' block
     :*b0:if(:: ;; auto-completion of an 'if' block
@@ -302,7 +267,7 @@ init()
 #if
 ;Date and Time
 ;-------------
-#if, toBool(configUser.enableHsDates)
+#if, toBool(hs.config.user.enableHsDates)
     :*:dts:: ;; datestamp - the current date as 'YYYYMMDD'
         addHotString()
         sendText(A_YYYY . A_MM . A_DD)
@@ -346,7 +311,7 @@ init()
 #if
 ;DOS
 ;---
-#if, toBool(configUser.enableHsDos)
+#if, toBool(hs.config.user.enableHsDos)
     #ifWinActive ahk_class ConsoleWindowClass
         :*b0:cd :: ;; Appends '/d' onto 'cd ' commands to allow changing drive++DOS only
             addHotString()
@@ -356,7 +321,7 @@ init()
 #if
 ;HTML
 ;----
-#if, toBool(configUser.enableHsHtml)
+#if, toBool(hs.config.user.enableHsHtml)
     :*b0:<!-:: ;; HTML/XML comment
         addHotString()
         sendText("-  -->", "{Left 4}")
@@ -650,11 +615,11 @@ init()
 #if
 ;Jira
 ;----
-#if, toBool(configUser.enableHsJira)
+#if, toBool(hs.config.user.enableHsJira)
     :*:{bpan:: ;; a pair of {panel} tags with blue background++used by Jira/Confluence
         addHotString()
-        pval := configUser.jiraPanels.formatBlue
-        sendJiraPanel(configUser.jiraPanels.formatBlue)
+        pval := hs.config.user.jiraPanels.formatBlue
+        sendJiraPanel(hs.config.user.jiraPanels.formatBlue)
         return
     :*:{code:: ;; a pair of generic {code} tags++used by Jira/Confluence
         addHotString()
@@ -666,7 +631,7 @@ init()
         return
     :*:{gpan:: ;; a pair of {panel} tags with green background++used by Jira/Confluence
         addHotString()
-        sendJiraPanel(configUser.jiraPanels.formatGreen)
+        sendJiraPanel(hs.config.user.jiraPanels.formatGreen)
         return
     :*:{info:: ;; a pair of {info} tags++used by Jira/Confluence
         addHotString()
@@ -691,7 +656,7 @@ init()
         return
     :*:{pan:: ;; a pair of {panel} tags++used by Jira/Confluence
         addHotString()
-        sendJiraPanel(configUser.jiraPanels.format)
+        sendJiraPanel(hs.config.user.jiraPanels.format)
         return
     :*b0:{quo:: ;; a pair of {quote} tags++used by Jira/Confluence
         addHotString()
@@ -700,7 +665,7 @@ init()
         return
     :*:{rpan:: ;; a pair of {panel} tags with red background++used by Jira/Confluence
         addHotString()
-        sendJiraPanel(configUser.jiraPanels.formatRed)
+        sendJiraPanel(hs.config.user.jiraPanels.formatRed)
         return
     :*:{sql:: ;; a pair of {code} tags for SQL++used by Jira/Confluence
         addHotString()
@@ -724,7 +689,7 @@ init()
         return
     :*:{ypan:: ;; a pair of {panel} tags with yellow background++used by Jira/Confluence
         addHotString()
-        sendJiraPanel(configUser.jiraPanels.formatYellow)
+        sendJiraPanel(hs.config.user.jiraPanels.formatYellow)
         return
 #if
 hsBackInX() {
@@ -736,7 +701,7 @@ hsBackInX() {
 ;__________________________________________________
 ;HotKeys
 #Include *i HotScriptKeys.ahk
-#if, toBool(configUser.enableHkMisc)
+#if, toBool(hs.config.user.enableHkMisc)
     #pause:: ;; toggles suspension of this script
         Suspend
         addHotKey()
@@ -1253,7 +1218,7 @@ hkHotScriptDebugVariable() {
 }
 
 hkHotScriptEditDefaultIni() {
-    runEditor(configDefault.file)
+    runEditor(hs.config.default.file)
 }
 
 hkHotScriptEditHotScript() {
@@ -1261,32 +1226,27 @@ hkHotScriptEditHotScript() {
 }
 
 hkHotScriptEditUserIni() {
-    runEditor(configUser.file)
+    runEditor(hs.config.user.file)
 }
 
 hkHotScriptEditUserFunctions() {
-    runEditor(USER_FUNCTIONS_FILE)
+    runEditor(hs.file.USER_FUNCTIONS)
 }
 
 hkHotScriptEditUserKeys() {
-    runEditor(USER_KEYS_FILE)
+    runEditor(hs.file.USER_KEYS)
 }
 
 hkHotScriptEditUserStrings() {
-    runEditor(USER_STRINGS_FILE)
+    runEditor(hs.file.USER_STRINGS)
 }
 
 hkHotScriptEditUserVariables() {
-    runEditor(USER_VARIABLES_FILE)
+    runEditor(hs.file.USER_VARIABLES)
 }
 
 hkHotScriptExit() {
     stop()
-}
-
-hkHotScriptFullHelp() {
-    ;showFullHelp()
-    ; TODO - temporarily disabled until it can be fixed
 }
 
 hkHotScriptQuickHelp() {
@@ -1322,7 +1282,7 @@ hkMiscPasteClipboardAsText() {
 }
 
 hkMiscPasteEnter() {
-    sendText(EOL_WIN)
+    sendText(hs.const.EOL_WIN)
 }
 
 hkMiscPasteTab() {
@@ -1625,19 +1585,19 @@ hkWindowToggleTransparency() {
 ;__________________________________________________
 ;custom functions
 addHotKey() {
-    configUser.hkSessionCount++
-    configUser.hkTotalCount++
-    value := configUser.hkTotalCount
-    file := configUser.file
-    IniWrite(configUser.file, "config", "hkTotalCount" . uniqueId, value)
+    hs.config.user.hkSessionCount++
+    hs.config.user.hkTotalCount++
+    value := hs.config.user.hkTotalCount
+    file := hs.config.user.file
+    IniWrite(hs.config.user.file, "config", "hkTotalCount" . hs.vars.uniqueId, value)
 }
 
 addHotString() {
-    configUser.hsSessionCount++
-    configUser.hsTotalCount++
-    value := configUser.hsTotalCount
-    file := configUser.file
-    IniWrite(configUser.file, "config", "hsTotalCount" . uniqueId, value)
+    hs.config.user.hsSessionCount++
+    hs.config.user.hsTotalCount++
+    value := hs.config.user.hsTotalCount
+    file := hs.config.user.file
+    IniWrite(hs.config.user.file, "config", "hsTotalCount" . hs.vars.uniqueId, value)
 }
 
 arrayToList(arr, delim:=",", trim:="") {
@@ -1695,19 +1655,19 @@ centerWindow(title:="A") {
 }
 
 cleanup20131211_2() {
-    oldCount := IniRead(configUser.file, "config", "hkTotalCount", 0)
+    oldCount := IniRead(hs.config.user.file, "config", "hkTotalCount", 0)
     if (oldCount > 0) {
-        configUser.hkTotalCount += oldCount
-        IniWrite(configUser.file, "config", "hkTotalCount" . uniqueId, configUser.hkTotalCount)
-        IniDelete(configUser.file, "config", "hkTotalCount")
+        hs.config.user.hkTotalCount += oldCount
+        IniWrite(hs.config.user.file, "config", "hkTotalCount" . hs.vars.uniqueId, hs.config.user.hkTotalCount)
+        IniDelete(hs.config.user.file, "config", "hkTotalCount")
     }
-    oldCount := IniRead(configUser.file, "config", "hsTotalCount", 0)
+    oldCount := IniRead(hs.config.user.file, "config", "hsTotalCount", 0)
     if (oldCount > 0) {
-        configUser.hsTotalCount += oldCount
-        IniWrite(configUser.file, "config", "hsTotalCount" . uniqueId, configUser.hsTotalCount)
-        IniDelete(configUser.file, "config", "hsTotalCount")
+        hs.config.user.hsTotalCount += oldCount
+        IniWrite(hs.config.user.file, "config", "hsTotalCount" . hs.vars.uniqueId, hs.config.user.hsTotalCount)
+        IniDelete(hs.config.user.file, "config", "hsTotalCount")
     }
-    IniDelete(configUser.file, "config", "enableHsSql")
+    IniDelete(hs.config.user.file, "config", "enableHsSql")
 }
 
 cleanupDeprecated() {
@@ -2635,13 +2595,13 @@ createIcon() {
     )
     iconData := iconData1 . iconData2 . iconData3 . iconData4 . iconData5
     hexToBin(iconBin, iconData)
-    fileIco := FileOpen(HOTSCRIPT_BASENAME . ".ico", "w")
+    fileIco := FileOpen(hs.BASENAME . ".ico", "w")
     fileIco.RawWrite(iconBin, StrLen(iconData) / 2)
     fileIco.close()
 }
 
 createUserFiles() {
-    file := USER_FUNCTIONS_FILE
+    file := hs.file.USER_FUNCTIONS
     if (FileExist(file) == "") {
         FileAppend,
 (
@@ -2657,7 +2617,7 @@ simpleFunction(someVar) {
 
 ), %file%
     }
-    file := USER_KEYS_FILE
+    file := hs.file.USER_KEYS
     if (FileExist(file) == "") {
         FileAppend,
 (
@@ -2894,7 +2854,7 @@ Each hotkey should use the following format:
 
 ), %file%
     }
-    file := USER_STRINGS_FILE
+    file := hs.file.USER_STRINGS
     if (FileExist(file) == "") {
         FileAppend,
 (
@@ -2931,7 +2891,7 @@ Each hotstring should use the following format:
 
 ), %file%
     }
-    file := USER_VARIABLES_FILE
+    file := hs.file.USER_VARIABLES
     if (FileExist(file) == "") {
         FileAppend,
 (
@@ -2971,7 +2931,7 @@ cryptSelected() {
 }
 
 debug(str) {
-    msg := HOTSCRIPT_TITLE . " v" . HOTSCRIPT_VERSION . " - " . A_MM . "/" . A_DD . "/" . A_YYYY . " at " . A_Hour . ":" . A_Min . ":" . A_Sec . " :: "
+    msg := hs.TITLE . " v" . hs.VERSION . " - " . A_MM . "/" . A_DD . "/" . A_YYYY . " at " . A_Hour . ":" . A_Min . ":" . A_Sec . " :: "
     OutputDebug % msg . str
 }
 
@@ -3006,34 +2966,6 @@ endsWith(str, value, caseInsensitive:="") {
     }
     tmp := StringRight(str, StrLen(value))
     return (tmp == value)
-}
-
-extractKeys(lines) {
-    keyList := ""
-    Loop, Parse, lines, %EOL_NIX%, %EOL_MAC%
-    {
-        line := ""
-        if (SubStr(Trim(A_LoopField), 1, 2) == ";;") {
-            ;add description lines
-            line := A_Index . VIRTUAL_SPACE . SubStr(Trim(A_LoopField), 3) . EOL_NIX
-        }
-        else if (SubStr(Trim(A_LoopField), 1, 1) == ";") {
-            ;ignore commented lines
-            line := ""
-        }
-        else if (RegExMatch(Trim(A_LoopField), "^\s*(?<hk>[^: ]+(\s&\s)*[^:, ]*)::(?<cmd>.*?)(?:(?<=\s);;(?<desc>.*))?$", _)) {
-            ;HotKeys
-            line := A_Index . VIRTUAL_SPACE . "hk" . VIRTUAL_SPACE . _hk . VIRTUAL_SPACE . (_desc ? _desc : _cmd) . EOL_NIX
-        }
-        else if (RegExMatch(Trim(A_LoopField), "^\s*:(?<opt>[^:, ]*):(?<hs>[^:]+)::(?<rep>.*?)(?:(?<=\s);;(?<desc>.*))?$", _)) {
-            ;HotStrings
-            line := A_Index . VIRTUAL_SPACE . "hs" . VIRTUAL_SPACE . _hs . VIRTUAL_SPACE . (_desc ? _desc : _rep) . VIRTUAL_SPACE . _opt . EOL_NIX
-        }
-        if (line != "") {
-            keyList .= line
-        }
-    }
-    return keyList
 }
 
 findOnPath(filename) {
@@ -3106,15 +3038,15 @@ getCenter(winW, winH, monitor:="A") {
         monitor := getActiveMonitor()
     }
     else {
-        if (monitor < monitors.count) {
+        if (monitor < hs.vars.monitors.count) {
             monitor := 1
         }
-        else if (monitor > monitors.count) {
-            monitor := monitors.count
+        else if (monitor > hs.vars.monitors.count) {
+            monitor := hs.vars.monitors.count
         }
     }
     coord := new Coords
-    targetMon := monitors[monitor]
+    targetMon := hs.vars.monitors[monitor]
     newX := targetMon.left + (targetMon.workWidth / 2) - (winW / 2)
     newY := targetMon.top + (targetMon.workHeight / 2) - (winH / 2)
     coord.x := newX
@@ -3173,7 +3105,6 @@ getDefaultHotKeyDefs(type) {
         hk["hkHotScriptEditUserStrings"] := "#5"
         hk["hkHotScriptEditUserVariables"] := "#8"
         hk["hkHotScriptExit"] := "#f12"
-        ;hk["hkHotScriptFullHelp"] := "^#h"
         hk["hkHotScriptQuickHelp"] := "#h"
         hk["hkHotScriptQuickHelpToggle"] := "!#h"
         hk["hkHotScriptReload"] := "#2"
@@ -3285,19 +3216,19 @@ getDefaultHotKeyDefs(type) {
 }
 
 getEol(text) {
-    if (InStr(text, EOL_WIN)) {
+    if (InStr(text, hs.const.EOL_WIN)) {
         ; check this first because it may contain both
-        eol := EOL_WIN
+        eol := hs.const.EOL_WIN
     }
-    else if (InStr(text, EOL_NIX)) {
-        eol := EOL_NIX
+    else if (InStr(text, hs.const.EOL_NIX)) {
+        eol := hs.const.EOL_NIX
     }
-    else if (InStr(text, EOL_MAC)) {
-        eol := EOL_MAC
+    else if (InStr(text, hs.const.EOL_MAC)) {
+        eol := hs.const.EOL_MAC
     }
     else {
         ; otherwise, default to Windows
-        eol := EOL_WIN
+        eol := hs.const.EOL_WIN
     }
     return eol
 }
@@ -3306,7 +3237,7 @@ getHotKeySections(config) {
     file := config.file
     sections := {}
     value := IniRead(file)
-    Loop, Parse, value, %EOL_NIX%
+    Loop, Parse, value, % hs.const.EOL_NIX
     {
         if (RegExMatch(A_LoopField, "^hk.+", key)) {
             sections.insert(key)
@@ -3316,7 +3247,7 @@ getHotKeySections(config) {
 }
 
 getListSize(list, delim:="") {
-    delim := (delim == "" ? EOL_WIN : delim)
+    delim := (delim == "" ? hs.const.EOL_WIN : delim)
     tmpCount := 0
     Loop, Parse, list, %delim%
     {
@@ -3360,6 +3291,29 @@ getSize(value) {
     return size
 }
 
+getVar(name) {
+    keyArray := StrSplit(name, ".")
+    varName := keyArray.RemoveAt(1)
+    tmp := %varName%
+    if (IsObject(tmp)) {
+        tmpName := varName
+        for idx, key in keyArray
+        {
+            if (!ObjHasKey(tmp, key)) {
+                throw, Exception("The object '" . tmpName . "' does not contain the key '" . key . "'.")
+            }
+            tmpName .= "." . key
+            if (!IsObject(tmp[key])) {
+                if (idx != keyArray.Length()) {
+                    throw, Exception("The requested object '" . tmpName . "' is a simple value not an object.")
+                }
+            }
+            tmp := tmp[key]
+        }
+    }
+    return tmp
+}
+
 hexToBin(ByRef bytes, hex, num:=0)
 {
     needed := Ceil(StrLen(hex) / 2)
@@ -3386,7 +3340,7 @@ hexToBin(ByRef bytes, hex, num:=0)
 hideWindow(title:="A") {
     hWnd := WinExist(title)
     if (IsWindow(hWnd)) {
-        hiddenWindows .= (hiddenWindows ? "|" : "") . hWnd
+        hs.vars.hiddenWindows .= (hs.vars.hiddenWindows ? "|" : "") . hWnd
         WinHide, ahk_id %hWnd%
         GroupActivate("AllWindows")
     }
@@ -3412,28 +3366,76 @@ hkToStr(key) {
 }
 
 init() {
+    initInternalVars()
+    refreshMonitors()
+    SetTimer("refreshMonitors", 30000)
     createUserFiles()
     loadConfig()
     cleanupDeprecated()
-
     updateRegistry()
-    icon := HOTSCRIPT_BASENAME . ".ico"
-    menuVersion := HOTSCRIPT_TITLE . " v" . HOTSCRIPT_VERSION . " (AHK v" . A_AhkVersion . ")"
+    icon := hs.BASENAME . ".ico"
+    menuVersion := hs.TITLE . " v" . hs.VERSION . " (AHK v" . A_AhkVersion . ")"
     Menu, Tray, Icon, %icon%
     Menu, Tray, Tip, %menuVersion%
-    GoSub initMonitors
-    SetTimer("initMonitors", 120000) ; 2 minutes (in milliseconds)
-    if (FileExist(configUser.editor) == "") {
-        if (findOnPath(configUser.editor) = "") {
-            msg := "The configured editor cannot be found: " . configUser.editor . "`n`nTo change this, edit the " . configUser.file . " file and add the 'editor' value in the [config] section."
+    if (FileExist(hs.config.user.editor) == "") {
+        if (findOnPath(hs.config.user.editor) = "") {
+            msg := "The configured editor cannot be found: " . hs.config.user.editor . "`n`nTo change this, edit the " . hs.config.user.file . " file and add the 'editor' value in the [config] section."
             MsgBox, 48,, %msg%
         }
     }
-    return
+}
 
-    initMonitors:
-        refreshMonitors()
-        return
+initInternalVars() {
+    hs.VERSION := "1.20150813.1"
+    hs.TITLE := "HotScript"
+    hs.BASENAME := A_ScriptDir . "\" . hs.TITLE
+
+    marker := {
+        (LTrim Join
+            always_on_top: "† ",
+            click_through: "‡ ",
+            transparent: "±"
+        )}
+
+    ; const
+    hs.const := {
+        (LTrim Join Comments
+            COMMENT_HEADER_LINE: " " . repeatStr("-", 70),
+            END_CHARS_REGEX: "[``~!@#$%^&*()\-_=+[\]{}\\|;:'" . chr(34) . ",.<>/?\s]",
+            EOL_MAC: "`r",
+            EOL_NIX: "`n",
+            EOL_WIN: "`r`n",
+            EOL_REGEX: "(\r\n|\n|\r)",
+            LINE_SEP: repeatStr("·", 157),
+            MARKER: marker,
+            MENU_SEP: "-",
+            VIRTUAL_SPACE: " "   ; this is not a space, but Alt+0160
+        )}
+    ; file
+    hs.file := {
+        (LTrim Join
+            CONFIG_DEFAULT: hs.BASENAME . "Default.ini",
+            CONFIG_USER: hs.BASENAME . "User.ini",
+            USER_FUNCTIONS: hs.BASENAME . "Functions.ahk",
+            USER_KEYS: hs.BASENAME . "Keys.ahk",
+            USER_STRINGS: hs.BASENAME . "Strings.ahk",
+            USER_VARIABLES: hs.BASENAME . "Variables.ahk"
+        )}
+    ; vars
+    hs.vars := {
+        (LTrim Join Comments
+            hiddenWindows: "",   ; this should persist, because if windows were hidden and the script was reloaded, they would be lost
+            monitors: {},
+            uniqueId: "_" . A_YEAR . "_" . A_COMPUTERNAME
+        )}
+    ; config
+    hs.config := {
+        (LTrim Join
+            default: new OldConfig(hs.TITLE),
+            user: new OldConfig
+        )}
+    hs.config.default.file := hs.file.CONFIG_DEFAULT
+    hs.config.user.file := hs.file.CONFIG_USER
 }
 
 is(value, type) {
@@ -3458,7 +3460,7 @@ isWindow(hWnd) {
 
 lineUnwrapSelected() {
     selText := getSelectedText()
-    selText := StringReplace(selText, A_Space . EOL_WIN, A_Space, "All")
+    selText := StringReplace(selText, A_Space . hs.const.EOL_WIN, A_Space, "All")
     pasteText(selText)
 }
 
@@ -3477,7 +3479,7 @@ lineWrapSelected() {
 }
 
 listToArray(list, delim:="") {
-    delim := (delim == "" ? EOL_WIN : delim)
+    delim := (delim == "" ? hs.const.EOL_WIN : delim)
     arr := {}
     Loop, Parse, list, %delim%
     {
@@ -3487,66 +3489,66 @@ listToArray(list, delim:="") {
 }
 
 loadConfig() {
-    file := configDefault.file
+    file := hs.config.default.file
     saveDefault := false
-    if (FileExist(configDefault.file) == "") {
+    if (FileExist(hs.config.default.file) == "") {
         saveDefault := true
-        configDefault.version := HOTSCRIPT_VERSION
+        hs.config.default.version := hs.VERSION
     }
     else {
         ; check version in default
-        configDefault.version := IniRead(configDefault.file, "config", "version")
-        if (configDefault.version != HOTSCRIPT_VERSION) {
+        hs.config.default.version := IniRead(hs.config.default.file, "config", "version")
+        if (hs.config.default.version != hs.VERSION) {
             ; different version so need to delete it
             FileDelete(file)
             saveDefault := true
-            configDefault.version := HOTSCRIPT_VERSION
+            hs.config.default.version := hs.VERSION
         }
     }
     ; load from default config first
-    configDefault.editor := IniRead(configDefault.file, "config", "editor", configDefault.editor)
-    configDefault.enableHkAction := IniRead(configDefault.file, "config", "enableHkAction", toBool(configDefault.enableHkAction))
-    configDefault.enableHkDos := IniRead(configDefault.file, "config", "enableHkDos", toBool(configDefault.enableHkDos))
-    configDefault.enableHkEpp := IniRead(configDefault.file, "config", "enableHkEpp", toBool(configDefault.enableHkEpp))
-    configDefault.enableHkMisc := IniRead(configDefault.file, "config", "enableHkMisc", toBool(configDefault.enableHkMisc))
-    configDefault.enableHkText := IniRead(configDefault.file, "config", "enableHkText", toBool(configDefault.enableHkText))
-    configDefault.enableHkTransform := IniRead(configDefault.file, "config", "enableHkTransform", toBool(configDefault.enableHkTransform))
-    configDefault.enableHkWindow := IniRead(configDefault.file, "config", "enableHkWindow", toBool(configDefault.enableHkWindow))
-    configDefault.enableHsAlias := IniRead(configDefault.file, "config", "enableHsAlias", toBool(configDefault.enableHsAlias))
-    configDefault.enableHsAutoCorrect := IniRead(configDefault.file, "config", "enableHsAutoCorrect", toBool(configDefault.enableHsAutoCorrect))
-    configDefault.enableHsCode := IniRead(configDefault.file, "config", "enableHsCode", toBool(configDefault.enableHsCode))
-    configDefault.enableHsDates := IniRead(configDefault.file, "config", "enableHsDates", toBool(configDefault.enableHsDates))
-    configDefault.enableHsDos := IniRead(configDefault.file, "config", "enableHsDos", toBool(configDefault.enableHsDos))
-    configDefault.enableHsHtml := IniRead(configDefault.file, "config", "enableHsHtml", toBool(configDefault.enableHsHtml))
-    configDefault.enableHsJira := IniRead(configDefault.file, "config", "enableHsJira", toBool(configDefault.enableHsJira))
-    configDefault.hkTotalCount := 0
-    configDefault.hsTotalCount := 0
-    configDefault.inputBoxFieldFont := IniRead(configDefault.file, "config", "inputBoxFieldFont", configDefault.inputBoxFieldFont)
-    configDefault.inputBoxOptions := IniRead(configDefault.file, "config", "inputBoxOptions", configDefault.inputBoxOptions)
-    configDefault.jiraPanels.format := IniRead(configDefault.file, "jira", "panelFormat", configDefault.jiraPanels.format)
-    configDefault.jiraPanels.formatBlue := IniRead(configDefault.file, "jira", "panelFormatBlue", configDefault.jiraPanels.formatBlue)
-    configDefault.jiraPanels.formatGreen := IniRead(configDefault.file, "jira", "panelFormatGreen", configDefault.jiraPanels.formatGreen)
-    configDefault.jiraPanels.formatRed := IniRead(configDefault.file, "jira", "panelFormatRed", configDefault.jiraPanels.formatRed)
-    configDefault.jiraPanels.formatYellow := IniRead(configDefault.file, "jira", "panelFormatYellow", configDefault.jiraPanels.formatYellow)
-    configDefault.options.oracleTransformRemainderToLower := IniRead(configDefault.file, "options", "oracleTransformRemainderToLower", toBool(configDefault.options.oracleTransformRemainderToLower))
-    configDefault.options.resolutions := IniRead(configDefault.file, "options", "resolutions")
-    if (configDefault.options.resolutions == "ERROR" || getSize(configDefault.options.resolutions) == 0) {
-        configDefault.options.resolutions := "640x480,&800x600,&1024x768,1280x720,1280x768,1280x800,1280x960,1&280x1024,1360x768,1&366x768,1&440x900,1600x900,1&600x1024,1680x1050,1&768x992,1&920x1080"
+    hs.config.default.editor := IniRead(hs.config.default.file, "config", "editor", hs.config.default.editor)
+    hs.config.default.enableHkAction := IniRead(hs.config.default.file, "config", "enableHkAction", toBool(hs.config.default.enableHkAction))
+    hs.config.default.enableHkDos := IniRead(hs.config.default.file, "config", "enableHkDos", toBool(hs.config.default.enableHkDos))
+    hs.config.default.enableHkEpp := IniRead(hs.config.default.file, "config", "enableHkEpp", toBool(hs.config.default.enableHkEpp))
+    hs.config.default.enableHkMisc := IniRead(hs.config.default.file, "config", "enableHkMisc", toBool(hs.config.default.enableHkMisc))
+    hs.config.default.enableHkText := IniRead(hs.config.default.file, "config", "enableHkText", toBool(hs.config.default.enableHkText))
+    hs.config.default.enableHkTransform := IniRead(hs.config.default.file, "config", "enableHkTransform", toBool(hs.config.default.enableHkTransform))
+    hs.config.default.enableHkWindow := IniRead(hs.config.default.file, "config", "enableHkWindow", toBool(hs.config.default.enableHkWindow))
+    hs.config.default.enableHsAlias := IniRead(hs.config.default.file, "config", "enableHsAlias", toBool(hs.config.default.enableHsAlias))
+    hs.config.default.enableHsAutoCorrect := IniRead(hs.config.default.file, "config", "enableHsAutoCorrect", toBool(hs.config.default.enableHsAutoCorrect))
+    hs.config.default.enableHsCode := IniRead(hs.config.default.file, "config", "enableHsCode", toBool(hs.config.default.enableHsCode))
+    hs.config.default.enableHsDates := IniRead(hs.config.default.file, "config", "enableHsDates", toBool(hs.config.default.enableHsDates))
+    hs.config.default.enableHsDos := IniRead(hs.config.default.file, "config", "enableHsDos", toBool(hs.config.default.enableHsDos))
+    hs.config.default.enableHsHtml := IniRead(hs.config.default.file, "config", "enableHsHtml", toBool(hs.config.default.enableHsHtml))
+    hs.config.default.enableHsJira := IniRead(hs.config.default.file, "config", "enableHsJira", toBool(hs.config.default.enableHsJira))
+    hs.config.default.hkTotalCount := 0
+    hs.config.default.hsTotalCount := 0
+    hs.config.default.inputBoxFieldFont := IniRead(hs.config.default.file, "config", "inputBoxFieldFont", hs.config.default.inputBoxFieldFont)
+    hs.config.default.inputBoxOptions := IniRead(hs.config.default.file, "config", "inputBoxOptions", hs.config.default.inputBoxOptions)
+    hs.config.default.jiraPanels.format := IniRead(hs.config.default.file, "jira", "panelFormat", hs.config.default.jiraPanels.format)
+    hs.config.default.jiraPanels.formatBlue := IniRead(hs.config.default.file, "jira", "panelFormatBlue", hs.config.default.jiraPanels.formatBlue)
+    hs.config.default.jiraPanels.formatGreen := IniRead(hs.config.default.file, "jira", "panelFormatGreen", hs.config.default.jiraPanels.formatGreen)
+    hs.config.default.jiraPanels.formatRed := IniRead(hs.config.default.file, "jira", "panelFormatRed", hs.config.default.jiraPanels.formatRed)
+    hs.config.default.jiraPanels.formatYellow := IniRead(hs.config.default.file, "jira", "panelFormatYellow", hs.config.default.jiraPanels.formatYellow)
+    hs.config.default.options.oracleTransformRemainderToLower := IniRead(hs.config.default.file, "options", "oracleTransformRemainderToLower", toBool(hs.config.default.options.oracleTransformRemainderToLower))
+    hs.config.default.options.resolutions := IniRead(hs.config.default.file, "options", "resolutions")
+    if (hs.config.default.options.resolutions == "ERROR" || getSize(hs.config.default.options.resolutions) == 0) {
+        hs.config.default.options.resolutions := "640x480,&800x600,&1024x768,1280x720,1280x768,1280x800,1280x960,1&280x1024,1360x768,1&366x768,1&440x900,1600x900,1&600x1024,1680x1050,1&768x992,1&920x1080"
         saveDefault := true
     }
-    configDefault.options.resolutions := listToArray(configDefault.options.resolutions, ",")
-    configDefault.templates.html := IniRead(configDefault.file, "templates", "html", configDefault.templates.html)
-    configDefault.templates.htmlKeys := IniRead(configDefault.file, "templates", "htmlKeys", configDefault.templates.htmlKeys)
-    configDefault.templates.java := IniRead(configDefault.file, "templates", "java", configDefault.templates.java)
-    configDefault.templates.javaKeys := IniRead(configDefault.file, "templates", "javaKeys", configDefault.templates.javaKeys)
-    configDefault.templates.perl := IniRead(configDefault.file, "templates", "perl", configDefault.templates.perl)
-    configDefault.templates.perlKeys := IniRead(configDefault.file, "templates", "perlKeys", configDefault.templates.perlKeys)
-    configDefault.templates.sql := IniRead(configDefault.file, "templates", "sql", configDefault.templates.sql)
-    configDefault.templates.sqlKeys := IniRead(configDefault.file, "templates", "sqlKeys", configDefault.templates.sqlKeys)
-    if (loadHotKeyDefs(configDefault)) {
+    hs.config.default.options.resolutions := listToArray(hs.config.default.options.resolutions, ",")
+    hs.config.default.templates.html := IniRead(hs.config.default.file, "templates", "html", hs.config.default.templates.html)
+    hs.config.default.templates.htmlKeys := IniRead(hs.config.default.file, "templates", "htmlKeys", hs.config.default.templates.htmlKeys)
+    hs.config.default.templates.java := IniRead(hs.config.default.file, "templates", "java", hs.config.default.templates.java)
+    hs.config.default.templates.javaKeys := IniRead(hs.config.default.file, "templates", "javaKeys", hs.config.default.templates.javaKeys)
+    hs.config.default.templates.perl := IniRead(hs.config.default.file, "templates", "perl", hs.config.default.templates.perl)
+    hs.config.default.templates.perlKeys := IniRead(hs.config.default.file, "templates", "perlKeys", hs.config.default.templates.perlKeys)
+    hs.config.default.templates.sql := IniRead(hs.config.default.file, "templates", "sql", hs.config.default.templates.sql)
+    hs.config.default.templates.sqlKeys := IniRead(hs.config.default.file, "templates", "sqlKeys", hs.config.default.templates.sqlKeys)
+    if (loadHotKeyDefs(hs.config.default)) {
         saveDefault := true
     }
-    sites := loadQuickLookupSites(configDefault)
+    sites := loadQuickLookupSites(hs.config.default)
     if (sites == "") {
         sites =
         (LTrim
@@ -3593,50 +3595,50 @@ loadConfig() {
         )
         saveDefault := true
     }
-    configDefault.quickLookupSites := sites
+    hs.config.default.quickLookupSites := sites
     if (saveDefault) {
-        saveConfig(configDefault)
+        saveConfig(hs.config.default)
     }
     ; now load from the user config, using the values from default if necessary
-    configUser.editor := IniRead(configUser.file, "config", "editor", configDefault.editor)
-    configUser.enableHkAction := toBool(IniRead(configUser.file, "config", "enableHkAction", configDefault.enableHkAction))
-    configUser.enableHkDos := toBool(IniRead(configUser.file, "config", "enableHkDos", configDefault.enableHkDos))
-    configUser.enableHkEpp := toBool(IniRead(configUser.file, "config", "enableHkEpp", configDefault.enableHkEpp))
-    configUser.enableHkMisc := toBool(IniRead(configUser.file, "config", "enableHkMisc", configDefault.enableHkMisc))
-    configUser.enableHkText := toBool(IniRead(configUser.file, "config", "enableHkText", configDefault.enableHkText))
-    configUser.enableHkTransform := toBool(IniRead(configUser.file, "config", "enableHkTransform", configDefault.enableHkTransform))
-    configUser.enableHkWindow := toBool(IniRead(configUser.file, "config", "enableHkWindow", configDefault.enableHkWindow))
-    configUser.enableHsAlias := toBool(IniRead(configUser.file, "config", "enableHsAlias", configDefault.enableHsAlias))
-    configUser.enableHsAutoCorrect := toBool(IniRead(configUser.file, "config", "enableHsAutoCorrect", configDefault.enableHsAutoCorrect))
-    configUser.enableHsCode := toBool(IniRead(configUser.file, "config", "enableHsCode", configDefault.enableHsCode))
-    configUser.enableHsDates := toBool(IniRead(configUser.file, "config", "enableHsDates", configDefault.enableHsDates))
-    configUser.enableHsDos := toBool(IniRead(configUser.file, "config", "enableHsDos", configDefault.enableHsDos))
-    configUser.enableHsHtml := toBool(IniRead(configUser.file, "config", "enableHsHtml", configDefault.enableHsHtml))
-    configUser.enableHsJira := toBool(IniRead(configUser.file, "config", "enableHsJira", configDefault.enableHsJira))
-    configUser.hkTotalCount := IniRead(configUser.file, "config", "hkTotalCount" . uniqueId, configDefault.hkTotalCount)
-    configUser.hsTotalCount := IniRead(configUser.file, "config", "hsTotalCount" . uniqueId, configDefault.hsTotalCount)
-    configUser.inputBoxFieldFont := IniRead(configUser.file, "config", "inputBoxFieldFont", configDefault.inputBoxFieldFont)
-    configUser.inputBoxOptions := IniRead(configUser.file, "config", "inputBoxFieldFont", configDefault.inputBoxOptions)
-    configUser.jiraPanels.format := IniRead(configUser.file, "jira", "panelFormat", configDefault.jiraPanels.format)
-    configUser.jiraPanels.formatBlue := IniRead(configUser.file, "jira", "panelFormatBlue", configDefault.jiraPanels.formatBlue)
-    configUser.jiraPanels.formatGreen := IniRead(configUser.file, "jira", "panelFormatGreen", configDefault.jiraPanels.formatGreen)
-    configUser.jiraPanels.formatRed := IniRead(configUser.file, "jira", "panelFormatRed", configDefault.jiraPanels.formatRed)
-    configUser.jiraPanels.formatYellow := IniRead(configUser.file, "jira", "panelFormatYellow", configDefault.jiraPanels.formatYellow)
-    configUser.options.oracleTransformRemainderToLower := toBool(IniRead(configUser.file, "options", "oracleTransformRemainderToLower", configDefault.options.oracleTransformRemainderToLower))
-    configUser.options.resolutions := listToArray(IniRead(configUser.file, "options", "resolutions", arrayToList(configDefault.options.resolutions, ",")), ",")
-    configUser.templates.html := IniRead(configUser.file, "templates", "html", configDefault.templates.html)
-    configUser.templates.java := IniRead(configUser.file, "templates", "java", configDefault.templates.java)
-    configUser.templates.perl := IniRead(configUser.file, "templates", "perl", configDefault.templates.perl)
-    configUser.templates.sql := IniRead(configUser.file, "templates", "sql", configDefault.templates.sql)
+    hs.config.user.editor := IniRead(hs.config.user.file, "config", "editor", hs.config.default.editor)
+    hs.config.user.enableHkAction := toBool(IniRead(hs.config.user.file, "config", "enableHkAction", hs.config.default.enableHkAction))
+    hs.config.user.enableHkDos := toBool(IniRead(hs.config.user.file, "config", "enableHkDos", hs.config.default.enableHkDos))
+    hs.config.user.enableHkEpp := toBool(IniRead(hs.config.user.file, "config", "enableHkEpp", hs.config.default.enableHkEpp))
+    hs.config.user.enableHkMisc := toBool(IniRead(hs.config.user.file, "config", "enableHkMisc", hs.config.default.enableHkMisc))
+    hs.config.user.enableHkText := toBool(IniRead(hs.config.user.file, "config", "enableHkText", hs.config.default.enableHkText))
+    hs.config.user.enableHkTransform := toBool(IniRead(hs.config.user.file, "config", "enableHkTransform", hs.config.default.enableHkTransform))
+    hs.config.user.enableHkWindow := toBool(IniRead(hs.config.user.file, "config", "enableHkWindow", hs.config.default.enableHkWindow))
+    hs.config.user.enableHsAlias := toBool(IniRead(hs.config.user.file, "config", "enableHsAlias", hs.config.default.enableHsAlias))
+    hs.config.user.enableHsAutoCorrect := toBool(IniRead(hs.config.user.file, "config", "enableHsAutoCorrect", hs.config.default.enableHsAutoCorrect))
+    hs.config.user.enableHsCode := toBool(IniRead(hs.config.user.file, "config", "enableHsCode", hs.config.default.enableHsCode))
+    hs.config.user.enableHsDates := toBool(IniRead(hs.config.user.file, "config", "enableHsDates", hs.config.default.enableHsDates))
+    hs.config.user.enableHsDos := toBool(IniRead(hs.config.user.file, "config", "enableHsDos", hs.config.default.enableHsDos))
+    hs.config.user.enableHsHtml := toBool(IniRead(hs.config.user.file, "config", "enableHsHtml", hs.config.default.enableHsHtml))
+    hs.config.user.enableHsJira := toBool(IniRead(hs.config.user.file, "config", "enableHsJira", hs.config.default.enableHsJira))
+    hs.config.user.hkTotalCount := IniRead(hs.config.user.file, "config", "hkTotalCount" . hs.vars.uniqueId, hs.config.default.hkTotalCount)
+    hs.config.user.hsTotalCount := IniRead(hs.config.user.file, "config", "hsTotalCount" . hs.vars.uniqueId, hs.config.default.hsTotalCount)
+    hs.config.user.inputBoxFieldFont := IniRead(hs.config.user.file, "config", "inputBoxFieldFont", hs.config.default.inputBoxFieldFont)
+    hs.config.user.inputBoxOptions := IniRead(hs.config.user.file, "config", "inputBoxFieldFont", hs.config.default.inputBoxOptions)
+    hs.config.user.jiraPanels.format := IniRead(hs.config.user.file, "jira", "panelFormat", hs.config.default.jiraPanels.format)
+    hs.config.user.jiraPanels.formatBlue := IniRead(hs.config.user.file, "jira", "panelFormatBlue", hs.config.default.jiraPanels.formatBlue)
+    hs.config.user.jiraPanels.formatGreen := IniRead(hs.config.user.file, "jira", "panelFormatGreen", hs.config.default.jiraPanels.formatGreen)
+    hs.config.user.jiraPanels.formatRed := IniRead(hs.config.user.file, "jira", "panelFormatRed", hs.config.default.jiraPanels.formatRed)
+    hs.config.user.jiraPanels.formatYellow := IniRead(hs.config.user.file, "jira", "panelFormatYellow", hs.config.default.jiraPanels.formatYellow)
+    hs.config.user.options.oracleTransformRemainderToLower := toBool(IniRead(hs.config.user.file, "options", "oracleTransformRemainderToLower", hs.config.default.options.oracleTransformRemainderToLower))
+    hs.config.user.options.resolutions := listToArray(IniRead(hs.config.user.file, "options", "resolutions", arrayToList(hs.config.default.options.resolutions, ",")), ",")
+    hs.config.user.templates.html := IniRead(hs.config.user.file, "templates", "html", hs.config.default.templates.html)
+    hs.config.user.templates.java := IniRead(hs.config.user.file, "templates", "java", hs.config.default.templates.java)
+    hs.config.user.templates.perl := IniRead(hs.config.user.file, "templates", "perl", hs.config.default.templates.perl)
+    hs.config.user.templates.sql := IniRead(hs.config.user.file, "templates", "sql", hs.config.default.templates.sql)
     ; set hotkeys to equal defaults, then override any from the user
-    configUser.hotkeys := configDefault.hotkeys
-    loadHotKeyDefs(configUser)
-    sites := loadQuickLookupSites(configUser)
-    configUser.quickLookupSites := (sites == "" ? configDefault.quickLookupSites : sites)
+    hs.config.user.hotkeys := hs.config.default.hotkeys
+    loadHotKeyDefs(hs.config.user)
+    sites := loadQuickLookupSites(hs.config.user)
+    hs.config.user.quickLookupSites := (sites == "" ? hs.config.default.quickLookupSites : sites)
     ; save after loading to make sure any new values are persisted
-    saveConfig(configUser, configDefault)
+    saveConfig(hs.config.user, hs.config.default)
     registerKeys()
-    if (saveDefault || FileExist(HOTSCRIPT_BASENAME . ".ico") == "") {
+    if (saveDefault || FileExist(hs.BASENAME . ".ico") == "") {
         createIcon()
     }
 }
@@ -3676,7 +3678,7 @@ loadHotKeys(config, section) {
     keyArr := {}
     isDefault := containsIgnoreCase(config.file, "default")
     found := false
-    Loop Parse, keys, %EOL_NIX%
+    Loop Parse, keys, % hs.const.EOL_NIX
     {
         pos := InStr(A_LoopField, "=")
         key := SubStr(A_LoopField, 1, (pos - 1))
@@ -3700,11 +3702,11 @@ loadQuickLookupSites(config) {
     file := config.file
     allSites := ""
     sites := IniRead(file, "quickLookup")
-    Loop Parse, sites, %EOL_NIX%
+    Loop Parse, sites, % hs.const.EOL_NIX
     {
         value := Trim(SubStr(A_LoopField, (InStr(A_LoopField, "=") + 1)))
         if (value != "") {
-            allSites .= value . EOL_NIX
+            allSites .= value . hs.const.EOL_NIX
         }
     }
     return allSites
@@ -3798,7 +3800,7 @@ moveToMonitor(hWnd:="", direction:=1, keepRelativeSize:=true) {
         ;MsgBox, 16, moveToMonitor() - Error, Specified window does not exist. Window ID = %hWnd%
         return false
     }
-
+    refreshMonitors()
     SysGet, monCount, MonitorCount
     if (monCount <= 1) {
         return true
@@ -3806,7 +3808,6 @@ moveToMonitor(hWnd:="", direction:=1, keepRelativeSize:=true) {
 
     Loop, %monCount%
     {
-        ; TODO - if Monitor%A_Index% is not defined, call refreshMonitors()
         SysGet, Monitor%A_Index%, MonitorWorkArea, %A_Index%
         Monitor%A_Index%Width := Monitor%A_Index%Right - Monitor%A_Index%Left
         Monitor%A_Index%Height := Monitor%A_Index%Bottom - Monitor%A_Index%Top
@@ -3872,7 +3873,7 @@ numberRemoveSelected() {
         eol := getEol(selText)
         first := true
         newText := ""
-        Loop, Parse, selText, %EOL_NIX%, %EOL_MAC%
+        Loop, Parse, selText, % hs.const.EOL_NIX, % hs.const.EOL_MAC
         {
             if (first) {
                 first := false
@@ -3901,7 +3902,7 @@ numberSelected(start:="1") {
         first := 1
         newText := ""
         count := start
-        Loop, Parse, selText, %EOL_NIX%, %EOL_MAC%
+        Loop, Parse, selText, % hs.const.EOL_NIX, % hs.const.EOL_MAC
         {
             newText .= count . ". " . A_LoopField . eol
             count++
@@ -3937,10 +3938,11 @@ pasteTemplate(template, tokens:="", keys:="") {
     sendText(template, keys)
 }
 
-pasteText(text:="")
+pasteText(text:="", delay:=250)
 {
     if (text != "") {
-        if (WinActive("ahk_class ConsoleWindowClass")) {
+;        if (WinActive("ahk_class ConsoleWindowClass")) {
+        if (WinActive("ahk_exe cmd.exe")) {
             SendRaw % text
         }
         else {
@@ -3949,7 +3951,7 @@ pasteText(text:="")
             Sleep(20)
             Clipboard := text
             SendInput, ^v
-            Sleep(250) ; wait or the clipboard is replaced with previous before it gets a chance to paste it, resulting in pasting the original clipboard
+            Sleep(delay) ; wait or the clipboard is replaced with previous before it gets a chance to paste it, resulting in pasting the original clipboard
             Clipboard := prevClipboard
             prevClipboard := ""
             Sleep(20)
@@ -3961,32 +3963,16 @@ pasteText(text:="")
     return
 }
 
-readKeysFromFile(script) {
-    static file := ""
-    static formatted := ""
-    if (file == "" || file != script) {
-        contents := FileRead(script)
-        formatted := extractKeys(contents)
-        file := script
-    }
-    return formatted
-}
-
 refreshMonitors() {
-    ; why does the timer to initMonitors call a label?
-    ;       Because timers can only call labels.
-    ; why does the label initMonitors call this function?
-    ;       Because labels are global, and therefore so are any variables it creates, which can collide with other variables.
     SysGet, monCount, MonitorCount
     SysGet, monPrimary, MonitorPrimary
-    monitors.count := monCount
-    monitors.primary := monPrimary
-    Loop % monitors.count
+    hs.vars.monitors.count := monCount
+    hs.vars.monitors.primary := monPrimary
+    Loop % hs.vars.monitors.count
     {
         SysGet, monName, MonitorName, %A_Index%
         SysGet, mon, Monitor, %A_Index%
         SysGet, monWork, MonitorWorkArea, %A_Index%
-
         curMon := new MonitorInfo
         curMon.idx := A_Index
         curMon.name := monName
@@ -4002,117 +3988,8 @@ refreshMonitors() {
         curMon.workBottom := monWorkBottom
         curMon.workHeight := (monWorkBottom - monWorkTop)
         curMon.workWidth := (monWorkRight - monWorkLeft)
-        monitors[curMon.idx] := curMon
+        hs.vars.monitors[curMon.idx] := curMon
     }
-}
-
-; sourced from: http://www.autohotkey.com/board/topic/114764-regex-dynamic-hotstrings/#entry667522
-regexHotString(k, a = "")
-{
-    static z, m = "~$", m_ = "*~$", s, t, w = 2000, sd, d = "Left,Right,Up,Down,Home,End,RButton,LButton", f = "!,+,^,#", f_="{,}"
-    global $
-    If z = ; init
-    {
-        RegRead, sd, HKCU, Control Panel\International, sDecimal
-        Loop, 94
-        {
-            c := Chr(A_Index + 32)
-            If A_Index between 33 and 58
-                Hotkey, %m_%%c%, __hs
-                else If A_Index not between 65 and 90
-                Hotkey, %m%%c%, __hs
-        }
-        e = 0,1,2,3,4,5,6,7,8,9,Dot,Div,Mult,Add,Sub,Enter
-        Loop, Parse, e, `,
-            Hotkey, %m%Numpad%A_LoopField%, __hs
-        e = BS,Shift,Space,Enter,Return,Tab,%d%
-        Loop, Parse, e, `,
-            Hotkey, %m%%A_LoopField%, __hs
-        z = 1
-    }
-    If (a == "" and k == "") ; poll
-    {
-        q:=RegExReplace(A_ThisHotkey, "\*\~\$(.*)", "$1")
-        q:=RegExReplace(q, "\~\$(.*)", "$1")
-        If q = BS
-        {
-            If (SubStr(s, 0) != "}")
-                StringTrimRight, s, s, 1
-        }
-        Else If q in %d%
-            s =
-        Else
-        {
-            If q = Shift
-            return
-            Else If q = Space
-                q := " "
-            Else If q = Tab
-                q := "`t"
-            Else If q in Enter,Return,NumpadEnter
-                q := "`n"
-            Else If (RegExMatch(q, "Numpad(.+)", n))
-            {
-                q := n1 == "Div" ? "/" : n1 == "Mult" ? "*" : n1 == "Add" ? "+" : n1 == "Sub" ? "-" : n1 == "Dot" ? sd : ""
-                If n1 is digit
-                    q = %n1%
-            }
-            Else If (GetKeyState("Shift") ^ !GetKeyState("CapsLock", "T"))
-                StringLower, q, q
-            s .= q
-        }
-        Loop, Parse, t, `n ; check
-        {
-            StringSplit, x, A_LoopField, `r
-            If (RegExMatch(s, x1 . "$", $)) ; match
-            {
-                ; try match object first
-                l := $.len
-                if (l > 0) {
-                    ; found it - written this way because we cannot know if a match object was used nor if len actually had a value
-                }
-                else {
-                    StringLen, l, $
-                }
-                StringTrimRight, s, s, l
-                SendInput, {BS %l%}
-                If (IsFunc(x2))
-                    %x2%($)
-                Else If (IsLabel(x2))
-                    Gosub, %x2%
-                Else
-                {
-                    Transform, x0, Deref, %x2%
-                    Loop, Parse, f_, `,
-                    StringReplace, x0, x0, %A_LoopField%, ¥%A_LoopField%¥, All
-                    Loop, Parse, f_, `,
-                    StringReplace, x0, x0, ¥%A_LoopField%¥, {%A_LoopField%}, All
-                    Loop, Parse, f, `,
-                    StringReplace, x0, x0, %A_LoopField%, {%A_LoopField%}, All
-                    SendInput, %x0%
-                }
-            }
-        }
-        If (StrLen(s) > w)
-            StringTrimLeft, s, s, w // 2
-    }
-    Else ; assert
-    {
-        StringReplace, k, k, `n, \n, All ; normalize
-        StringReplace, k, k, `r, \r, All
-        Loop, Parse, t, `n
-        {
-            l = %A_LoopField%
-            If (SubStr(l, 1, InStr(l, "`r") - 1) == k)
-                StringReplace, t, t, `n%l%
-        }
-        If a !=
-            t = %t%`n%k%`r%a%
-    }
-    Return
-    __hs: ; event
-    regexHotString("", "")
-    Return
 }
 
 registerHotkey(hkStr, funcName, restrict:="", args*) {
@@ -4140,10 +4017,10 @@ registerHotkey(hkStr, funcName, restrict:="", args*) {
 }
 
 registerKeys() {
-    for section, svalue in configUser.hotkeys {
+    for section, svalue in hs.config.user.hotkeys {
         category := "enable" . setCase(SubStr(section, 1, 1), "U") . SubStr(section, 2)
-        if (section == "hkHotScript" || configUser[(category)]) {
-            for action, kvalue in configUser.hotkeys[(section)] {
+        if (section == "hkHotScript" || hs.config.user[(category)]) {
+            for action, kvalue in hs.config.user.hotkeys[(section)] {
                 if (kvalue != "") {
                     funcName := RegExReplace(action, "-\d+$", "$1")
                     if (section == "hkDos") {
@@ -4175,7 +4052,7 @@ replaceEachLine(value, line) {
     eol := getEol(value)
     hasEol := endsWith(value, eol)
     newText := ""
-    Loop, Parse, value, %EOL_NIX%, %EOL_MAC%
+    Loop, Parse, value, % hs.const.EOL_NIX, % hs.const.EOL_MAC
     {
         newText .= line . eol
     }
@@ -4203,7 +4080,7 @@ replaceSelected(text) {
 resizeTo(anchor) {
     anchor := setCase(anchor, "U")
     curMonitor := getActiveMonitor()
-    curMon := monitors[curMonitor]
+    curMon := hs.vars.monitors[curMonitor]
     noResize := false
     WinGetClass, winClass, A
     if (winClass == "CalcFrame") {
@@ -4360,12 +4237,12 @@ resizeWindow(width:=0, height:=0, title:="A") {
 }
 
 restoreHiddenWindows() {
-    Loop, Parse, hiddenWindows, |
+    Loop, Parse, % hs.vars.hiddenWindows, |
     {
         WinShow, ahk_id %A_LoopField%
         WinActivate, ahk_id %A_LoopField%
     }
-    hiddenWindows := ""
+    hs.vars.hiddenWindows := ""
 }
 
 reverse(str) {
@@ -4391,8 +4268,11 @@ runAhkHelp() {
 }
 
 runDos() {
-    isExist := WinExist("ahk_class ConsoleWindowClass")
-    isActive := WinActive("ahk_class ConsoleWindowClass")
+    ; using ahk_class stopped working, but not sure why as it still works on Win2012
+    ;isExist := WinExist("ahk_class ConsoleWindowClass")
+    isExist := WinExist("ahk_exe cmd.exe")
+    ;isActive := WinActive("ahk_class ConsoleWindowClass")
+    isActive := WinActive("ahk_exe cmd.exe")
     if (isExist && not isActive) {
         ; activate it only if it exists but does not have focus
         WinActivate
@@ -4400,19 +4280,17 @@ runDos() {
     else {
         ; create it if not already running or was already focused and user wants another instance
         workDir := EnvGet("SystemDrive") . "\"
-        exe = %comspec%
-        ;message(exe)
-        runTarget(exe, workDir)
+        runTarget(COMSPEC, workDir)
     }
 }
 
 runEditor(file:="") {
-    SplitPath(configUser.editor, editorName, editorPath)
+    SplitPath(hs.config.user.editor, editorName, editorPath)
     regExe := "i)" . StringReplace(editorName, ".", "\.", "all")
     if (WinExist("ahk_exe " . regExe)) {
         WinActivate
     }
-    target := configUser.editor
+    target := hs.config.user.editor
     if (FileExist(target) == "") {
         target := findOnPath(target)
     }
@@ -4424,7 +4302,7 @@ runEditor(file:="") {
         runTarget(target)
     }
     else {
-        message("Unable to locate the configured editor: " . configUser.editor)
+        message("Unable to locate the configured editor: " . hs.config.user.editor)
     }
 }
 
@@ -4440,14 +4318,14 @@ runHotkey(label) {
 
 runQuickLookup() {
     text := getSelectedTextOrPrompt("Quick Lookup")
-    text := Trim(text, (" `t" . EOL_WIN))
+    text := Trim(text, (" `t" . hs.const.EOL_WIN))
     if (text != "") {
         text := urlEncode(text)
-        menuDef := configUser.quickLookupSites
-        Loop Parse, menuDef, %EOL_NIX%
+        menuDef := hs.config.user.quickLookupSites
+        Loop Parse, menuDef, % hs.const.EOL_NIX
         {
             if (Mod(A_Index, 2) == 1) {
-                qtext := (A_LoopField == MENU_SEP ? "" : A_LoopField)
+                qtext := (A_LoopField == hs.const.MENU_SEP ? "" : A_LoopField)
                 Menu, qLookupMenu, Add, %qtext%, doQuickLookup
             }
         }
@@ -4458,7 +4336,7 @@ runQuickLookup() {
     return
 
     doQuickLookup:
-        Loop Parse, menuDef, %EOL_NIX%
+        Loop Parse, menuDef, % hs.const.EOL_NIX
         {
             if (A_ThisMenuItemPos * 2 == A_Index) {
                 if (A_LoopField != "Cancel") {
@@ -4472,7 +4350,7 @@ runQuickLookup() {
 }
 
 runQuickResolution() {
-    for key, value in configUser.options.resolutions {
+    for key, value in hs.config.user.options.resolutions {
         Menu, qResMenu, Add, %value%, doQuickResolution
     }
     Menu, qResMenu, Add
@@ -4492,7 +4370,7 @@ runQuickResolution() {
 
 runSelectedText() {
     selText := getSelectedTextOrPrompt("Google Search")
-    selText := Trim(selText, (" `t" . EOL_WIN))
+    selText := Trim(selText, (" `t" . hs.const.EOL_WIN))
     if (selText != "") {
         if (isUrl(selText)) {
             if (!startsWith(selText, "http", 1) && !startsWith(selText, "ftp", 1) && !startsWith(selText, "www.", 1)) {
@@ -4527,7 +4405,7 @@ runTarget(target, workDir:="") {
     pid := Run(target, workDir)
     if (pid != "") {
         WinWait, ahk_pid %pid%
-	    Sleep(50)
+        Sleep(50)
         WinActivate, ahk_pid %pid%
     }
 }
@@ -4535,7 +4413,7 @@ runTarget(target, workDir:="") {
 saveConfig(config, defaultConfig:=-1) {
     file := config.file
     ; always save these values
-    IniWrite(config.file, "config", "version", HOTSCRIPT_VERSION)
+    IniWrite(config.file, "config", "version", hs.VERSION)
     if (defaultConfig == -1) {
         ; save it, since nothing to compare against
         IniWrite(config.file, "config", "editor", config.editor)
@@ -4624,8 +4502,8 @@ saveConfig(config, defaultConfig:=-1) {
             IniWrite(config.file, "config", "inputBoxOptions", config.inputBoxOptions)
         }
         ; always save these values
-        IniWrite(config.file, "config", "hkTotalCount" . uniqueId, config.hkTotalCount)
-        IniWrite(config.file, "config", "hsTotalCount" . uniqueId, config.hsTotalCount)
+        IniWrite(config.file, "config", "hkTotalCount" . hs.vars.uniqueId, config.hkTotalCount)
+        IniWrite(config.file, "config", "hsTotalCount" . hs.vars.uniqueId, config.hsTotalCount)
         if (config.jiraPanels.format != defaultConfig.jiraPanels.format) {
             IniWrite(config.file, "jira", "panelFormat", config.jiraPanels.format)
         }
@@ -4704,7 +4582,7 @@ saveQuickLookupSites(config) {
     keyCount := 1
     key := ""
     IniDelete(config.file, "quickLookup")
-    Loop Parse, sites, %EOL_NIX%
+    Loop Parse, sites, % hs.const.EOL_NIX
     {
         value := Trim(A_LoopField)
         if (value != "") {
@@ -4744,7 +4622,7 @@ sendJiraCode(type) {
         {code:{type1}title={type2} snippet|{format}}
         {code}
     )
-    tokens := {type1:setCase(type . (type == "" ? "" : "|"), "L"), type2:(type == "" ? "Code" : type), format:configUser.jiraPanels.format}
+    tokens := {type1:setCase(type . (type == "" ? "" : "|"), "L"), type2:(type == "" ? "Code" : type), format:hs.config.user.jiraPanels.format}
     pasteTemplate(template, tokens, "{Enter}{Up}")
 }
 
@@ -4768,8 +4646,8 @@ sendJiraSpecialPanel(type) {
     pasteTemplate(template, tokens, "{Enter}{Up}")
 }
 
-sendText(text, keys:="") {
-    pasteText(text)
+sendText(text, keys:="", delay:="250") {
+    pasteText(text, delay)
     if (keys != "") {
         SendInput, %keys%
     }
@@ -4833,11 +4711,11 @@ setTransparency(increase:=true, hWnd:="A") {
         }
         if (newTrans != curTrans) {
             WinGetTitle, currentTitle, ahk_id %hWnd%
-            newTitle := RegExReplace(currentTitle, MARKER.transparent . "\(\d{1,3}%\) ")
+            newTitle := RegExReplace(currentTitle, hs.const.MARKER.transparent . "\(\d{1,3}%\) ")
             WinSet, Transparent, %newTrans%, ahk_id %hWnd%
             if (newTrans < MAX) {
                 percent := Round((newTrans / (MAX + 1)) * 100)
-                newTitle := MARKER.transparent . "(" . percent . "%) " + newTitle
+                newTitle := hs.const.MARKER.transparent . "(" . percent . "%) " + newTitle
             }
             WinSetTitle, ahk_id %hWnd%, , %newTitle%
         }
@@ -4846,17 +4724,17 @@ setTransparency(increase:=true, hWnd:="A") {
 
 showClipboard() {
     clipPreview := (Clipboard == "" ? "{Empty}" : Clipboard)
-    header := "Clipboard preview:" . EOL_NIX . LINE_SEP
-    Progress("B1 C00 CT000000 CWFFFFDD FM11 FS10 W1200 WM1200 ZH0", clipPreview, header, SPLASH_TITLE, "Courier New")
-    centerWindow(SPLASH_TITLE)
+    header := "Clipboard preview:" . hs.const.EOL_NIX . hs.const.LINE_SEP
+    splashTitle := hs.TITLE . "Splash"
+    Progress("B1 C00 CT000000 CWFFFFDD FM11 FS10 W1200 WM1200 ZH0", clipPreview, header, splashTitle, "Courier New")
+    centerWindow(splashTitle)
     KeyWait("v")
     Progress("off")
 }
 
 showDebugVar(value:="") {
-    global
-    local val
-    local msg
+    val := ""
+    msg := ""
     if (IsObject(value)) {
         val := toString(value)
         varName := "array"
@@ -4868,98 +4746,27 @@ showDebugVar(value:="") {
     else {
         varName := ask("Debug", "Please enter the name of the variable to inspect:", 330)
         if (varName != "") {
-            if (IsObject(%varName%)) {
-                val := EOL_NIX . toString(%varName%)
+            try {
+                val := toString(getVar(varName))
             }
-            else {
-                val := %varName%
+            catch e {
+                MsgBox % e.Message
+                return
             }
         }
         else {
             return
         }
     }
-    msg := "DEBUG: " . varName . " = [" . val . "]"
-    Gui, 99: Destroy
-    Gui, 99: Add, Edit, w800 h600 ReadOnly, %msg%
-    Gui, 99: Show
-}
+    msg := varName . " = [" . val . "]"
+;    Gui, 99: Destroy
+;    Gui, 99: Add, Edit, w800 h600 ReadOnly, %msg%
+;    Gui, 99: Show
+    ListVars
+    WinWaitActive ahk_class AutoHotkey
+    ControlSetText Edit1, %msg%
+    WinWaitClose
 
-showFullHelp() {
-    Gui, 98: Destroy
-    Gui, 98: Font, s10
-    Gui, 98: Font, w500
-    ;Gui, 98: Add, Text, center cBlue y3 w800, Double-click an entry to execute the action.
-    Gui, 98: Add, Tab2, h30 w115 x5 y18, Keys|Strings
-    Gui, 98: Tab, Keys
-    Gui, 98: Add, ListView, vlvKeys glvHelp r5 Grid Sort AltSubmit -Multi -Resize x5 y41 h608 w900, Definition|Line|Key(s)|Comment|Description
-    Gui, 98: Tab, Strings
-    Gui, 98: Add, ListView, vlvStrings glvHelp r5 Grid Sort AltSubmit -Multi -Resize x5 y41 h608 w900, Definition|Line|Trigger|Options|Comment|Description
-
-    keys := readKeysFromFile(A_ScriptFullPath)
-    Loop, Parse, keys, %EOL_NIX%, %EOL_MAC%
-    {
-        ; initialize vars because StringSplit doesn't
-        key_field1 := ""
-        key_field2 := ""
-        key_field3 := ""
-        key_field4 := ""
-        key_field5 := ""
-        StringSplit, key_field, A_LoopField, %VIRTUAL_SPACE%
-        ; rows below trim spaces
-        line := key_field1
-        type := key_field2
-        kdef := key_field3
-        desc := key_field4
-        comment := ""
-        pos := InStr(desc, "++")
-        if (pos) {
-            comment := SubStr(desc, pos + 2)
-            desc := SubStr(desc, 1, pos - 1)
-        }
-        if (kdef != "") {
-            if (type == "hk") {
-                hkFull := hkToStr(kdef)
-                Gui, 98: ListView, lvKeys
-                LV_Add("", kdef, line, hkFull, comment, desc)
-            }
-            else if (type == "hs") {
-                trigger := kdef
-                options := key_field5
-                kdef := ":" . options . ":" . trigger
-                Gui, 98: ListView, lvStrings
-                LV_Add("", kdef, line, trigger, options, comment, desc)
-            }
-        }
-    }
-    Gui, 98: ListView, lvKeys
-    LV_ModifyCol(1, "0")                    ;definition
-    LV_ModifyCol(2, "0 Center")             ;line
-    LV_ModifyCol(3, "AutoHdr Logical Sort") ;named keys
-    LV_ModifyCol(4, "AutoHdr Logical")      ;comment
-    LV_ModifyCol(5, "AutoHdr Logical")      ;description
-
-    Gui, 98: ListView, lvStrings
-    LV_ModifyCol(1, "0")                    ;definition
-    LV_ModifyCol(2, "0 Center")             ;line
-    LV_ModifyCol(3, "AutoHdr Logical Sort") ;trigger
-    LV_ModifyCol(4, "AutoHdr")              ;options
-    LV_ModifyCol(5, "AutoHdr Logical")      ;comment
-    LV_ModifyCol(6, "AutoHdr Logical")      ;description
-
-    Gui, 98: -MinimizeBox
-    Gui, 98: -MaximizeBox
-
-    hkSession := toComma(configUser.hkSessionCount)
-    hkTotal := toComma(configUser.hkTotalCount)
-    hsSession := toComma(configUser.hsSessionCount)
-    hsTotal := toComma(configUser.hsTotalCount)
-    helpTitle := HOTSCRIPT_TITLE . " v" . HOTSCRIPT_VERSION . " (AHK v" . A_AhkVersion . ")                Session Usage:  " . hkSession . " hotkeys, " . hsSession . " hotstrings            Total Usage:  " . hkTotal . " hotkeys, " . hsTotal . " hotstrings"
-
-    activeMon := getActiveMonitor()
-    Gui, 98: Show, , %helpTitle%
-    centerWindow("A")
-    return
 }
 
 showQuickHelp(waitforKey) {
@@ -4972,7 +4779,7 @@ showQuickHelp(waitforKey) {
     }
 
     colLine := "-------------------------------------`t"
-    spacer := VIRTUAL_SPACE . "`t`t`t`t`t"
+    spacer := hs.const.VIRTUAL_SPACE . "`t`t`t`t`t"
 
     hkActionHelpEnabled =
     ( LTrim
@@ -4993,7 +4800,7 @@ showQuickHelp(waitforKey) {
         Alt-Apps`tToggle desktop icons`t
     )
     hkActionHelpDisabled := replaceEachLine(hkActionHelpEnabled, spacer)
-    hkActionHelp := (configUser.enableHkAction ? hkActionHelpEnabled : hkActionHelpDisabled)
+    hkActionHelp := (hs.config.user.enableHkAction ? hkActionHelpEnabled : hkActionHelpDisabled)
 
     hkDosHelpEnabled =
     ( LTrim
@@ -5011,7 +4818,7 @@ showQuickHelp(waitforKey) {
         Alt-X`tRun 'exit'`t`t`t
     )
     hkDosHelpDisabled := replaceEachLine(hkDosHelpEnabled, spacer)
-    hkDosHelp := (configUser.enableHkDos ? hkDosHelpEnabled : hkDosHelpDisabled)
+    hkDosHelp := (hs.config.user.enableHkDos ? hkDosHelpEnabled : hkDosHelpDisabled)
 
 ;    hkEppHelpEnabled =
 ;    ( LTrim
@@ -5027,27 +4834,27 @@ showQuickHelp(waitforKey) {
 ;        XButton2`tNext file`t`t`t
 ;    )
 ;    hkEppHelpDisabled := replaceEachLine(hkEppHelpEnabled, spacer)
-;    hkEppHelp := (configUser.enableHkEpp ? hkEppHelpEnabled : hkEppHelpDisabled)
+;    hkEppHelp := (hs.config.user.enableHkEpp ? hkEppHelpEnabled : hkEppHelpDisabled)
 
+    title := hs.TITLE
     hkHotScriptHelp =
     ( LTrim Comment
-        %HOTSCRIPT_TITLE% hotkeys`t`t`t
+        %title% hotkeys`t`t`t
         %colLine%
         AltWin-H`tToggle quick help`t
         ;CtrlWin-F12`tDebug variable`t`t
-        Win-F12`t`tExit %HOTSCRIPT_TITLE%`t`t
-        ;CtrlWin-H`tShow full help`t`t
+        Win-F12`t`tExit %title%`t`t
         Win-H`t`tShow quick help`t`t
         ;Win-1`t`tRun AHK help`t`t
-        Win-2`t`tReload %HOTSCRIPT_TITLE%`t
-        ;Win-3`t`tEdit %HOTSCRIPT_TITLE%`t`t
+        Win-2`t`tReload %title%`t
+        ;Win-3`t`tEdit %title%`t`t
         Win-4`t`tEdit user keys`t`t
         Win-5`t`tEdit user strings`t
         Win-6`t`tEdit user INI`t`t
         Win-7`t`tEdit user functions`t
         Win-8`t`tEdit user variables`t
         ;Win-9`t`tEdit default INI`t`t
-        Win-Pause`tPause %HOTSCRIPT_TITLE%`t`t
+        Win-Pause`tPause %title%`t`t
     )
 
     hkMiscHelpEnabled =
@@ -5064,7 +4871,7 @@ showQuickHelp(waitforKey) {
         CtrlWin-ARROW`tDrag mouse 1px`t`t
     )
     hkMiscHelpDisabled := replaceEachLine(hkMiscHelpEnabled, spacer)
-    hkMiscHelp := (configUser.enableHkMisc ? hkMiscHelpEnabled : hkMiscHelpDisabled)
+    hkMiscHelp := (hs.config.user.enableHkMisc ? hkMiscHelpEnabled : hkMiscHelpDisabled)
 
     hkWindowHelpEnabled =
     ( LTrim
@@ -5096,7 +4903,7 @@ showQuickHelp(waitforKey) {
         %spacer%
     )
     hkWindowHelpDisabled := replaceEachLine(hkWindowHelpEnabled, spacer)
-    hkWindowHelp := (configUser.enableHkWindow ? hkWindowHelpEnabled : hkWindowHelpDisabled)
+    hkWindowHelp := (hs.config.user.enableHkWindow ? hkWindowHelpEnabled : hkWindowHelpDisabled)
 
     hkTextHelpEnabled =
     ( LTrim
@@ -5109,7 +4916,7 @@ showQuickHelp(waitforKey) {
         CtrlShift-Up`tDuplicate current line`t
     )
     hkTextHelpDisabled := replaceEachLine(hkTextHelpEnabled, spacer)
-    hkTextHelp := (configUser.enableHkText ? hkTextHelpEnabled : hkTextHelpDisabled)
+    hkTextHelp := (hs.config.user.enableHkText ? hkTextHelpEnabled : hkTextHelpDisabled)
 
     hkTransformHelpEnabled =
     ( LTrim
@@ -5141,13 +4948,13 @@ showQuickHelp(waitforKey) {
         %spacer%
     )
     hkTransformHelpDisabled := replaceEachLine(hkTransformHelpEnabled, spacer)
-    hkTransformHelp := (configUser.enableHkTransform ? hkTransformHelpEnabled : hkTransformHelpDisabled)
+    hkTransformHelp := (hs.config.user.enableHkTransform ? hkTransformHelpEnabled : hkTransformHelpDisabled)
 
-    hkCol1 := hkActionHelp . EOL_NIX . hkMiscHelp
+    hkCol1 := hkActionHelp . hs.const.EOL_NIX . hkMiscHelp
     hkCol2 := hkWindowHelp
     hkCol3 := hkTransformHelp
-    hkCol4 := hkHotScriptHelp . EOL_NIX . hkDosHelp
-;   TODO - this needs to be added back, once it is fully stable/accurate   . EOL_NIX . hkTextHelp
+    hkCol4 := hkHotScriptHelp . hs.const.EOL_NIX . hkDosHelp
+;   TODO - this needs to be added back, once it is fully stable/accurate   . hs.const.EOL_NIX . hkTextHelp
 ;    hkCol5 := hkEppHelp
 
     hkArr1 := listToArray(hkCol1)
@@ -5159,8 +4966,8 @@ showQuickHelp(waitforKey) {
     hkResult := ""
     for key, value in hkArr1
     {
-        ;hkResult .= LTrim(RTrim(value . hkArr2[key] . hkArr3[key] . hkArr4[key] . hkArr5[key])) . EOL_NIX
-        hkResult .= LTrim(RTrim(value . hkArr2[key] . hkArr3[key] . hkArr4[key])) . EOL_NIX
+        ;hkResult .= LTrim(RTrim(value . hkArr2[key] . hkArr3[key] . hkArr4[key] . hkArr5[key])) . hs.const.EOL_NIX
+        hkResult .= LTrim(RTrim(value . hkArr2[key] . hkArr3[key] . hkArr4[key])) . hs.const.EOL_NIX
     }
 
     hsAliasHelpEnabled =
@@ -5189,7 +4996,7 @@ showQuickHelp(waitforKey) {
         common fractions (1/2, n/3, n/4, n/8)`t
     )
     hsAliasHelpDisabled := replaceEachLine(hsAliasHelpEnabled, spacer)
-    hsAliasHelp := (configUser.enableHsAlias ? hsAliasHelpEnabled : hsAliasHelpDisabled)
+    hsAliasHelp := (hs.config.user.enableHsAlias ? hsAliasHelpEnabled : hsAliasHelpDisabled)
 
     hsAutoCorrectHelpEnabled =
     ( LTrim
@@ -5199,7 +5006,7 @@ showQuickHelp(waitforKey) {
         cL`tc:`t`t`t`t
     )
     hsAutoCorrectHelpDisabled := replaceEachLine(hsAutoCorrectHelpEnabled, spacer)
-    hsAutoCorrectHelp := (configUser.enableHsAutoCorrect ? hsAutoCorrectHelpEnabled : hsAutoCorrectHelpDisabled)
+    hsAutoCorrectHelp := (hs.config.user.enableHsAutoCorrect ? hsAutoCorrectHelpEnabled : hsAutoCorrectHelpDisabled)
 
     hsCodeHelpEnabled =
     ( LTrim
@@ -5227,7 +5034,7 @@ showQuickHelp(waitforKey) {
         %spacer%
     )
     hsCodeHelpDisabled := replaceEachLine(hsCodeHelpEnabled, spacer)
-    hsCodeHelp := (configUser.enableHsCode ? hsCodeHelpEnabled : hsCodeHelpDisabled)
+    hsCodeHelp := (hs.config.user.enableHsCode ? hsCodeHelpEnabled : hsCodeHelpDisabled)
 
     hsDatesHelpEnabled =
     ( LTrim
@@ -5245,7 +5052,7 @@ showQuickHelp(waitforKey) {
         @time`t24:MM:SS`t`t`t
     )
     hsDatesHelpDisabled := replaceEachLine(hsDatesHelpEnabled, spacer)
-    hsDatesHelp := (configUser.enableHsDates ? hsDatesHelpEnabled : hsDatesHelpDisabled)
+    hsDatesHelp := (hs.config.user.enableHsDates ? hsDatesHelpEnabled : hsDatesHelpDisabled)
 
     hsDosHelpEnabled =
     ( LTrim
@@ -5255,7 +5062,7 @@ showQuickHelp(waitforKey) {
         cd`tcd /d`t`t`t`t
     )
     hsDosHelpDisabled := replaceEachLine(hsDosHelpEnabled, spacer)
-    hsDosHelp := (configUser.enableHsDos ? hsDosHelpEnabled : hsDosHelpDisabled)
+    hsDosHelp := (hs.config.user.enableHsDos ? hsDosHelpEnabled : hsDosHelpDisabled)
 
 ;    hsHtmlHelpEnabled =
 ;    ( LTrim
@@ -5281,7 +5088,7 @@ showQuickHelp(waitforKey) {
         <xml`tAuto-completes XML header`t
     )
     hsHtmlHelpDisabled := replaceEachLine(hsHtmlHelpEnabled, spacer)
-    hsHtmlHelp := (configUser.enableHsHtml ? hsHtmlHelpEnabled : hsHtmlHelpDisabled)
+    hsHtmlHelp := (hs.config.user.enableHsHtml ? hsHtmlHelpEnabled : hsHtmlHelpDisabled)
 
     hsJiraHelpEnabled =
     ( LTrim
@@ -5307,12 +5114,12 @@ showQuickHelp(waitforKey) {
         `{ypan`t'panel' tags (yellow)`t`t`t
     )
     hsJiraHelpDisabled := replaceEachLine(hsJiraHelpEnabled, spacer)
-    hsJiraHelp := (configUser.enableHsJira ? hsJiraHelpEnabled : hsJiraHelpDisabled)
+    hsJiraHelp := (hs.config.user.enableHsJira ? hsJiraHelpEnabled : hsJiraHelpDisabled)
 
     hsCol1 := hsAliasHelp
     hsCol2 := hsCodeHelp
-    hsCol3 := hsDatesHelp . EOL_NIX . hsAutoCorrectHelp . EOL_NIX . hsHtmlHelp
-    hsCol4 := hsJiraHelp . EOL_NIX
+    hsCol3 := hsDatesHelp . hs.const.EOL_NIX . hsAutoCorrectHelp . hs.const.EOL_NIX . hsHtmlHelp
+    hsCol4 := hsJiraHelp . hs.const.EOL_NIX
 
     ; TODO - add hsDosHelp
 
@@ -5323,13 +5130,14 @@ showQuickHelp(waitforKey) {
 
     hsResult := ""
     for key, value in hsArr1 {
-        hsResult .= LTrim(RTrim(value . hsArr2[key] . hsArr3[key] . hsArr4[key])) . EOL_NIX
+        hsResult .= LTrim(RTrim(value . hsArr2[key] . hsArr3[key] . hsArr4[key])) . hs.const.EOL_NIX
     }
 
-    quickHelp := hkResult . LINE_SEP . EOL_NIX . Trim(hsResult, (" `t" . EOL_WIN))
-    Progress("B1 C00 CT000000 CWFFFFDD FM11 FS8 W1125 WM1200 ZH0", quickHelp,, SPLASH_TITLE, "Courier New")
+    quickHelp := hkResult . hs.const.LINE_SEP . hs.const.EOL_NIX . Trim(hsResult, (" `t" . hs.const.EOL_WIN))
+    splashTitle := hs.TITLE . "Splash"
+    Progress("B1 C00 CT000000 CWFFFFDD FM11 FS8 W1125 WM1200 ZH0", quickHelp,, splashTitle, "Courier New")
     isShowing := true
-    centerWindow(SPLASH_TITLE)
+    centerWindow(splashTitle)
     if (waitForKey) {
         KeyWait("h")
         isShowing := false
@@ -5339,8 +5147,9 @@ showQuickHelp(waitforKey) {
 }
 
 showSplash(msg,timeout:=1500) {
-    SplashImage("", "b1 cwff9999 fs12", msg, "", SPLASH_TITLE)
-    centerWindow(SPLASH_TITLE)
+    splashTitle := hs.TITLE . "Splash"
+    SplashImage("", "b1 cwff9999 fs12", msg, "", splashTitle)
+    centerWindow(splashTitle)
     Sleep(timeout)
     SplashImage("off")
 }
@@ -5363,18 +5172,18 @@ startsWith(str, value, caseInsensitive:="") {
 }
 
 stop() {
-    hkSession := toComma(configUser.hkSessionCount)
-    hkTotal := toComma(configUser.hkTotalCount)
-    hsSession := toComma(configUser.hsSessionCount)
-    hsTotal := toComma(configUser.hsTotalCount)
-    msg := "Shutting down..." . EOL_NIX . EOL_NIX . "Session Usage" . EOL_NIX . "    hotkeys: " . hkSession . EOL_NIX . "    hotstrings: " . hsSession . EOL_NIX . EOL_NIX . "Total Usage" . EOL_NIX . "    hotkeys: " . hkTotal . EOL_NIX . "    hotstrings: " . hsTotal
-    MsgBox,, %HOTSCRIPT_VERSION%, %msg%
+    hkSession := toComma(hs.config.user.hkSessionCount)
+    hkTotal := toComma(hs.config.user.hkTotalCount)
+    hsSession := toComma(hs.config.user.hsSessionCount)
+    hsTotal := toComma(hs.config.user.hsTotalCount)
+    msg := "Shutting down..." . hs.const.EOL_NIX . hs.const.EOL_NIX . "Session Usage" . hs.const.EOL_NIX . "    hotkeys: " . hkSession . hs.const.EOL_NIX . "    hotstrings: " . hsSession . hs.const.EOL_NIX . hs.const.EOL_NIX . "Total Usage" . hs.const.EOL_NIX . "    hotkeys: " . hkTotal . hs.const.EOL_NIX . "    hotstrings: " . hsTotal
+    MsgBox,, % hs.VERSION, %msg%
     ExitApp
 }
 
 stripEol(str) {
-    str := StringReplace(str, EOL_MAC , "", "All")
-    str := StringReplace(str, EOL_NIX , "", "All")
+    str := StringReplace(str, hs.const.EOL_MAC , "", "All")
+    str := StringReplace(str, hs.const.EOL_NIX , "", "All")
     return str
 }
 
@@ -5397,8 +5206,8 @@ tagifySelected() {
 }
 
 templateHtml() {
-    template := FileRead(configUser.templates.html)
-    templateKeys := configUser.templates.htmlKeys
+    template := FileRead(hs.config.user.templates.html)
+    templateKeys := hs.config.user.templates.htmlKeys
     if (template == "") {
         templateKeys := "{Up 3}{End}{Home}"
         template =
@@ -5423,14 +5232,14 @@ templateHtml() {
 </html>
 
         )
-        template := RegExReplace(template, EOL_NIX, EOL_WIN)
+        template := RegExReplace(template, hs.const.EOL_NIX, hs.const.EOL_WIN)
     }
     pasteTemplate(template, "", templateKeys)
 }
 
 templateJava() {
-    template := FileRead(configUser.templates.java)
-    templateKeys := configUser.templates.javaKeys
+    template := FileRead(hs.config.user.templates.java)
+    templateKeys := hs.config.user.templates.javaKeys
     if (template == "") {
         templateKeys := "{Up 3}{End}{Home}"
         template =
@@ -5445,7 +5254,7 @@ public class Template {
 }
 
         )
-        template := RegExReplace(template, EOL_NIX, EOL_WIN)
+        template := RegExReplace(template, hs.const.EOL_NIX, hs.const.EOL_WIN)
     }
     pasteTemplate(template, "", templateKeys)
 }
@@ -5457,13 +5266,13 @@ templateJiraTable() {
 | Row1_1 | Row1_2 | Row1_3 | Row1_4 | Row1_5 |
 
     )
-    template := RegExReplace(template, EOL_NIX, EOL_WIN)
+    template := RegExReplace(template, hs.const.EOL_NIX, hs.const.EOL_WIN)
     pasteTemplate(template, "", "{Home}{Up 2}{Right 3}+{Right 7}")
 }
 
 templatePerl() {
-    template := FileRead(configUser.templates.perl)
-    templateKeys := configUser.templates.perlKeys
+    template := FileRead(hs.config.user.templates.perl)
+    templateKeys := hs.config.user.templates.perlKeys
     if (template == "") {
         templateKeys := "^{Home}"
         template =
@@ -5599,14 +5408,14 @@ sub trim {
 }
 
         )
-        template := RegExReplace(template, EOL_NIX, EOL_WIN)
+        template := RegExReplace(template, hs.const.EOL_NIX, hs.const.EOL_WIN)
     }
     pasteTemplate(template, "", templateKeys)
 }
 
 templateSql() {
-    template := FileRead(configUser.templates.sql)
-    templateKeys := configUser.templates.sqlKeys
+    template := FileRead(hs.config.user.templates.sql)
+    templateKeys := hs.config.user.templates.sqlKeys
     if (template == "") {
         templateKeys := "{Up 2}{End}"
         template =
@@ -5619,7 +5428,7 @@ templateSql() {
             WHERE
 
         )
-        template := RegExReplace(template, EOL_NIX, EOL_WIN)
+        template := RegExReplace(template, hs.const.EOL_NIX, hs.const.EOL_WIN)
     }
     pasteTemplate(template, "", templateKeys)
 }
@@ -5655,15 +5464,15 @@ toggleAlwaysOnTop(hWnd:="A") {
 
     ; remove any existing markers
     WinGetTitle, newTitle, ahk_id %hWnd%
-    newTitle := StringReplace(newTitle, MARKER.always_on_top)
-    newTitle := StringReplace(newTitle, MARKER.click_through)
+    newTitle := StringReplace(newTitle, hs.const.MARKER.always_on_top)
+    newTitle := StringReplace(newTitle, hs.const.MARKER.click_through)
 
     ; force click-through to be turned off
     WinSet, ExStyle, -0x20, ahk_id %hWnd%
-    
+
     WinSet, AlwaysOnTop, %newState%, ahk_id %hWnd%
     if (newState == "on") {
-        newTitle := MARKER.always_on_top . newTitle
+        newTitle := hs.const.MARKER.always_on_top . newTitle
     }
     else {
         WinSet, Transparent, 255, ahk_id %hWnd%
@@ -5684,15 +5493,15 @@ toggleClickThrough(hWnd:="A") {
 
     ; remove any existing markers
     WinGetTitle, newTitle, ahk_id %hWnd%
-    newTitle := StringReplace(newTitle, MARKER.always_on_top)
-    newTitle := StringReplace(newTitle, MARKER.click_through)
+    newTitle := StringReplace(newTitle, hs.const.MARKER.always_on_top)
+    newTitle := StringReplace(newTitle, hs.const.MARKER.click_through)
 
     if (newState == "on") {
         WinSet, Transparent, 127, ahk_id %hWnd%
         WinSet, ExStyle, +0x20, ahk_id %hWnd%
         WinSet, AlwaysOnTop, on, ahk_id %hWnd%
         ; 50% transparent
-        newTitle := MARKER.click_through . newTitle
+        newTitle := hs.const.MARKER.click_through . newTitle
     }
     else {
         WinSet, ExStyle, -0x28, ahk_id %hWnd%
@@ -5717,7 +5526,7 @@ toggleDesktopIcons() {
 }
 
 toggleSuspend() {
-    msg := HOTSCRIPT_TITLE . " is " . (A_IsSuspended ? "suspended" : "enabled") . "..."
+    msg := hs.TITLE . " is " . (A_IsSuspended ? "suspended" : "enabled") . "..."
     showSplash(msg)
 }
 
@@ -5731,31 +5540,31 @@ toggleTransparency(hWnd:="A") {
         WinGetTitle, currentTitle, ahk_id %hWnd%
         if (curTrans) {
             WinSet, Transparent, off, ahk_id %hWnd%
-            newTitle := RegExReplace(currentTitle, MARKER.transparent . "\(\d{1,3}%\) ")
+            newTitle := RegExReplace(currentTitle, hs.const.MARKER.transparent . "\(\d{1,3}%\) ")
         }
         else {
             WinSet, Transparent, 127, ahk_id %hWnd%
-            newTitle := MARKER.transparent . "(50%) " + currentTitle
+            newTitle := hs.const.MARKER.transparent . "(50%) " + currentTitle
         }
         WinSetTitle, ahk_id %hWnd%, , %newTitle%
     }
 }
 
-toString(array, depth:=6, indent:="") {
+toString(obj, depth:=8, indent:="") {
     result := ""
-    if (IsObject(array)) {
-        for key, value in array {
-            result .= "`t" . indent . key
+    if (IsObject(obj)) {
+        for key, value in obj {
+            result .= (depth == 8 && StrLen(result) == 0 && getSize(obj) > 1 ? hs.const.EOL_WIN : "") . "`t" . indent . key
             if (IsObject(value) && depth > 1) {
-                result .= EOL_NIX . toString(value, depth - 1, indent . "`t")
+                result .= hs.const.EOL_WIN . toString(value, depth - 1, indent . "`t")
             }
             else {
-                result .= "`t= [" . value . "]" . EOL_NIX
+                result .= "`t= [" . value . "]" . hs.const.EOL_WIN
             }
         }
     }
     else {
-        result := array
+        result := obj
     }
     return result
 }
@@ -5778,20 +5587,20 @@ transformSelected(type,types:="I|L|R|S|T|U") {
 }
 
 updateRegistry() {
-    RegWrite("HKEY_CLASSES_ROOT", "AutoHotkeyScript\Shell\Edit\Command", "", """" . configUser.editor . """ ""`%1""")
+    RegWrite("HKEY_CLASSES_ROOT", "AutoHotkeyScript\Shell\Edit\Command", "", """" . hs.config.user.editor . """ ""`%1""")
     RegWrite("HKEY_CLASSES_ROOT", "Applications\AutoHotkey.exe", "IsHostApp")
 }
 
 upperCaseOracle() {
     selText := getSelectedText()
     if (selText != "") {
-        if (configUser.options.oracleTransformRemainderToLower) {
+        if (hs.config.user.options.oracleTransformRemainderToLower) {
             selText := setCase(selText, "L")
         }
         oracleWords := "i)\b(ABORT|ABS|ACCEPT|ACCESS|ACCOUNT|ACOS|ACTIVATE|ADD|ADD_MONTHS|ADJ_DATE|ADMIN|ADVISE|AFTER|AGENT|AGGREGATE|ALL|ALL_ROWS|ALLOCATE|ALTER|ANALYZE|AND|ANY|APPENDCHILDXML|ARCHIVE|ARCHIVELOG|ARRAY|ARRAYLEN|ARROW|AS|ASC|ASCII|ASCIISTR|ASIN|ASSERT|ASSIGN|AT|ATAN|ATAN2|ATTRIBUTE|AUDIT|AUTHENTICATED|AUTHID|AUTHORIZATION|AUTOEXTEND|AUTOMATIC|AVG|BACKUP|BASE_TABLE|BECOME|BEFORE|BEGIN|BETWEEN|BFILE|BFILE_BASE|BFILENAME|BIN_TO_NUM|BINARY|BINARY_INTEGER|BINARY2VARCHAR|BIT_COMPLEMENT|BIT_OR|BIT_XOR|BITAND|BITMAP|BLOB|BLOB_BASE|BLOCK|BODY|BOOL_TO_INT|BOOLEAN|BOTH|BOUND|BULK|BY|BYTE|CACHE|CACHE_INSTANCES|CALL|CALLING|CANCEL|CARDINALITY|CASCADE|CASE|CAST|CAST_FROM_BINARY|CAST_FROM_NUMBER|CAST_TO_BINARY|CAST_TO_BINARY_FLOAT|CAST_TO_NUMBER|CAST_TO_NVARCHAR2|CAST_TO_RAW|CAST_TO_VARCHAR|CEIL|CFILE|CHAINED|CHANGE|CHAR|CHAR_BASE|CHAR_CS|CHARACTER|CHARSET|CHARSETFORM|CHARSETID|CHARTOROWID|CHECK|CHECKPOINT|CHOOSE|CHR|CHUNK|CLEAR|CLOB|CLOB_BASE|CLONE|CLOSE|CLOSE_CACHED_OPEN_CURSORS|CLUSTER|CLUSTER_ID|CLUSTER_PROBABILITY|CLUSTER_SET|CLUSTERS|COALESCE|COBOL|COLAUTH|COLLECT|COLUMN|COLUMNS|COMMENT|COMMIT|COMMITTED|COMPATIBILITY|COMPILE|COMPILED|COMPLETE|COMPOSE|COMPOSITE_LIMIT|COMPRESS|COMPUTE|CONCAT|CONNECT|CONNECT_TIME|CONSTANT|CONSTRAINT|CONSTRAINTS|CONSTRUCTOR|CONTENTS|CONTEXT|CONTINUE|CONTROLFILE|CONVERT|CORR|CORR_K|CORR_S|COS|COSH|COST|COUNT|COVAR_POP|COVAR_SAMP|CPU_PER_CALL|CPU_PER_SESSION|CRASH|CREATE|CUME_DIST|CURRENT|CURRENT_DATE|CURRENT_SCHEMA|CURRENT_TIMESTAMP|CURRENT_USER|CURRVAL|CURSOR|CUSTOMDATUM|CV|CYCLE|DANGLING|DATA|DATA_BASE|DATABASE|DATAFILE|DATAFILES|DATAOBJNO|DATE|DATE_BASE|DAY|DBA|DBHIGH|DBLOW|DBMAC|DBTIMEZONE|DEALLOCATE|DEBUG|DEBUGOFF|DEBUGON|DEC|DECIMAL|DECLARE|DECODE|DECOMPOSE|DEFAULT|DEFERRABLE|DEFERRED|DEFINE|DEFINITION|DEGREE|DELAY|DELETE|DELETEXML|DELTA|DENSE_RANK|DEPTH|DEREF|DESC|DETERMINISTIC|DIGITS|DIRECTORY|DISABLE|DISCONNECT|DISMOUNT|DISPOSE|DISTINCT|DISTRIBUTED|DML|DO|DOUBLE|DROP|DUMP|DURATION|EACH|ELEMENT|ELSE|ELSIF|EMPTY|EMPTY_BLOB|EMPTY_CLOB|ENABLE|END|ENFORCE|ENTRY|ESCAPE|ESTIMATE_CPU_UNITS|EVENTS|EXCEPT|EXCEPTION|EXCEPTION_INIT|EXCEPTIONS|EXCHANGE|EXCLUDING|EXCLUSIVE|EXEC|EXECUTE|EXISTS|EXISTSNODE|EXIT|EXP|EXPIRE|EXPLAIN|EXTENT|EXTENTS|EXTERNAL|EXTERNALLY|EXTRACT|EXTRACTVALUE|FAILED_LOGIN_ATTEMPTS|FALSE|FAST|FEATURE_ID|FEATURE_SET|FEATURE_VALUE|FETCH|FILE|FINAL|FIRST|FIRST_ROWS|FIRST_VALUE|FIXED|FLAGGER|FLOAT|FLOB|FLOOR|FLUSH|FOR|FORALL|FORCE|FOREIGN|FORM|FORTRAN|FOUND|FREELIST|FREELISTS|FROM|FROM_TZ|FULL|FUNCTION|GENERAL|GENERIC|GET_CLOCK_TIME|GET_DDL|GET_DEPENDENT_DDL|GET_DEPENDENT_XML|GET_GRANTED_DDL|GET_GRANTED_XDL|GET_HASH|GET_REBUILD_COMMAND|GET_SCN|GET_XML|GLOBAL|GLOBAL_NAME|GLOBALLY|GO|GOTO|GRANT|GREATEST|GROUP|GROUP_ID|GROUPING|GROUPING_ID|GROUPS|HASH|HASHKEYS|HAVING|HEADER|HEAP|HEXTORAW|HIDDEN|HOUR|IDENTIFIED|IDGENERATORS|IDLE_TIME|IF|IMMEDIATE|IN|INCLUDING|INCREMENT|IND_PARTITION|INDEX|INDEXED|INDEXES|INDICATOR|INDICES|INFINITE|INITCAP|INITIAL|INITIALLY|INITRANS|INNER|INSERT|INSERTCHILDXML|INSERTXMLBEFORE|INSTANCE|INSTANCES|INSTANTIABLE|INSTEAD|INSTR|INSTR2|INSTR4|INSTRB|INSTRC|INT|INT_TO_BOOL|INTEGER|INTERFACE|INTERMEDIATE|INTERSECT|INTERVAL|INTO|INVALIDATE|IS|ISOLATION|ISOLATION_LEVEL|ITERATE|ITERATION_NUMBER|JAVA|JOIN|KEEP|KEY|KILL|LABEL|LAG|LANGUAGE|LARGE|LAST|LAST_DAY|LAST_VALUE|LAYER|LEAD|LEADING|LEAST|LEFT|LENGTH|LENGTH2|LENGTH4|LENGTHB|LENGTHC|LESS|LEVEL|LIBRARY|LIKE|LIKE2|LIKE4|LIKEC|LIMIT|LIMITED|LINK|LIST|LISTS|LN|LNNVL|LOB|LOCAL|LOCALTIMESTAMP|LOCK|LOCKED|LOG|LOGFILE|LOGGING|LOGICAL_READS_PER_CALL|LOGICAL_READS_PER_SESSION|LONG|LOOP|LOWER|LPAD|LTRIM|MAKE_REF|MAKEREF|MANAGE|MANUAL|MAP|MASTER|MAX|MAXARCHLOGS|MAXDATAFILES|MAXEXTENTS|MAXINSTANCES|MAXLEN|MAXLOGFILES|MAXLOGHISTORY|MAXLOGMEMBERS|MAXSIZE|MAXTRANS|MAXVALUE|MEDIAN|MEMBER|MERGE|MIN|MINEXTENTS|MINIMUM|MINUS|MINUTE|MINVALUE|MLS_LABEL_FORMAT|MLSLABEL|MOD|MODE|MODIFY|MODULE|MONTH|MONTHS_BETWEEN|MOUNT|MOVE|MTS_DISPATCHERS|MULTISET|NAN|NANVL|NATIONAL|NATIVE|NATURAL|NCHAR|NCHAR_CS|NCLOB|NEEDED|NESTED|NETWORK|NEW|NEW_TIME|NEXT|NEXT_DAY|NEXTVAL|NHEXTORAW|NLS_CHARSET_DECL_LEN|NLS_CHARSET_ID|NLS_CHARSET_NAME|NLS_INITCAP|NLS_LOWER|NLS_UPPER|NLSSORT|NOARCHIVELOG|NOAUDIT|NOCACHE|NOCOMPRESS|NOCOPY|NOCYCLE|NOFORCE|NOLOGGING|NOMAXVALUE|NOMINVALUE|NONE|NOORDER|NOOVERRIDE|NOPARALLEL|NORESETLOGS|NOREVERSE|NORMAL|NOSORT|NOT|NOTFOUND|NOTHING|NOWAIT|NTILE|NULL|NULLFN|NULLIF|NULLS FIRST|NULLS LAST|NUMBER|NUMBER_BASE|NUMERIC|NUMTODSINTERVAL|NUMTOHEX|NUMTOHEX2|NUMTOYMINTERVAL|NVARCHAR2|NVL|NVL2|OBJECT|OBJNO|OBJNO_REUSE|OCICOLL|OCIDATE|OCIDATETIME|OCIDURATION|OCIINTERVAL|OCILOBLOCATOR|OCINUMBER|OCIRAW|OCIREF|OCIREFCURSOR|OCIROWID|OCISTRING|OCITYPE|OF|OFF|OFFLINE|OID|OIDINDEX|OLD|ON|ONLINE|ONLY|OPAQUE|OPCODE|OPEN|OPERATOR|OPTIMAL|OPTIMIZER_GOAL|OPTION|OR|ORA_HASH|ORACLE|ORADATA|ORDER|ORGANIZATION|ORLANY|ORLVARY|OSLABEL|OTHERS|OUT|OUTER|OVERFLOW|OVERLAPS|OVERRIDING|OWN|PACKAGE|PARALLEL|PARALLEL_ENABLE|PARAMETER|PARAMETERS|PARTITION|PASCAL|PASSWORD|PASSWORD_GRACE_TIME|PASSWORD_LIFE_TIME|PASSWORD_LOCK_TIME|PASSWORD_REUSE_MAX|PASSWORD_REUSE_TIME|PASSWORD_VERIFY_FUNCTION|PATH|PCTFREE|PCTINCREASE|PCTTHRESHOLD|PCTUSED|PCTVERSION|PERCENT|PERCENT_RANK|PERCENTILE_CONT|PERCENTILE_DISC|PERMANENT|PIPE|PIPELINED|PIVOT|PLAN|PLI|PLSQL_DEBUG|POSITIVE|POST_TRANSACTION|POWER|POWERMULTISET|POWERMULTISET_BY_CARDINALITY|PRAGMA|PRECISION|PREDICTION|PREDICTION_BOUNDS|PREDICTION_COST|PREDICTION_DETAILS|PREDICTION_PROBABILITY|PREDICTION_SET|PRESENTNNV|PRESENTV|PRESERVE|PREVIOUS|PRIMARY|PRIOR|PRIVATE|PRIVATE_SGA|PRIVILEGE|PRIVILEGES|PROCEDURE|PROFILE|PUBLIC|PURGE|QUEUE|QUOTA|QUOTE DELIMITERS|RAISE|RANDOMBYTES|RANDOMINTEGER|RANDOMNUMBER|RANGE|RANK|RATIO_TO_REPORT|RAW|RAW_TO_CHAR|RAW_TO_NCHAR|RAW_TO_VARCHAR2|RAWTOHEX|RAWTONHEX|RAWTONUM|RAWTONUM2|RBA|READ|READUP|REAL|REBUILD|RECORD|RECOVER|RECOVERABLE|RECOVERY|REF|REFERENCE|REFERENCES|REFERENCING|REFRESH|REFTOHEX|REGEXP_COUNT|REGEXP_INSTR|REGEXP_REPLACE|REGEXP_SUBSTR|REGR_AVGX|REGR_AVGY|REGR_COUNT|REGR_INTERCEPT|REGR_R2|REGR_SLOPE|REGR_SXX|REGR_SXY|REGR_SYY|RELEASE|REM|REMAINDER|REMR|RENAME|REPLACE|RESET|RESETLOGS|RESIZE|RESOURCE|RESTRICTED|RESULT|RETURN|RETURNING|REUSE|REVERSE|REVOKE|RIGHT|ROLE|ROLES|ROLLBACK|ROUND|ROW|ROW_NUMBER|ROWID|ROWIDTOCHAR|ROWIDTONCHAR|ROWLABEL|ROWNUM|ROWS|ROWTYPE|RPAD|RTRIM|RULE|RUN|SAMPLE|SAVE|SAVEPOINT|SB1|SB2|SB4|SCAN_INSTANCES|SCHEMA|SCN|SCN_TO_TIMESTAMP|SCOPE|SD_ALL|SD_INHIBIT|SD_SHOW|SECOND|SECTION|SEG_BLOCK|SEG_FILE|SEGMENT|SELECT|SELF|SEPARATE|SEQUENCE|SERIALIZABLE|SESSION|SESSION_CACHED_CURSORS|SESSIONS_PER_USER|SESSIONTIMEZONE|SET|SHARE|SHARED|SHARED_POOL|SHORT|SHRINK|SIGN|SIN|SINH|SIZE|SIZE_T|SKIP|SKIP_UNUSABLE_INDEXES|SMALLINT|SNAPSHOT|SOME|SORT|SOUNDEX|SPACE|SPARSE|SPECIFICATION|SPLIT|SQL|SQL_TRACE|SQLBUF|SQLCODE|SQLDATA|SQLERRM|SQLERROR|SQLNAME|SQLSTATE|SQRT|STANDARD|STANDBY|START|STATEMENT|STATEMENT_ID|STATIC|STATISTICS|STATS_BINOMIAL_TEST|STATS_CROSSTAB|STATS_F_TEST|STATS_KS_TEST|STATS_MODE|STATS_MW_TEST|STATS_ONE_WAY_ANOVA|STATS_T_TEST|STATS_T_TEST_ONE|STATS_T_TEST_PAIRED|STATS_T_TEST_INDEP|STATS_T_TEST_INDEPU|STATS_WSR_TEST|STDDEV|STDDEV_POP|STDDEV_SAMP|STOP|STORAGE|STORE|STORED|STRING|STRING_TO_RAW|STRUCT|STRUCTURE|STYLE|SUBMULTISET|SUBPARTITION|SUBSTITUTABLE|SUBSTR|SUBSTR2|SUBSTR4|SUBSTRB|SUBSTRC|SUBTYPE|SUCCESSFUL|SUM|SWITCH|SYNONYM|SYS_CONNECT_BY_PATH|SYS_CONTEXT|SYS_DBURIGEN|SYS_EXTRACT_UTC|SYS_GUID|SYS_OP_COMBINED_HASH|SYS_OP_DESCEND|SYS_OP_DISTINCT|SYS_OP_GUID|SYS_OP_LBID|SYS_OP_MAP_NONNULL|SYS_OP_RAWTONUM|SYS_OP_RPB|SYS_OP_TOSETID|SYS_TYPEID|SYS_XMLAGG|SYS_XMLGEN|SYSDATE|SYSDBA|SYSOPER|SYSTEM|SYSTIMESTAMP|TABAUTH|TABLE|TABLES|TABLESPACE|TABLESPACE_NO|TABNO|TAN|TANH|TASK|TDO|TEMPORARY|TERMINATE|THAN|THE|THEN|THREAD|TIME|TIMESTAMP|TIMESTAMP_TO_SCN|TIMEZONE_ABBR|TIMEZONE_HOUR|TIMEZONE_MINUTE|TIMEZONE_REGION|TO|TO_BINARY_DOUBLE|TO_BINARY_FLOAT|TO_BINARYDOUBLE|TO_BINARYFLOAT|TO_CHAR|TO_CLOB|TO_DATE|TO_DSINTERVAL|TO_LOB|TO_MULTI_BYTE|TO_NCHAR|TO_NCLOB|TO_NUMBER|TO_SINGLE_BYTE|TO_TIMESTAMP|TO_TIMESTAMP_TZ|TO_YMINTERVAL|TOPLEVEL|TRACE|TRACING|TRAILING|TRANSAC|TRANSACTION|TRANSACTIONAL|TRANSITIONAL|TRANSLATE|TRANSLITERATE|TREAT|TRIGGER|TRIGGERS|TRIM|TRUE|TRUNC|TRUNCATE|TRUSTED|TX|TYPE|TZ_OFFSET|UB1|UB2|UB4|UBA|UID|UNBOUNDED FOLLOWING|UNBOUNDED PRECEDING|UNDER|UNION|UNIQUE|UNISTR|UNLIMITED|UNLOCK|UNRECOVERABLE|UNSIGNED|UNTIL|UNTRUSTED|UNUSABLE|UNUSED|UPDATABLE|UPDATE|UPDATEXML|UPPER|USAGE|USE|USER|USERENV|USING|VALIDATE|VALIDATION|VALIST|VALUE|VALUES|VAR_POP|VAR_SAMP|VARCHAR|VARCHAR2|VARIABLE|VARIANCE|VARRAY|VARYING|VERIFY_OWNER|VERIFY_TABLE|VERTICAL BARS|VIEW|VIEWS|VOID|VSIZE|WHEN|WHENEVER|WHERE|WHILE|WIDTH_BUCKET|WITH|WITHOUT|WORK|WRAPPED|WRITE|WRITEDOWN|WRITEUP|XID|XMLAGG|XMLCAST|XMLCDATA|XMLCOLATTVAL|XMLCOLLATVAL|XMLCOMMENT|XMLCONCAT|XMLDIFF|XMLELEMENT|XMLEXISTS|XMLFOREST|XMLISVALID|XMLPARSE|XMLPATCH|XMLPI|XMLQUERY|XMLROOT|XMLSEQUENCE|XMLSERIALIZE|XMLTABLE|XMLTRANSFORM|XOR|YEAR|ZONE)\b"
         inComment := false
         upper := ""
-        Loop, Parse, selText, %EOL_NIX%
+        Loop, Parse, selText, % hs.const.EOL_NIX
         {
             if (inComment) {
                 pos := InStr(A_LoopField, "*/")
@@ -5804,7 +5613,7 @@ upperCaseOracle() {
                     line1 := A_LoopField
                     line2 := ""
                 }
-                upper .= line1 . RegExReplace(line2, oracleWords, "$U{1}") . EOL_NIX
+                upper .= line1 . RegExReplace(line2, oracleWords, "$U{1}") . hs.const.EOL_NIX
             }
             else {
                 pos := InStr(A_LoopField, "/*")
@@ -5824,7 +5633,7 @@ upperCaseOracle() {
                         line2 := ""
                     }
                 }
-                upper .= RegExReplace(line1, oracleWords, "$U{1}") . line2 . EOL_NIX
+                upper .= RegExReplace(line1, oracleWords, "$U{1}") . line2 . hs.const.EOL_NIX
             }
         }
         upper := SubStr(upper, 1, StrLen(upper) - 1)
@@ -5854,9 +5663,9 @@ urlEncode(text) {
     text := StringReplace(text, "`", "%60", "All")
     text := StringReplace(text, A_Tab, A_Space, "All")
     text := StringReplace(text, A_Space, "%20", "All")
-    text := StringReplace(text, EOL_WIN, A_Space, "All")
-    text := StringReplace(text, EOL_MAC, A_Space, "All")
-    text := StringReplace(text, EOL_NIX, A_Space, "All")
+    text := StringReplace(text, hs.const.EOL_WIN, A_Space, "All")
+    text := StringReplace(text, hs.const.EOL_MAC, A_Space, "All")
+    text := StringReplace(text, hs.const.EOL_NIX, A_Space, "All")
     return text
 }
 
@@ -5895,7 +5704,7 @@ wrapSelectedEach(start, end) {
     lenStart := StrLen(start)
     lenEnd := StrLen(end)
     newText := ""
-    Loop, Parse, selText, %EOL_NIX%, %EOL_MAC%
+    Loop, Parse, selText, % hs.const.EOL_NIX, % hs.const.EOL_MAC
     {
         lineText := A_LoopField
         if (startsWith(lineText, start) && endsWith(lineText, end)) {
@@ -5918,6 +5727,7 @@ wrapSelectedEach(start, end) {
 
 zoomAdjust(direction) {
     static zoomFactor := 1.189207115 ; sqrt(sqrt(2))
+    global zoomAmount
     if (direction == -1) {
         if (zoomAmount < 4) {
             zoomAmount *= zoomFactor
@@ -5931,6 +5741,15 @@ zoomAdjust(direction) {
 }
 
 zoomStart() {
+    ; TODO - refactor global variables into HS
+    global zoomAmount := 2
+    global zoomWindowDimension := 0
+    global zoomWindowH := 100
+    global zoomWindowW := 240
+    global zoomFollow := true
+    global zoomHdcFrame
+    global zoomHddFrame
+
     Process("Priority", "", "High")
     Hotkey, Escape, zoomExit, On
     Hotkey, Space, zoomToggleFollow, On
