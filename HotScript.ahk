@@ -33,19 +33,19 @@ EOL_WIN := "`r`n"
 EOL_REGEX := "(\r\n|\n|\r)"
 LINE_SEP := repeatStr("·", 157)
 MENU_SEP := "-"
-MY_TITLE := "HotScript"
-MY_BASE := A_ScriptDir . "\" . MY_TITLE
-MY_VERSION := "20150304.1"
+HOTSCRIPT_TITLE := "HotScript"
+HOTSCRIPT_DIR := A_ScriptDir . "\" . HOTSCRIPT_TITLE
+HOTSCRIPT_VERSION := "20150611.1"
 SKIP_FIELDS := Array("file", "hkSessionCount", "hsSessionCount")
-SPLASH_TITLE := MY_TITLE . "Splash"
-USER_KEYS := A_ScriptDir . "\" . MY_TITLE . "Keys.ahk"
-USER_STRINGS := A_ScriptDir . "\" . MY_TITLE . "Strings.ahk"
+SPLASH_TITLE := HOTSCRIPT_TITLE . "Splash"
+USER_KEYS := A_ScriptDir . "\" . HOTSCRIPT_TITLE . "Keys.ahk"
+USER_STRINGS := A_ScriptDir . "\" . HOTSCRIPT_TITLE . "Strings.ahk"
 VIRTUAL_SPACE := " " ; this is not a space, but Alt+0160
 
-configDefault := new OldConfig(MY_TITLE)
-configDefault.file := A_ScriptDir . "\" . MY_TITLE . "Default.ini"
+configDefault := new OldConfig(HOTSCRIPT_TITLE)
+configDefault.file := A_ScriptDir . "\" . HOTSCRIPT_TITLE . "Default.ini"
 configUser := new OldConfig
-configUser.file := A_ScriptDir . "\" . MY_TITLE . "User.ini"
+configUser.file := A_ScriptDir . "\" . HOTSCRIPT_TITLE . "User.ini"
 hiddenWindows := ""
 lvKeys := ""
 lvStrings := ""
@@ -179,7 +179,7 @@ init()
 #If
 ;Code
 ;----
-#If, toBool(configUser.enableHsDates)
+#If, toBool(configUser.enableHsCode)
     :*b0:for(:: ;; auto-completion of a 'for' block
     :*b0:for (:: ;; auto-completion of a 'for' block
     :*b0:if(:: ;; auto-completion of an 'if' block
@@ -302,7 +302,7 @@ init()
 #If, toBool(configUser.enableHsHtml)
     :?*b0:<a :: ;; auto-completion of the HTML 'a' tag (with 'href' attribute)
         addHotString()
-        sendText("href=''></a>", "{Left 4}")
+        sendText("href=""""></a>", "{Left 4}")
         return
     :?b0o:<b:: ;; auto-completion of the HTML 'b' tag
         addHotString()
@@ -346,7 +346,7 @@ init()
         return
     :?*b0:<div:: ;; auto-completion of the HTML 'div' tag (with 'id' attribute)
         addHotString()
-        sendText(" id=''>", "{Enter}{Tab}{Enter}{Backspace}")
+        sendText(" id="""">", "{Enter}{Tab}{Enter}{Backspace}")
         sendText("</div>", "{Up}{End}")
         return
     :?*b0:<em:: ;; auto-completion of the HTML 'em' tag
@@ -421,15 +421,15 @@ init()
     :?*b0:<iframe:: ;; auto-completion of the HTML 'iframe' tag
     :?*b0:<img:: ;; auto-completion of the HTML 'img' tag (with 'src' attribute)
         addHotString()
-        sendText(" src=''/>", "{Left 3}")
+        sendText(" src=""""/>", "{Left 3}")
         return
     :?*b0:<input:: ;; auto-completion of the HTML 'input' tag (with 'type', 'name', 'id' and 'value' attributes)
         addHotString()
-        sendText(" type='' name='' id='' value=''/>", "{End}{Home}{Right 13}")
+        sendText(" type="""" name="""" id="""" value=""""/>", "{End}{Home}{Right 13}")
         return
     :?*b0:<label:: ;; auto-completion of the HTML 'label' tag (with 'for' attribute)
         addHotString()
-        sendText(" for=''></label>", "{Left 10}")
+        sendText(" for=""""></label>", "{Left 10}")
         return
     :?*b0:<legend:: ;; auto-completion of the HTML 'legend' tag
         addHotString()
@@ -441,7 +441,7 @@ init()
         return
     :?*b0:<link:: ;; auto-completion of the HTML 'link' tag (with 'rel', 'type' and 'href' attributes)
         addHotString()
-        sendText(" rel='stylesheet' type='text/css' href=''/>", "{Left 3}")
+        sendText(" rel=""stylesheet"" type=""text/css"" href=""""/>", "{Left 3}")
         return
     :?*b0:<ol:: ;; auto-completion of the HTML 'ol' tag
         addHotString()
@@ -485,7 +485,7 @@ init()
         return
     :?*b0:<select:: ;; auto-completion of the HTML 'sel' tag (with 'name' and 'id' attributes and nested 'option' tag)
         addHotString()
-        sendText(" name='' id=''>", "{Enter}{Tab}")
+        sendText(" name="""" id="""">", "{Enter}{Tab}")
         sendText("<option></option>", "{Enter}{Backspace}")
         sendText("</select>", "{Up}{End}{Left 9}")
         return
@@ -495,11 +495,11 @@ init()
         return
     :?*b0:<source:: ;; auto-completion of the HTML 'source' tag (with 'type' and 'src' attributes)
         addHotString()
-        sendText(" type='' src=''/>", "{Left 3}")
+        sendText(" type="""" src=""""/>", "{Left 3}")
         return
     :?*b0:<span:: ;; auto-completion of the HTML 'span' tag (with 'id' attribute)
         addHotString()
-        sendText(" id=''></span>", "{Left 7}")
+        sendText(" id=""""></span>", "{Left 7}")
         return
     :?*b0:<strong:: ;; auto-completion of the HTML 'strong' tag
         addHotString()
@@ -507,7 +507,7 @@ init()
         return
     :?*b0:<style:: ;; auto-completion of the HTML 'style' tag (with 'type' attribute)
         addHotString()
-        sendText(" type='text/css'>", "{Enter}{Tab}{Enter}{Backspace}")
+        sendText(" type=""text/css"">", "{Enter}{Tab}{Enter}{Backspace}")
         sendText("</style>", "{Up}{End}")
         return
     :?*b0:<sub:: ;; auto-completion of the HTML 'sub' tag
@@ -565,7 +565,7 @@ init()
         return
     :?*b0:<texta:: ;; auto-completion of the HTML 'textarea' tag (with 'rows' and 'cols' attributes)
         addHotString()
-        sendText("rea rows='' cols=''>", "{Enter}{Tab}{Enter}{Backspace}")
+        sendText("rea rows="""" cols="""">", "{Enter}{Tab}{Enter}{Backspace}")
         sendText("</textarea>", "{Up}{End}")
         return
     :?*b0:<title:: ;; auto-completion of the HTML 'title' tag
@@ -1069,54 +1069,67 @@ WinGetTitle(winTitle:="", winText:="", excludeTitle:="", excludeText:="") {
 ;__________________________________________________
 ;hotkey functions
 hkActionAlwaysOnTop() {
+    addHotKey()
     toggleAlwaysOnTop()
 }
 
 hkActionCalculator() {
+    addHotKey()
     findOrRunByExe("calc")
 }
 
 hkActionControlPanel() {
+    addHotKey()
     runTarget("Control Panel")
 }
 
 hkActionDosPrompt() {
+    addHotKey()
     runDos()
 }
 
 hkActionEditor() {
+    addHotKey()
     runEditor()
 }
 
 hkActionGoogleSearch() {
+    addHotKey()
     runSelectedText()
 }
 
 hkActionHideWindow() {
+    addHotKey()
     hideWindow()
 }
 
 hkActionQuickLookup() {
+    addHotKey()
     runQuickLookup()
 }
 
 hkActionRestoreHiddenWindows() {
+    addHotKey()
     restoreHiddenWindows()
 }
 
 hkActionToggleDesktopIcons() {
+    addHotKey()
     toggleDesktopIcons()
 }
 
 hkActionWindowsExplorer() {
+    addHotKey()
     runTarget("explorer.exe C:\")
 }
 
 hkActionWindowsServices() {
+    addHotKey()
     runServices()
 }
 
 hkActionWindowsSnip() {
+    addHotKey()
     snip := findOnPath("SnippingTool.exe")
     if (snip == "") {
         winVer := RegRead("HKEY_LOCAL_MACHINE", "SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ProductName")
@@ -1132,58 +1145,72 @@ hkActionWindowsSnip() {
 }
 
 hkDosCdParent() {
+    addHotKey()
     SendInput, cd ..{Enter}
 }
 
 hkDosCopy() {
+    addHotKey()
     SendInput, copy{Space}
 }
 
 hkDosDownloads() {
+    addHotKey()
     SendInput, pushd `%USERPROFILE`%\Downloads{Enter}
 }
 
 hkDosExit() {
+    addHotKey()
     SendInput, exit{Enter}
 }
 
 hkDosMove() {
+    addHotKey()
     SendInput, move{Space}
 }
 
 hkDosPopd() {
+    addHotKey()
     SendInput, popd{Enter}
 }
 
 hkDosPushd() {
+    addHotKey()
     SendInput, pushd{Space}
 }
 
 hkDosRoot() {
+    addHotKey()
     SendInput, cd\{Enter}
 }
 
 hkDosType() {
+    addHotKey()
     SendInput, type{Space}
 }
 
 hkEppDeleteToEol() {
+    addHotKey()
     SendInput, ^+{Delete}
 }
 
 hkEppDeleteWord() {
+    addHotKey()
     SendInput, ^{Delete}
 }
 
 hkEppGoToLine() {
+    addHotKey()
     SendInput, !g
 }
 
 hkEppNextFile() {
+    addHotKey()
     SendInput, {F6}
 }
 
 hkEppPrevFile() {
+    addHotKey()
     SendInput, +{F6}
 }
 
@@ -1197,29 +1224,35 @@ hkHotScriptDebugVariable() {
 
 hkHotScriptEditDefaultIni() {
     global configDefault
+    addHotKey()
     runEditor(configDefault.file)
 }
 
 hkHotScriptEditHotScript() {
+    addHotKey()
     runEditor(A_ScriptFullPath)
 }
 
 hkHotScriptEditUserIni() {
     global configUser
+    addHotKey()
     runEditor(configUser.file)
 }
 
 hkHotScriptEditUserKeys() {
     global USER_KEYS
+    addHotKey()
     runEditor(USER_KEYS)
 }
 
 hkHotScriptEditUserStrings() {
     global USER_STRINGS
+    addHotKey()
     runEditor(USER_STRINGS)
 }
 
 hkHotScriptExit() {
+    addHotKey()
     stop()
 }
 
@@ -1241,83 +1274,103 @@ hkHotScriptReload() {
 }
 
 hkMiscMouseDown() {
+    addHotKey()
     MouseMove(0, 1)
 }
 
 hkMiscMouseLeft() {
+    addHotKey()
     MouseMove(-1, 0)
 }
 
 hkMiscMouseRight() {
+    addHotKey()
     MouseMove(1, 0)
 }
 
 hkMiscMouseUp() {
+    addHotKey()
     MouseMove(0, -1)
 }
 
 hkMiscPasteClipboardAsText() {
+    addHotKey()
     sendText(ClipBoard)
 }
 
 hkMiscPasteEnter() {
     global EOL_WIN
+    addHotKey()
     sendText(EOL_WIN)
 }
 
 hkMiscPasteTab() {
+    addHotKey()
     sendText(A_Tab)
 }
 
 hkMiscPreviewClipboard() {
+    addHotKey()
     showClipboard()
 }
 
 hkMiscZoomWindow() {
+    addHotKey()
     zoomStart()
 }
 
 hkScreenMovementCenterWindow() {
+    addHotKey()
     centerWindow()
 }
 
 hkScreenMovementDragMouseDown() {
+    addHotKey()
     MouseClickDrag("Left", 0, 0, 0, 1, 0)
 }
 
 hkScreenMovementDragMouseLeft() {
+    addHotKey()
     MouseClickDrag("Left", 0, 0, -1, 0, 0)
 }
 
 hkScreenMovementDragMouseRight() {
+    addHotKey()
     MouseClickDrag("Left", 0, 0, 1, 0, 0)
 }
 
 hkScreenMovementDragMouseUp() {
+    addHotKey()
     MouseClickDrag("Left", 0, 0, 0, -1, 0)
 }
 
 hkScreenMovementWindowLeft() {
+    addHotKey()
     moveToMonitor("A", -1)
 }
 
 hkScreenMovementWindowRight() {
+    addHotKey()
     moveToMonitor("A", 1)
 }
 
 hkScreenMovementPageDown() {
+    addHotKey()
     SendInput, {PgDn}
 }
 
 hkScreenMovementPageUp() {
+    addHotKey()
     SendInput, {PgUp}
 }
 
 hkScreenMovementResizeWindow() {
+    addHotKey()
     runQuickResolution()
 }
 
 hkScreenMovementResizeWindowAnchor() {
+    addHotKey()
     direction := ""
     if (GetKeyState("up", "p") == "D") {
         direction .= "T"
@@ -1335,6 +1388,7 @@ hkScreenMovementResizeWindowAnchor() {
 }
 
 hkScreenMovementResizeWindowCompass() {
+    addHotKey()
     direction := ""
     key := setCase(A_ThisHotKey, "L")
     if (containsIgnoreCase(key, "NumPad1", "NumPadEnd")) {
@@ -1368,14 +1422,17 @@ hkScreenMovementResizeWindowCompass() {
 }
 
 hkScreenMovementWindowMaximize() {
+    addHotKey()
     maximize()
 }
 
 hkScreenMovementWindowMinimize() {
+    addHotKey()
     minimize()
 }
 
 hkTextDeleteCurrentLine() {
+    addHotKey()
     if (WinActive("ahk_exe i)EditPadPro\d*\.exe")) {
         SendInput, ^!y
     }
@@ -1385,6 +1442,8 @@ hkTextDeleteCurrentLine() {
 }
 
 hkTextDuplicateCurrentLine() {
+    global configUser
+    addHotKey()
     if (WinActive("ahk_exe i)EditPadPro\d*\.exe")) {
         SendInput, ^+{Up}
     }
@@ -1394,6 +1453,7 @@ hkTextDuplicateCurrentLine() {
 }
 
 hkTextMoveCurrentLineDown() {
+    addHotKey()
     if (WinActive("ahk_exe i)EditPadPro\d*\.exe")) {
         Send, ^!+{Down}
     }
@@ -1403,8 +1463,12 @@ hkTextMoveCurrentLineDown() {
 }
 
 hkTextMoveCurrentLineUp() {
+    addHotKey()
     if (WinActive("ahk_exe i)EditPadPro\d*\.exe")) {
         Send, ^!+{Up}
+    }
+    else if (WinActive("ahk_class ConsoleWindowClass")) {
+        hkDosCdParent()
     }
     else {
         moveCurrentLineUp()
@@ -1412,14 +1476,17 @@ hkTextMoveCurrentLineUp() {
 }
 
 hkTransformEncrypt() {
+    addHotKey()
     cryptSelected()
 }
 
 hkTransformInvertCase() {
+    addHotKey()
     transformSelected("I")
 }
 
 hkTransformLowerCase() {
+    addHotKey()
     if (WinActive("ahk_exe i)EditPadPro\d*\.exe")) {
         Send, ^+l
     }
@@ -1429,43 +1496,52 @@ hkTransformLowerCase() {
 }
 
 hkTransformNumberPrepend() {
+    addHotKey()
     numberSelected()
 }
 
 hkTransformNumberPrependPrompt() {
+    addHotKey()
     numberSelectedPrompt()
 }
 
 hkTransformNumberStrip() {
+    addHotKey()
     numberRemoveSelected()
 }
 
 hkTransformOracleUpper() {
+    addHotKey()
     upperCaseOracle()
 }
 
 hkTransformReverseText() {
+    addHotKey()
     transformSelected("R")
 }
 
 hkTransformSentenceCase() {
+    addHotKey()
     transformSelected("S")
 }
 
 hkTransformSortAscending() {
+    addHotKey()
     sortSelected()
 }
 
 hkTransformSortDescending() {
+    addHotKey()
     sortSelected("d")
 }
 
 hkTransformTagify() {
+    addHotKey()
     tagifySelected()
 }
 
 hkTransformTitleCase() {
-    WinActive("ahk_class ConsoleWindowClass")
+    addHotKey()
     if (WinActive("ahk_class Chrome_WidgetWin_1") || WinActive("ahk_class MozillaWindowClass")) {
         Send, ^+t
     }
@@ -1475,10 +1551,12 @@ hkTransformTitleCase() {
 }
 
 hkTransformUnwrapText() {
+    addHotKey()
     lineUnwrapSelected()
 }
 
 hkTransformUpperCase() {
+    addHotKey()
     if (WinActive("ahk_exe i)EditPadPro\d*\.exe")) {
         Send, ^+u
     }
@@ -1488,54 +1566,67 @@ hkTransformUpperCase() {
 }
 
 hkTransformWrapEachInBrackets() {
+    addHotKey()
     wrapSelectedEach("[", "]")
 }
 
 hkTransformWrapEachInCurlys() {
+    addHotKey()
     wrapSelectedEach("{", "}")
 }
 
 hkTransformWrapEachInParenthesis() {
+    addHotKey()
     wrapSelectedEach("(", ")")
 }
 
 hkTransformWrapEachInDoubleQuotes() {
+    addHotKey()
     wrapSelectedEach("""", """")
 }
 
 hkTransformWrapEachInSingleQuotes() {
+    addHotKey()
     wrapSelectedEach("'", "'")
 }
 
 hkTransformWrapEachInTags() {
+    addHotKey()
     wrapSelectedEach("<", ">")
 }
 
 hkTransformWrapInBrackets() {
+    addHotKey()
     wrapSelected("[", "]")
 }
 
 hkTransformWrapInCurlys() {
+    addHotKey()
     wrapSelected("{", "}")
 }
 
 hkTransformWrapInParenthesis() {
+    addHotKey()
     wrapSelected("(", ")")
 }
 
 hkTransformWrapInDoubleQuotes() {
+    addHotKey()
     wrapSelected("""", """")
 }
 
 hkTransformWrapInSingleQuotes() {
+    addHotKey()
     wrapSelected("'", "'")
 }
 
 hkTransformWrapInTags() {
+    addHotKey()
     wrapSelected("<", ">")
 }
 
 hkTransformWrapText() {
+    addHotKey()
     lineWrapSelected()
 }
 
@@ -1703,7 +1794,7 @@ containsIgnoreCase(str, values*) {
 }
 
 createIcon() {
-    Global MY_BASE
+    Global HOTSCRIPT_DIR
     iconData1 =
     ( LTrim Join
         000001000400101000000000200068040000460000002020000000002000A8100000AE040000
@@ -2569,7 +2660,7 @@ createIcon() {
     )
     iconData := iconData1 . iconData2 . iconData3 . iconData4 . iconData5
     hexToBin(iconBin, iconData)
-    fileIco := FileOpen(MY_BASE . ".ico", "w")
+    fileIco := FileOpen(HOTSCRIPT_DIR . ".ico", "w")
     fileIco.RawWrite(iconBin, StrLen(iconData) / 2)
     fileIco.close()
 }
@@ -2836,6 +2927,8 @@ Each hotkey should use the following format:
 
     O: Omit the ending character of auto-replace HotStrings when the replacement is produced.
     This is useful when you want a hotstring to be kept unambiguous by still requiring an ending character, but don't actually want the ending character to be shown on the screen.
+
+    You can use the built-in variable A_EndChar to reference the ending character that was typed.
 `*`/
 
 `/`*
@@ -2871,6 +2964,13 @@ cryptSelected() {
     if (selText != "") {
         replaceSelected(crypt(selText))
     }
+}
+
+debug(str) {
+    global HOTSCRIPT_TITLE
+    global HOTSCRIPT_VERSION
+    msg := HOTSCRIPT_TITLE . " v" . HOTSCRIPT_VERSION . " - " . A_MM . "/" . A_DD . "/" . A_YYYY . " at " . A_Hour . ":" . A_Min . ":" . A_Sec . " :: "
+    OutputDebug % msg . str
 }
 
 deleteCurrentLine() {
@@ -3049,7 +3149,8 @@ getDefaultHotKeyDefs(type) {
         hk["hkActionWindowsSnip"] := "#printscreen"
     }
     else if (type == "hkDos") {
-        hk["hkDosCdParent"] := "!."
+        hk["hkDosCdParent-1"] := "!."
+        hk["hkDosCdParent-2"] := "!up"
         hk["hkDosCopy"] := "!c"
         hk["hkDosDownloads"] := "!d"
         hk["hkDosExit"] := "!x"
@@ -3313,18 +3414,18 @@ hkToStr(key) {
 }
 
 init() {
-    global MY_BASE
-    global MY_TITLE
-    global MY_VERSION
+    global HOTSCRIPT_DIR
+    global HOTSCRIPT_TITLE
+    global HOTSCRIPT_VERSION
     global configUser
     createUserFiles()
     loadConfig()
     cleanupDeprecated()
 
     updateRegistry()
-    icon := MY_BASE . ".ico"
+    icon := HOTSCRIPT_DIR . ".ico"
     Menu, Tray, Icon, %icon%
-    Menu, Tray, Tip, %MY_TITLE% v%MY_VERSION%
+    Menu, Tray, Tip, %HOTSCRIPT_TITLE% v%HOTSCRIPT_VERSION%
     GoSub initMonitors
     SetTimer("initMonitors", 120000) ; 2 minutes (in milliseconds)
     if (FileExist(configUser.editor) == "") {
@@ -3394,8 +3495,8 @@ listToArray(list, delim:="") {
 }
 
 loadConfig() {
-    global MY_BASE
-    global MY_VERSION
+    global HOTSCRIPT_DIR
+    global HOTSCRIPT_VERSION
     global configDefault
     global configUser
     global uniqueId
@@ -3403,16 +3504,16 @@ loadConfig() {
     saveDefault := false
     if (FileExist(configDefault.file) == "") {
         saveDefault := true
-        configDefault.version := MY_VERSION
+        configDefault.version := HOTSCRIPT_VERSION
     }
     else {
         ; check version in default
         configDefault.version := IniRead(configDefault.file, "config", "version")
-        if (configDefault.version != MY_VERSION) {
+        if (configDefault.version != HOTSCRIPT_VERSION) {
             ; different version so need to delete it
             FileDelete(file)
             saveDefault := true
-            configDefault.version := MY_VERSION
+            configDefault.version := HOTSCRIPT_VERSION
         }
     }
     ; load from default config first
@@ -3472,6 +3573,8 @@ loadConfig() {
             -
             &Google
             http://www.google.com/search?q=@selection@
+            Google &Maps
+            http://www.google.com/maps/search/@selection@
             Google &Images
             http://images.google.com/images?q=@selection@
             Google Trans&late
@@ -3480,7 +3583,7 @@ loadConfig() {
             -
             &Dictionary
             http://dictionary.reference.com/browse/@selection@
-            I&MDB
+            IMD&B
             http://www.imdb.com/find?q=@selection@
             &Thesaurus
             http://thesaurus.com/browse/@selection@
@@ -3546,7 +3649,7 @@ loadConfig() {
     ; save after loading to make sure any new values are persisted
     saveConfig(configUser, configDefault)
     registerKeys()
-    if (saveDefault || FileExist(MY_BASE . ".ico") == "") {
+    if (saveDefault || FileExist(HOTSCRIPT_DIR . ".ico") == "") {
         createIcon()
     }
 }
@@ -3856,15 +3959,20 @@ pasteTemplate(template, tokens:="", keys:="") {
 pasteText(text:="")
 {
     if (text != "") {
-        prevClipboard := ClipboardAll
-        Clipboard := ""
-        Sleep(20)
-        Clipboard := text
-        SendInput, ^v
-        Sleep(250) ; wait or the clipboard is replaced with previous before it gets a chance to paste it, resulting in pasting the original clipboard
-        Clipboard := prevClipboard
-        prevClipboard := ""
-        Sleep(20)
+        if (WinActive("ahk_class ConsoleWindowClass")) {
+            SendInput % text
+        }
+        else {
+            prevClipboard := ClipboardAll
+            Clipboard := ""
+            Sleep(20)
+            Clipboard := text
+            SendInput, ^v
+            Sleep(250) ; wait or the clipboard is replaced with previous before it gets a chance to paste it, resulting in pasting the original clipboard
+            Clipboard := prevClipboard
+            prevClipboard := ""
+            Sleep(20)
+        }
     }
     else {
         SendInput, {Del}
@@ -4424,6 +4532,12 @@ runSelectedText() {
             }
             Run(selText)
         }
+;        else if () {
+            ; if InStr(FileExist("C:\My Folder"), "D")
+            ; TODO - if directory or UNC, open with Explorer
+            ;      - could be just \utils so search all drives for it
+            ; TODO - if file, run it or open it
+;        }
         else {
             searchText := urlEncode(selText)
             Run("http://www.google.com/search?q=" . searchText)
@@ -4451,11 +4565,11 @@ runTarget(target, workDir:="") {
 }
 
 saveConfig(config, defaultConfig:=-1) {
-    global MY_VERSION
+    global HOTSCRIPT_VERSION
     global uniqueId
     file := config.file
     ; always save these values
-    IniWrite(config.file, "config", "version", MY_VERSION)
+    IniWrite(config.file, "config", "version", HOTSCRIPT_VERSION)
     if (defaultConfig == -1) {
         ; save it, since nothing to compare against
         IniWrite(config.file, "config", "editor", config.editor)
@@ -4782,8 +4896,8 @@ showDebugVar(value:="") {
 showFullHelp() {
     global EOL_MAC
     global EOL_NIX
-    global MY_TITLE
-    global MY_VERSION
+    global HOTSCRIPT_TITLE
+    global HOTSCRIPT_VERSION
     global configUser
     global VIRTUAL_SPACE
     Gui, 98: Destroy
@@ -4854,7 +4968,7 @@ showFullHelp() {
     hkTotal := toComma(configUser.hkTotalCount)
     hsSession := toComma(configUser.hsSessionCount)
     hsTotal := toComma(configUser.hsTotalCount)
-    helpTitle := MY_TITLE . " v" . MY_VERSION . " (AHK v" . A_AhkVersion . ")                Session Usage:  " . hkSession . " hotkeys, " . hsSession . " hotstrings            Total Usage:  " . hkTotal . " hotkeys, " . hsTotal . " hotstrings"
+    helpTitle := HOTSCRIPT_TITLE . " v" . HOTSCRIPT_VERSION . " (AHK v" . A_AhkVersion . ")                Session Usage:  " . hkSession . " hotkeys, " . hsSession . " hotstrings            Total Usage:  " . hkTotal . " hotkeys, " . hsTotal . " hotstrings"
 
     activeMon := getActiveMonitor()
     Gui, 98: Show, , %helpTitle%
@@ -4866,7 +4980,7 @@ showQuickHelp(waitforKey) {
     global EOL_NIX
     global EOL_WIN
     global LINE_SEP
-    global MY_TITLE
+    global HOTSCRIPT_TITLE
     global SPLASH_TITLE
     global VIRTUAL_SPACE
     global configUser
@@ -4940,21 +5054,21 @@ showQuickHelp(waitforKey) {
 
     hkHotScriptHelp =
     ( LTrim Comment
-        %MY_TITLE% hotkeys`t`t`t
+        %HOTSCRIPT_TITLE% hotkeys`t`t`t
         %colLine%
         AltWin-H`tToggle quick help`t
         CtrlWin-F12`tDebug variable`t`t
-        Win-F12`t`tExit %MY_TITLE%`t`t
+        Win-F12`t`tExit %HOTSCRIPT_TITLE%`t`t
         ;CtrlWin-H`tShow full help`t`t
         Win-H`t`tShow quick help`t`t
         Win-1`t`tRun AHK help`t`t
-        Win-2`t`tReload %MY_TITLE%`t
-        Win-3`t`tEdit %MY_TITLE%`t`t
+        Win-2`t`tReload %HOTSCRIPT_TITLE%`t
+        Win-3`t`tEdit %HOTSCRIPT_TITLE%`t`t
         Win-4`t`tEdit user keys`t`t
         Win-5`t`tEdit user strings`t
         Win-6`t`tEdit user INI`t`t
         Win-7`t`tEdit default INI`t`t
-        Win-Pause`tPause %MY_TITLE%`t`t
+        Win-Pause`tPause %HOTSCRIPT_TITLE%`t`t
     )
 
     hkMiscHelpEnabled =
@@ -5266,14 +5380,14 @@ startsWith(str, value, caseInsensitive:="") {
 
 stop() {
     global EOL_NIX
-    global MY_VERSION
+    global HOTSCRIPT_VERSION
     global configUser
     hkSession := toComma(configUser.hkSessionCount)
     hkTotal := toComma(configUser.hkTotalCount)
     hsSession := toComma(configUser.hsSessionCount)
     hsTotal := toComma(configUser.hsTotalCount)
     msg := "Shutting down..." . EOL_NIX . EOL_NIX . "Session Usage" . EOL_NIX . "    hotkeys: " . hkSession . EOL_NIX . "    hotstrings: " . hsSession . EOL_NIX . EOL_NIX . "Total Usage" . EOL_NIX . "    hotkeys: " . hkTotal . EOL_NIX . "    hotstrings: " . hsTotal
-    MsgBox,, %MY_VERSION%, %msg%
+    MsgBox,, %HOTSCRIPT_VERSION%, %msg%
     ExitApp
 }
 
@@ -5314,14 +5428,21 @@ templateHtml() {
         template =
         (
 <!DOCTYPE html>
-<html>
+<html lang='en'>
+    <head>
+        <meta charset='UTF-8'/>
+        <title>Quick HTML template</title>
+    </head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore.js"></script>
     <script>
         function test() {
             //
         }
     </script>
 <body>
-    <input type="button" value="Test" onclick="test()"/>
+    <h2>This is a simple HTML template. (generated by HotScript)</h2>
+    <input type='button' value='Test' onclick='test()'/>
 </body>
 </html>
 
@@ -5344,9 +5465,9 @@ templateJava() {
 import java.io.*;
 import java.util.*;
 
-public class Test {
+public class Template {
     public static void main(String[] args) {
-        System.out.println("");
+        System.out.println("This is a simple Java template. (generated by HotScript)");
     }
 }
 
@@ -5526,6 +5647,9 @@ templateSql() {
         templateKeys := "{Up 2}{End}"
         template =
         (LTrim
+            -- ----------------------------------------------------------------------
+            -- This is a simple SQL template. (generated by HotScript)
+            -- ----------------------------------------------------------------------
             SELECT *
             FROM%A_SPACE%
             WHERE
@@ -5586,8 +5710,8 @@ toggleDesktopIcons() {
 }
 
 toggleSuspend() {
-    global MY_TITLE
-    msg := MY_TITLE . " is " . (A_IsSuspended ? "suspended" : "enabled") . "..."
+    global HOTSCRIPT_TITLE
+    msg := HOTSCRIPT_TITLE . " is " . (A_IsSuspended ? "suspended" : "enabled") . "..."
     showSplash(msg)
 }
 
