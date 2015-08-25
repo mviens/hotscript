@@ -1,9 +1,11 @@
 /*
 There should be no reason to edit this file directly.
 
-To add user-defined HotKeys, edit the file   : HotScriptKeys.ahk
-To add user-defined HotStrings, edit the file: HotScriptStrings.ahk
-To change global values, copy values from    : HotScriptDefault.ini to HotScriptUser.ini
+To add user-defined functions, edit the file  : HotScriptFunctions.ahk
+To add user-defined hotkeys, edit the file    : HotScriptKeys.ahk
+To add user-defined hotstrings, edit the file : HotScriptStrings.ahk
+To add user-defined variables, edit the file  : HotScriptVariables.ahk
+To override default settings, copy values from: HotScriptDefault.ini to HotScriptUser.ini
 
 For further information, assistance or bug-reporting,
 please contact Mike Viens. (mike.viens@pearson.com)
@@ -27,41 +29,48 @@ StringCaseSense On
 
 ;__________________________________________________
 ;private variables
-COMMENT_HEADER_LINE := " " . repeatStr("-", 70)
-EOL_MAC := "`r"
-EOL_NIX := "`n"
-EOL_WIN := "`r`n"
-EOL_REGEX := "(\r\n|\n|\r)"
-LINE_SEP := repeatStr("·", 157)
-MARKER := {
+global COMMENT_HEADER_LINE := " " . repeatStr("-", 70)
+global EOL_MAC := "`r"
+global EOL_NIX := "`n"
+global EOL_WIN := "`r`n"
+global EOL_REGEX := "(\r\n|\n|\r)"
+global LINE_SEP := repeatStr("·", 157)
+global MARKER := {
     (LTrim Join
         always_on_top: "† ",
         click_through: "‡ ",
         transparent: "±"
     )}
-MENU_SEP := "-"
-HOTSCRIPT_TITLE := "HotScript"
-HOTSCRIPT_BASENAME := A_ScriptDir . "\" . HOTSCRIPT_TITLE
-HOTSCRIPT_VERSION := "1.20150622.3"
-SPLASH_TITLE := HOTSCRIPT_TITLE . "Splash"
-USER_KEYS_FILE := HOTSCRIPT_BASENAME . "Keys.ahk"
-USER_STRINGS_FILE := HOTSCRIPT_BASENAME . "Strings.ahk"
-VIRTUAL_SPACE := " " ; this is not a space, but Alt+0160
+global MENU_SEP := "-"
+global HOTSCRIPT_TITLE := "HotScript"
+global HOTSCRIPT_BASENAME := A_ScriptDir . "\" . HOTSCRIPT_TITLE
+global HOTSCRIPT_VERSION := "1.20150808.1"
+global SPLASH_TITLE := HOTSCRIPT_TITLE . "Splash"
+global USER_FUNCTIONS_FILE := HOTSCRIPT_BASENAME . "Functions.ahk"
+global USER_KEYS_FILE := HOTSCRIPT_BASENAME . "Keys.ahk"
+global USER_STRINGS_FILE := HOTSCRIPT_BASENAME . "Strings.ahk"
+global USER_VARIABLES_FILE := HOTSCRIPT_BASENAME . "Variables.ahk"
+global VIRTUAL_SPACE := " " ; this is not a space, but Alt+0160
 
-configDefault := new OldConfig(HOTSCRIPT_TITLE)
+global configDefault := new OldConfig(HOTSCRIPT_TITLE)
 configDefault.file := HOTSCRIPT_BASENAME . "Default.ini"
-configUser := new OldConfig
+global configUser := new OldConfig
 configUser.file := HOTSCRIPT_BASENAME . "User.ini"
-hiddenWindows := ""
-lvKeys := ""
-lvStrings := ""
-monitors := {}
-uniqueId := "_" . A_YEAR . "_" . A_COMPUTERNAME
+global hiddenWindows := ""
+global lvKeys := ""
+global lvStrings := ""
+global monitors := {}
+global uniqueId := "_" . A_YEAR . "_" . A_COMPUTERNAME
 
 
 ;__________________________________________________
 ;Auto-run code goes here
 init()
+
+;__________________________________________________
+;Includes
+#Include *i HotScriptVariables.ahk
+#Include *i HotScriptFunctions.ahk
 
 ;__________________________________________________
 ;HotStrings
@@ -1244,7 +1253,6 @@ hkHotScriptDebugVariable() {
 }
 
 hkHotScriptEditDefaultIni() {
-    global configDefault
     runEditor(configDefault.file)
 }
 
@@ -1253,18 +1261,23 @@ hkHotScriptEditHotScript() {
 }
 
 hkHotScriptEditUserIni() {
-    global configUser
     runEditor(configUser.file)
 }
 
+hkHotScriptEditUserFunctions() {
+    runEditor(USER_FUNCTIONS_FILE)
+}
+
 hkHotScriptEditUserKeys() {
-    global USER_KEYS_FILE
     runEditor(USER_KEYS_FILE)
 }
 
 hkHotScriptEditUserStrings() {
-    global USER_STRINGS_FILE
     runEditor(USER_STRINGS_FILE)
+}
+
+hkHotScriptEditUserVariables() {
+    runEditor(USER_VARIABLES_FILE)
 }
 
 hkHotScriptExit() {
@@ -1309,7 +1322,6 @@ hkMiscPasteClipboardAsText() {
 }
 
 hkMiscPasteEnter() {
-    global EOL_WIN
     sendText(EOL_WIN)
 }
 
@@ -1335,7 +1347,6 @@ hkTextDeleteCurrentLine() {
 }
 
 hkTextDuplicateCurrentLine() {
-    global configUser
     if (WinActive("ahk_exe i)EditPadPro\d*\.exe")) {
         SendInput, ^+{Up}
     }
@@ -1614,8 +1625,6 @@ hkWindowToggleTransparency() {
 ;__________________________________________________
 ;custom functions
 addHotKey() {
-    global configUser
-    global uniqueId
     configUser.hkSessionCount++
     configUser.hkTotalCount++
     value := configUser.hkTotalCount
@@ -1624,8 +1633,6 @@ addHotKey() {
 }
 
 addHotString() {
-    global configUser
-    global uniqueId
     configUser.hsSessionCount++
     configUser.hsTotalCount++
     value := configUser.hsTotalCount
@@ -1688,8 +1695,6 @@ centerWindow(title:="A") {
 }
 
 cleanup20131211_2() {
-    global configUser
-    global uniqueId
     oldCount := IniRead(configUser.file, "config", "hkTotalCount", 0)
     if (oldCount > 0) {
         configUser.hkTotalCount += oldCount
@@ -1765,7 +1770,6 @@ containsIgnoreCase(str, values*) {
 }
 
 createIcon() {
-    Global HOTSCRIPT_BASENAME
     iconData1 =
     ( LTrim Join
         000001000400101000000000200068040000460000002020000000002000A8100000AE040000
@@ -2637,8 +2641,22 @@ createIcon() {
 }
 
 createUserFiles() {
-    global USER_KEYS_FILE
-    global USER_STRINGS_FILE
+    file := USER_FUNCTIONS_FILE
+    if (FileExist(file) == "") {
+        FileAppend,
+(
+; All user-defined functions should be declared below.
+; Functions defined here can be used referenced by HotScriptKeys.ahk or HotScriptStrings.ahk.
+; Any functions defined within HotScript itself can be called by functions created here.
+
+`/`*
+simpleFunction(someVar) {
+    ; do something here...
+}
+`*`/
+
+), %file%
+    }
     file := USER_KEYS_FILE
     if (FileExist(file) == "") {
         FileAppend,
@@ -2913,6 +2931,21 @@ Each hotstring should use the following format:
 
 ), %file%
     }
+    file := USER_VARIABLES_FILE
+    if (FileExist(file) == "") {
+        FileAppend,
+(
+; All user-defined variables should be declared below.
+; Variables defined here can be used referenced by HotScriptFunctions.ahk, HotScriptKeys.ahk or HotScriptStrings.ahk.
+; All variables should be declared with "global" to make them easily accessible by other HotScript scripts and functions.
+
+`/`*
+global AUTHOR := "My Name"
+global SOURCE_DIR := "C:\dev\projects"
+`*`/
+
+), %file%
+    }
 }
 
 crypt(text) {
@@ -2938,8 +2971,6 @@ cryptSelected() {
 }
 
 debug(str) {
-    global HOTSCRIPT_TITLE
-    global HOTSCRIPT_VERSION
     msg := HOTSCRIPT_TITLE . " v" . HOTSCRIPT_VERSION . " - " . A_MM . "/" . A_DD . "/" . A_YYYY . " at " . A_Hour . ":" . A_Min . ":" . A_Sec . " :: "
     OutputDebug % msg . str
 }
@@ -2978,9 +3009,6 @@ endsWith(str, value, caseInsensitive:="") {
 }
 
 extractKeys(lines) {
-    global EOL_MAC
-    global EOL_NIX
-    global VIRTUAL_SPACE
     keyList := ""
     Loop, Parse, lines, %EOL_NIX%, %EOL_MAC%
     {
@@ -3074,8 +3102,6 @@ getActiveMonitor(hWnd:="A") {
 }
 
 getCenter(winW, winH, monitor:="A") {
-    global Coords
-    global monitors
     if (monitor == "A") {
         monitor := getActiveMonitor()
     }
@@ -3139,11 +3165,13 @@ getDefaultHotKeyDefs(type) {
     else if (type == "hkHotScript") {
         hk["hkHotScriptAutoHotKeyHelp"] := "#1"
         hk["hkHotScriptDebugVariable"] := "^#f12"
-        hk["hkHotScriptEditDefaultIni"] := "#7"
+        hk["hkHotScriptEditDefaultIni"] := "#9"
         hk["hkHotScriptEditHotScript"] := "#3"
         hk["hkHotScriptEditUserIni"] := "#6"
+        hk["hkHotScriptEditUserFunctions"] := "#7"
         hk["hkHotScriptEditUserKeys"] := "#4"
         hk["hkHotScriptEditUserStrings"] := "#5"
+        hk["hkHotScriptEditUserVariables"] := "#8"
         hk["hkHotScriptExit"] := "#f12"
         ;hk["hkHotScriptFullHelp"] := "^#h"
         hk["hkHotScriptQuickHelp"] := "#h"
@@ -3257,9 +3285,6 @@ getDefaultHotKeyDefs(type) {
 }
 
 getEol(text) {
-    global EOL_MAC
-    global EOL_NIX
-    global EOL_WIN
     if (InStr(text, EOL_WIN)) {
         ; check this first because it may contain both
         eol := EOL_WIN
@@ -3278,7 +3303,6 @@ getEol(text) {
 }
 
 getHotKeySections(config) {
-    global EOL_NIX
     file := config.file
     sections := {}
     value := IniRead(file)
@@ -3292,7 +3316,6 @@ getHotKeySections(config) {
 }
 
 getListSize(list, delim:="") {
-    global EOL_WIN
     delim := (delim == "" ? EOL_WIN : delim)
     tmpCount := 0
     Loop, Parse, list, %delim%
@@ -3361,7 +3384,6 @@ hexToBin(ByRef bytes, hex, num:=0)
 }
 
 hideWindow(title:="A") {
-    global hiddenWindows
     hWnd := WinExist(title)
     if (IsWindow(hWnd)) {
         hiddenWindows .= (hiddenWindows ? "|" : "") . hWnd
@@ -3390,18 +3412,15 @@ hkToStr(key) {
 }
 
 init() {
-    global HOTSCRIPT_BASENAME
-    global HOTSCRIPT_TITLE
-    global HOTSCRIPT_VERSION
-    global configUser
     createUserFiles()
     loadConfig()
     cleanupDeprecated()
 
     updateRegistry()
     icon := HOTSCRIPT_BASENAME . ".ico"
+    menuVersion := HOTSCRIPT_TITLE . " v" . HOTSCRIPT_VERSION . " (AHK v" . A_AhkVersion . ")"
     Menu, Tray, Icon, %icon%
-    Menu, Tray, Tip, %HOTSCRIPT_TITLE% v%HOTSCRIPT_VERSION%
+    Menu, Tray, Tip, %menuVersion%
     GoSub initMonitors
     SetTimer("initMonitors", 120000) ; 2 minutes (in milliseconds)
     if (FileExist(configUser.editor) == "") {
@@ -3438,14 +3457,12 @@ isWindow(hWnd) {
 }
 
 lineUnwrapSelected() {
-    global EOL_WIN
     selText := getSelectedText()
     selText := StringReplace(selText, A_Space . EOL_WIN, A_Space, "All")
     pasteText(selText)
 }
 
 lineWrapSelected() {
-    global EOL_WIN
     selText := getSelectedText()
     static width := 80
     tmpWidth := ask("Enter Width", "Maximum number of characters per line:", width)
@@ -3460,7 +3477,6 @@ lineWrapSelected() {
 }
 
 listToArray(list, delim:="") {
-    global EOL_WIN
     delim := (delim == "" ? EOL_WIN : delim)
     arr := {}
     Loop, Parse, list, %delim%
@@ -3471,11 +3487,6 @@ listToArray(list, delim:="") {
 }
 
 loadConfig() {
-    global HOTSCRIPT_BASENAME
-    global HOTSCRIPT_VERSION
-    global configDefault
-    global configUser
-    global uniqueId
     file := configDefault.file
     saveDefault := false
     if (FileExist(configDefault.file) == "") {
@@ -3660,7 +3671,6 @@ loadHotKeyDefs(config) {
 }
 
 loadHotKeys(config, section) {
-    global EOL_NIX
     file := config.file
     keys := IniRead(file, section)
     keyArr := {}
@@ -3687,7 +3697,6 @@ loadHotKeys(config, section) {
 }
 
 loadQuickLookupSites(config) {
-    global EOL_NIX
     file := config.file
     allSites := ""
     sites := IniRead(file, "quickLookup")
@@ -3854,8 +3863,6 @@ moveToMonitor(hWnd:="", direction:=1, keepRelativeSize:=true) {
 }
 
 numberRemoveSelected() {
-    global EOL_MAC
-    global EOL_NIX
     selText := getSelectedText()
     if (selText == "") {
         SendInput, {End}{Home}+{End}
@@ -3880,8 +3887,6 @@ numberRemoveSelected() {
 }
 
 numberSelected(start:="1") {
-    global EOL_MAC
-    global EOL_NIX
     selText := getSelectedText()
     if (selText == "") {
         SendInput, {End}{Home}+{End}
@@ -3936,7 +3941,7 @@ pasteText(text:="")
 {
     if (text != "") {
         if (WinActive("ahk_class ConsoleWindowClass")) {
-            SendInput % text
+            SendRaw % text
         }
         else {
             prevClipboard := ClipboardAll
@@ -3972,8 +3977,6 @@ refreshMonitors() {
     ;       Because timers can only call labels.
     ; why does the label initMonitors call this function?
     ;       Because labels are global, and therefore so are any variables it creates, which can collide with other variables.
-    global MonitorInfo
-    global monitors
     SysGet, monCount, MonitorCount
     SysGet, monPrimary, MonitorPrimary
     monitors.count := monCount
@@ -4137,8 +4140,6 @@ registerHotkey(hkStr, funcName, restrict:="", args*) {
 }
 
 registerKeys() {
-    global configDefault
-    global configUser
     for section, svalue in configUser.hotkeys {
         category := "enable" . setCase(SubStr(section, 1, 1), "U") . SubStr(section, 2)
         if (section == "hkHotScript" || configUser[(category)]) {
@@ -4171,8 +4172,6 @@ repeatStr(value, count) {
 }
 
 replaceEachLine(value, line) {
-    global EOL_MAC
-    global EOL_NIX
     eol := getEol(value)
     hasEol := endsWith(value, eol)
     newText := ""
@@ -4202,7 +4201,6 @@ replaceSelected(text) {
 }
 
 resizeTo(anchor) {
-    global monitors
     anchor := setCase(anchor, "U")
     curMonitor := getActiveMonitor()
     curMon := monitors[curMonitor]
@@ -4362,7 +4360,6 @@ resizeWindow(width:=0, height:=0, title:="A") {
 }
 
 restoreHiddenWindows() {
-    global hiddenWindows
     Loop, Parse, hiddenWindows, |
     {
         WinShow, ahk_id %A_LoopField%
@@ -4410,7 +4407,6 @@ runDos() {
 }
 
 runEditor(file:="") {
-    global configUser
     SplitPath(configUser.editor, editorName, editorPath)
     regExe := "i)" . StringReplace(editorName, ".", "\.", "all")
     if (WinExist("ahk_exe " . regExe)) {
@@ -4443,10 +4439,6 @@ runHotkey(label) {
 }
 
 runQuickLookup() {
-    global EOL_NIX
-    global EOL_WIN
-    global MENU_SEP
-    global configUser
     text := getSelectedTextOrPrompt("Quick Lookup")
     text := Trim(text, (" `t" . EOL_WIN))
     if (text != "") {
@@ -4480,7 +4472,6 @@ runQuickLookup() {
 }
 
 runQuickResolution() {
-    global configUser
     for key, value in configUser.options.resolutions {
         Menu, qResMenu, Add, %value%, doQuickResolution
     }
@@ -4500,7 +4491,6 @@ runQuickResolution() {
 }
 
 runSelectedText() {
-    global EOL_WIN
     selText := getSelectedTextOrPrompt("Google Search")
     selText := Trim(selText, (" `t" . EOL_WIN))
     if (selText != "") {
@@ -4543,8 +4533,6 @@ runTarget(target, workDir:="") {
 }
 
 saveConfig(config, defaultConfig:=-1) {
-    global HOTSCRIPT_VERSION
-    global uniqueId
     file := config.file
     ; always save these values
     IniWrite(config.file, "config", "version", HOTSCRIPT_VERSION)
@@ -4691,7 +4679,6 @@ saveConfig(config, defaultConfig:=-1) {
 }
 
 saveHotKeyDefs(config, defaultConfig:=false) {
-    global EOL_NIX
     IniDelete(config.file, "hotkeys")
     for section, svalue in config.hotkeys {
         for key, kvalue in config.hotkeys[(section)] {
@@ -4713,7 +4700,6 @@ saveHotKeyDefs(config, defaultConfig:=false) {
 }
 
 saveQuickLookupSites(config) {
-    global EOL_NIX
     sites := config.quickLookupSites
     keyCount := 1
     key := ""
@@ -4753,7 +4739,6 @@ selfReload() {
 }
 
 sendJiraCode(type) {
-    global configUser
     template =
     ( LTrim
         {code:{type1}title={type2} snippet|{format}}
@@ -4828,7 +4813,6 @@ setCase(value, case) {
 }
 
 setTransparency(increase:=true, hWnd:="A") {
-    global MARKER
     MAX := 255
     MIN := 7
     hWnd := setCase(Trim(hWnd), "U")
@@ -4861,9 +4845,6 @@ setTransparency(increase:=true, hWnd:="A") {
 }
 
 showClipboard() {
-    global EOL_NIX
-    global LINE_SEP
-    global SPLASH_TITLE
     clipPreview := (Clipboard == "" ? "{Empty}" : Clipboard)
     header := "Clipboard preview:" . EOL_NIX . LINE_SEP
     Progress("B1 C00 CT000000 CWFFFFDD FM11 FS10 W1200 WM1200 ZH0", clipPreview, header, SPLASH_TITLE, "Courier New")
@@ -4905,12 +4886,6 @@ showDebugVar(value:="") {
 }
 
 showFullHelp() {
-    global EOL_MAC
-    global EOL_NIX
-    global HOTSCRIPT_TITLE
-    global HOTSCRIPT_VERSION
-    global configUser
-    global VIRTUAL_SPACE
     Gui, 98: Destroy
     Gui, 98: Font, s10
     Gui, 98: Font, w500
@@ -4988,13 +4963,6 @@ showFullHelp() {
 }
 
 showQuickHelp(waitforKey) {
-    global EOL_NIX
-    global EOL_WIN
-    global LINE_SEP
-    global HOTSCRIPT_TITLE
-    global SPLASH_TITLE
-    global VIRTUAL_SPACE
-    global configUser
     static isShowing := false
     if (isShowing) {
         KeyWait("h")
@@ -5076,7 +5044,9 @@ showQuickHelp(waitforKey) {
         Win-4`t`tEdit user keys`t`t
         Win-5`t`tEdit user strings`t
         Win-6`t`tEdit user INI`t`t
-        ;Win-7`t`tEdit default INI`t`t
+        Win-7`t`tEdit user functions`t
+        Win-8`t`tEdit user variables`t
+        ;Win-9`t`tEdit default INI`t`t
         Win-Pause`tPause %HOTSCRIPT_TITLE%`t`t
     )
 
@@ -5369,7 +5339,6 @@ showQuickHelp(waitforKey) {
 }
 
 showSplash(msg,timeout:=1500) {
-    global SPLASH_TITLE
     SplashImage("", "b1 cwff9999 fs12", msg, "", SPLASH_TITLE)
     centerWindow(SPLASH_TITLE)
     Sleep(timeout)
@@ -5394,9 +5363,6 @@ startsWith(str, value, caseInsensitive:="") {
 }
 
 stop() {
-    global EOL_NIX
-    global HOTSCRIPT_VERSION
-    global configUser
     hkSession := toComma(configUser.hkSessionCount)
     hkTotal := toComma(configUser.hkTotalCount)
     hsSession := toComma(configUser.hsSessionCount)
@@ -5407,8 +5373,6 @@ stop() {
 }
 
 stripEol(str) {
-    global EOL_MAC
-    global EOL_NIX
     str := StringReplace(str, EOL_MAC , "", "All")
     str := StringReplace(str, EOL_NIX , "", "All")
     return str
@@ -5433,9 +5397,6 @@ tagifySelected() {
 }
 
 templateHtml() {
-    global EOL_NIX
-    global EOL_WIN
-    global configUser
     template := FileRead(configUser.templates.html)
     templateKeys := configUser.templates.htmlKeys
     if (template == "") {
@@ -5468,9 +5429,6 @@ templateHtml() {
 }
 
 templateJava() {
-    global EOL_NIX
-    global EOL_WIN
-    global configUser
     template := FileRead(configUser.templates.java)
     templateKeys := configUser.templates.javaKeys
     if (template == "") {
@@ -5493,9 +5451,6 @@ public class Template {
 }
 
 templateJiraTable() {
-    global EOL_NIX
-    global EOL_WIN
-    global configUser
     template =
     (
 || Column1 || Column2 || Column3 || Column4 || Column5 ||
@@ -5507,9 +5462,6 @@ templateJiraTable() {
 }
 
 templatePerl() {
-    global EOL_NIX
-    global EOL_WIN
-    global configUser
     template := FileRead(configUser.templates.perl)
     templateKeys := configUser.templates.perlKeys
     if (template == "") {
@@ -5653,9 +5605,6 @@ sub trim {
 }
 
 templateSql() {
-    global EOL_NIX
-    global EOL_WIN
-    global configUser
     template := FileRead(configUser.templates.sql)
     templateKeys := configUser.templates.sqlKeys
     if (template == "") {
@@ -5695,7 +5644,6 @@ toComma(value) {
 }
 
 toggleAlwaysOnTop(hWnd:="A") {
-    global MARKER
     hWnd := setCase(Trim(hWnd), "U")
     if (hWnd == "" || hWnd == "A") {
         hWnd := WinExist("A")
@@ -5725,7 +5673,6 @@ toggleAlwaysOnTop(hWnd:="A") {
 }
 
 toggleClickThrough(hWnd:="A") {
-    global MARKER
     hWnd := setCase(Trim(hWnd), "U")
     if (hWnd == "" || hWnd == "A") {
         hWnd := WinExist("A")
@@ -5770,13 +5717,11 @@ toggleDesktopIcons() {
 }
 
 toggleSuspend() {
-    global HOTSCRIPT_TITLE
     msg := HOTSCRIPT_TITLE . " is " . (A_IsSuspended ? "suspended" : "enabled") . "..."
     showSplash(msg)
 }
 
 toggleTransparency(hWnd:="A") {
-    global MARKER
     hWnd := setCase(Trim(hWnd), "U")
     if (hWnd == "" || hWnd == "A") {
         hWnd := WinExist("A")
@@ -5797,7 +5742,6 @@ toggleTransparency(hWnd:="A") {
 }
 
 toString(array, depth:=6, indent:="") {
-    global EOL_NIX
     result := ""
     if (IsObject(array)) {
         for key, value in array {
@@ -5834,14 +5778,11 @@ transformSelected(type,types:="I|L|R|S|T|U") {
 }
 
 updateRegistry() {
-    global configUser
     RegWrite("HKEY_CLASSES_ROOT", "AutoHotkeyScript\Shell\Edit\Command", "", """" . configUser.editor . """ ""`%1""")
     RegWrite("HKEY_CLASSES_ROOT", "Applications\AutoHotkey.exe", "IsHostApp")
 }
 
 upperCaseOracle() {
-    global EOL_NIX
-    global configUser
     selText := getSelectedText()
     if (selText != "") {
         if (configUser.options.oracleTransformRemainderToLower) {
@@ -5892,9 +5833,6 @@ upperCaseOracle() {
 }
 
 urlEncode(text) {
-    global EOL_MAC
-    global EOL_NIX
-    global EOL_WIN
     text := StringReplace(text, "%", "%25", "All") ; This needs to be first
     text := StringReplace(text, """", "%22", "All")
     text := StringReplace(text, "#", "%23", "All")
@@ -5944,8 +5882,6 @@ wrapSelected(start, end) {
 }
 
 wrapSelectedEach(start, end) {
-    global EOL_MAC
-    global EOL_NIX
     selText := getSelectedText()
     if (selText == "") {
         SendInput, {End}{Home}+{End}
@@ -5982,7 +5918,6 @@ wrapSelectedEach(start, end) {
 
 zoomAdjust(direction) {
     static zoomFactor := 1.189207115 ; sqrt(sqrt(2))
-    global zoomAmount
     if (direction == -1) {
         if (zoomAmount < 4) {
             zoomAmount *= zoomFactor
@@ -5996,14 +5931,6 @@ zoomAdjust(direction) {
 }
 
 zoomStart() {
-    global zoomAmount := 2
-    global zoomWindowDimension := 0
-    global zoomWindowH := 100
-    global zoomWindowW := 240
-    global zoomFollow := true
-    global zoomHdcFrame
-    global zoomHddFrame
-
     Process("Priority", "", "High")
     Hotkey, Escape, zoomExit, On
     Hotkey, Space, zoomToggleFollow, On
