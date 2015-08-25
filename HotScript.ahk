@@ -35,7 +35,7 @@ LINE_SEP := repeatStr("·", 157)
 MENU_SEP := "-"
 HOTSCRIPT_TITLE := "HotScript"
 HOTSCRIPT_DIR := A_ScriptDir . "\" . HOTSCRIPT_TITLE
-HOTSCRIPT_VERSION := "20150611.1"
+HOTSCRIPT_VERSION := "20150615.1"
 SKIP_FIELDS := Array("file", "hkSessionCount", "hsSessionCount")
 SPLASH_TITLE := HOTSCRIPT_TITLE . "Splash"
 USER_KEYS := A_ScriptDir . "\" . HOTSCRIPT_TITLE . "Keys.ahk"
@@ -5109,7 +5109,7 @@ showQuickHelp(waitforKey) {
         %spacer%
         Window Resizing hotkeys`t`t`t
         %colLine%
-        CtrlWin-R`tResize to ...`t`t`t
+        CtrlWin-R`tResize to ...`t`t
         ShiftWin-ARROW`tResize to edge (50`%)`t
         ShiftWin-DnLt`tResize to corner (25`%)`t
         ShiftWin-DnRt`tResize to corner (25`%)`t
