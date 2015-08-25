@@ -70,7 +70,7 @@ Add to HotScriptKeys.ahk template
 ;private variables
 MENU_SEP := "-"
 LINE_SEP := repeatStr("·", 165)
-MY_VERSION := "20131127.beta1"
+MY_VERSION := "20131130.beta1"
 MY_TITLE := "Mike's HotScript"
 QUICK_SPLASH_TITLE := "QuickSplash"
 
@@ -1826,6 +1826,9 @@ pasteText(text)
         Sleep 200 ; wait or the clipboard is replaced with previous before it gets a chance to paste it, resulting in pasting the original clipboard
         Clipboard := prevClipboard
         prevClipboard :=
+    }
+    else {
+        Send, {Del}
     }
     return
 }
