@@ -9,6 +9,7 @@ For further information, assistance or bug-reporting,
 please contact Mike Viens. (mike.viens@pearson.com)
 */
 
+#Include %A_ScriptDir%
 #Hotstring EndChars -()[]{}<>!@$%^&*_=+|:'"/\,.?! `n`t;
 #MaxHotkeysPerInterval 200
 #NoEnv
@@ -50,19 +51,6 @@ Full help screen
     Add reference to HotScript.ini
     Show current configuration
         Be able to change configuration
-
-Add to HotScriptKeys.ahk template
-    * (asterisk): An ending character (e.g. space, period, or enter) is not required to trigger the hotstring. For example:
-        :*:j@::jsmith@somedomain.comThe example above would send its replacement the moment you type the @ character. When using the #Hotstring directive, use *0 to turn this option back off.
-
-    ? (question mark): The hotstring will be triggered even when it is inside another word; that is, when the character typed immediately before it is alphanumeric. For example, if :?:al::airline is a hotstring, typing "practical " would produce "practicairline ". Use ?0 to turn this option back off.
-
-    B0 (B followed by a zero): Automatic backspacing is not done to erase the abbreviation you type. Use a plain B to turn backspacing back on after it was previously turned off. A script may also do its own backspacing via {bs 5}, which sends 5 backspaces. Similarly, it may send left-arrow keystrokes via {left 5}. For example, the following hotstring produces "<em></em>" and moves the caret 5 places to the left (so that it's between the tags):
-        :*b0:<em>::</em>{left 5}C: Case sensitive: When you type an abbreviation, it must exactly match the case defined in the script. Use C0 to turn case sensitivity back off.
-
-    C1: Do not conform to typed case. Use this option to make auto-replace hotstrings case insensitive and prevent them from conforming to the case of the characters you actually type. Case-conforming hotstrings (which are the default) produce their replacement text in all caps if you type the abbreviation in all caps. If you type only the first letter in caps, the first letter of the replacement will also be capitalized (if it is a letter). If you type the case in any other way, the replacement is sent exactly as defined. When using the #Hotstring directive, C0 can be used to turn this option back off, which makes hotstrings conform again.
-
-    O: Omit the ending character of auto-replace hotstrings when the replacement is produced. This is useful when you want a hotstring to be kept unambiguous by still requiring an ending character, but don't actually want the ending character to be shown on the screen. For example, if :o:ar::aristocrat is a hotstring, typing "ar" followed by the spacebar will produce "aristocrat" with no trailing space, which allows you to make the word plural or possessive without having to backspace. Use O0 (the letter O followed by a zero) to turn this option back off.
 */
 
 
@@ -70,9 +58,11 @@ Add to HotScriptKeys.ahk template
 ;private variables
 MENU_SEP := "-"
 LINE_SEP := repeatStr("·", 165)
-MY_VERSION := "20131130.beta1"
+MY_VERSION := "20131202.beta1"
 MY_TITLE := "Mike's HotScript"
 QUICK_SPLASH_TITLE := "QuickSplash"
+USER_KEYS := A_ScriptDir . "\HotScriptKeys.ahk"
+USER_STRINGS := A_ScriptDir . "\HotScriptStrings.ahk"
 
 JiraPanels := {format:"", formatBlue:"", formatGreen:"", formatRed:"", formatYellow:""}
 
@@ -174,11 +164,11 @@ init()
         addHotString()
         sendText("Never mind, I found it.")
         return
-    ::np:: ;; no problem
+    :*:np:: ;; no problem
         addHotString()
         sendText("no problem")
         return
-    ::nw:: ;; no worries
+    :*:nw:: ;; no worries
         addHotString()
         sendText("no worries")
         return
@@ -622,7 +612,7 @@ init()
         sendText("<li></li>", "{Enter}{Backspace}")
         sendText("</ul>", "{Up}{End}{Left 5}")
         return
-    :?*:<xml:: ;; creates an XML header in UTF-8
+    :?*:<xml:: ;; auto-complettion of the XML header in UTF-8
         addHotString()
         sendText("<?xml version=""1.0"" encoding=""UTF-8""?>", "{Enter}")
         return
@@ -728,6 +718,7 @@ init()
 ;Action
 ;------
 #If, toBool(configUser.enableHkAction)
+;#f10::MsgBox % "Internal key..."
     #a:: ;; toggles the 'always-on-top' mode of the active window
         addHotKey()
         toggleAlwaysOnTop()
@@ -1235,6 +1226,23 @@ Each hotkey should use the following format:
 ; Functions defined in HotScript are available for use here.
 
 `/`*
+    `* `(asterisk`): An ending character `(e.g. space, period, or enter`) is not required to trigger the hotstring.
+
+    `? `(question mark`): The hotstring will be triggered even when it is inside another word`; that is, when the character typed immediately before it is alphanumeric.
+
+    B0 `(B followed by a zero`): Automatic backspacing is not done to erase the abbreviation you type.
+
+    C1: Do not conform to typed case. 
+    Use this option to make auto-replace hotstrings case insensitive and prevent them from conforming to the case of the characters you actually type.
+    Case-conforming hotstrings `(which are the default`) produce their replacement text in all caps if you type the abbreviation in all caps.
+    If you type only the first letter in caps, the first letter of the replacement will also be capitalized `(if it is a letter`).
+    If you type the case in any other way, the replacement is sent exactly as defined.
+
+    O: Omit the ending character of auto-replace hotstrings when the replacement is produced.
+    This is useful when you want a hotstring to be kept unambiguous by still requiring an ending character, but don't actually want the ending character to be shown on the screen.
+`*`/
+
+`/`*
 Each hotstring should use the following format:
 
 `:`*`:hw.`:`: ;; Hello World.
@@ -1570,7 +1578,7 @@ loadConfig() {
     configDefault.jiraPanels.formatGreen := IniReadValue(configDefault, "jira", "panelFormatGreen", "borderStyle=solid| borderColor=#9EC49F| titleBGColor=#BBDABE| bgColor=#DDFADE")
     configDefault.jiraPanels.formatRed := IniReadValue(configDefault, "jira", "panelFormatRed", "borderStyle=solid| borderColor=#DF9898| titleBGColor=#DFC7C7| bgColor=#FFE7E7")
     configDefault.jiraPanels.formatYellow := IniReadValue(configDefault, "jira", "panelFormatYellow", "borderStyle=solid| borderColor=#F7DF92| titleBGColor=#DFDFBD| bgColor=#FFFFDD")
-    
+
     quickLookupSitesFromIni(configDefault)
     if (configDefault.quickLookupSites == "") {
         defaultSites =
@@ -2439,7 +2447,7 @@ showFullHelp() {
 
     Gui, -MinimizeBox
     Gui, -MaximizeBox
-    
+
     hkSession := toComma(configUser.hkSessionCount)
     hkTotal := toComma(configUser.hkTotalCount)
     hsSession := toComma(configUser.hsSessionCount)
@@ -2484,7 +2492,7 @@ showQuickHelp(waitforKey) {
         Win-P`t`tRun/activate Perforce`t`t
         Win-Q`t`tQuick lookup selected text`t
         Win-R`t`tRun/activate RegexBuddy`t`t
-        Win-S`t`tRun Services`t`t`t
+        Win-S`t`tRun/activate Windows Services`t
         Win-V`t`tPreview the clipboard (text)`t
         Win-X`t`tRun Windows Explorer`t`t
         Win-Z`t`tCreate zoom window`t`t
@@ -2684,7 +2692,7 @@ showQuickHelp(waitforKey) {
         Date/Time hotstrings`t`t`t
         %col2line%
         dtms`t'YYYYMDD_24MMSS'`t`t
-        dts`t'YYYYMDD'`t`t`t
+        dts`t'YYYYMMDD'`t`t`t
         tms`t'24MMSS'`t`t`t
         @date`t'MM/DD/YYYY'`t`t`t
         @day`tDay name`t`t`t
@@ -2711,10 +2719,11 @@ showQuickHelp(waitforKey) {
         %col2line%
         a/b/big/block/body/br/but/cap/code`t
         del/div/em/field/foot/form/h[1-6]`t
-        head/hgroup/hr/html/i/iframe/img`t
-        input/label/legend/li/link/ol/optg`t
-        opti/p/pre/q/script/section/select`t
-        small/source/span/table/tbody/td`t
+        head/heaer/hgroup/hr/html/i/iframe`t
+        img/input/label/legend/li/link/ol`t
+        optg/opti/p/pre/q/script/section`t
+        select/small/source/span/strong`t
+        style/sub/sum/sup/table/tbody/td`t
         texta/tfoot/th/title/tr/u/ul/xml`t
         %spacer2%
     )
@@ -2750,7 +2759,7 @@ showQuickHelp(waitforKey) {
     hsCol1 := hsAliasHelp
     hsCol2 := hsCodeHelp . "`n" . hsHtmlHelp
     hsCol3 := hsDateHelp . "`n" . hsAutoCorHelp
-    ;hsCol4 := hsJiraHelp . "`n" . hsSqlHelp . "`n" . hsDosHelp 
+    ;hsCol4 := hsJiraHelp . "`n" . hsSqlHelp . "`n" . hsDosHelp
     hsCol4 := hsJiraHelp . "`n" . hsSqlHelp
 
     hsArr1 :=
@@ -2927,7 +2936,7 @@ upperCaseOracle() {
                 }
                 else {
                     line1 := A_LoopField
-                    line2 := 
+                    line2 :=
                 }
                 upper .= line1 . RegExReplace(line2, oracleWords, "$U{1}") . "`n"
             }
@@ -2946,7 +2955,7 @@ upperCaseOracle() {
                     }
                     else {
                         line1 := A_LoopField
-                        line2 := 
+                        line2 :=
                     }
                 }
                 upper .= RegExReplace(line1, oracleWords, "$U{1}") . line2 . "`n"
