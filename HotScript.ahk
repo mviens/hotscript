@@ -41,7 +41,7 @@ Full help screen
 COMMENT_HEADER_LINE := " " . repeatStr("-", 70)
 LINE_SEP := repeatStr("·", 165)
 MENU_SEP := "-"
-MY_VERSION := "20131205.beta1"
+MY_VERSION := "20131210.beta1"
 MY_TITLE := "Mike's HotScript"
 QUICK_SPLASH_TITLE := "QuickSplash"
 USER_KEYS := A_ScriptDir . "\HotScriptKeys.ahk"
@@ -712,7 +712,6 @@ init()
 ;Action
 ;------
 #If, toBool(configUser.enableHkAction)
-;#f10::MsgBox % "Internal key..."
     #a:: ;; toggles the 'always-on-top' mode of the active window
         addHotKey()
         toggleAlwaysOnTop()
@@ -769,11 +768,12 @@ init()
         addHotKey()
         showClipboard()
         return
-    #x:: ;; launch Windows explorer
+    #x:: ;; launch Windows Explorer
         addHotKey()
         runTarget("explorer.exe C:\")
         return
     #z:: ;; create a zoom window (MouseWheel/Shift-MouseWheel/Space/Escape)
+        addHotKey()
         zoomStart()
         return
     #1:: ;; activates or launches the AutoHotKey help file
@@ -797,7 +797,6 @@ init()
         addHotKey()
         sendText("`r`n")
         return
-    ;#f9::MsgBox % showArray(monitors)
     ;#f10::ListHotkeys
     ;#f11::ListVars
     #f12:: ;; exits this script, restoring original keyboard functionality
@@ -808,7 +807,7 @@ init()
         addHotKey()
         showDebugVar()
         return
-    #insert:: ;; hides the current window
+    #insert:: ;; restore all previously hidden windows
         addHotKey()
         restoreHiddenWindows()
         return
@@ -1224,7 +1223,7 @@ Each hotkey should use the following format:
 
     B0 `(B followed by a zero`): Automatic backspacing is not done to erase the abbreviation you type.
 
-    C1: Do not conform to typed case. 
+    C1: Do not conform to typed case.
     Use this option to make auto-replace hotstrings case insensitive and prevent them from conforming to the case of the characters you actually type.
     Case-conforming hotstrings `(which are the default`) produce their replacement text in all caps if you type the abbreviation in all caps.
     If you type only the first letter in caps, the first letter of the replacement will also be capitalized `(if it is a letter`).
@@ -2344,10 +2343,10 @@ setCase(value, case) {
     return result
 }
 
-showArray(array, depth:=5, indent:="") {
-    list :=
+showArray(array, depth:=6, indent:="") {
+    list := ""
     for key, value in array {
-        list .= indent . key
+        list .= "`t" . indent . key
         if (IsObject(value) && depth > 1) {
             list .= "`n" . showArray(value, depth - 1, indent . "`t")
         }
@@ -2355,7 +2354,7 @@ showArray(array, depth:=5, indent:="") {
             list .= "`t= [" . value . "]`n"
         }
     }
-    return rtrim(list)
+    return list
 }
 
 showClipboard() {
@@ -2375,12 +2374,12 @@ showDebugVar() {
     varName := ask("Debug", "Please enter the name of the variable to inspect:", 330)
     if (varName != "") {
         if (IsObject(%varName%)) {
-            val := showArray(%varName%)
+            val := "`n" . showArray(%varName%)
         }
         else {
             val := %varname%
         }
-        MsgBox % varName . " = [" . val . "]"
+        MsgBox % "DEBUG: " . varName . " = [" . val . "]"
     }
 }
 
@@ -2587,8 +2586,8 @@ showQuickHelp(waitforKey) {
         Transform hotkeys`t`t`t
         %col2Line%
         CtrlShift-'`tWrap in ""`t`t
-        AltShift-,`tDetag-ify text`t`t
-        AltShift-.`tDetag-ify text`t`t
+        AltShift-,`tUntag-ify text`t`t
+        AltShift-.`tUntag-ify text`t`t
         CtrlShift-,`tTag-ify text`t`t
         CtrlShift-.`tTag-ify text`t`t
         CtrlShift-[`tWrap in []`t`t
@@ -2772,7 +2771,7 @@ showQuickHelp(waitforKey) {
     hsArr2 := listToArray(hsCol2)
     hsArr3 := listToArray(hsCol3)
     hsArr4 := listToArray(hsCol4)
-    
+
     hsResult :=
     for key, value in hsArr1 {
         hsResult .= RTrim(value . hsArr2[key] . hsArr3[key] . hsArr4[key]) . "`n"
