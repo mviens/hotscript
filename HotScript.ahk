@@ -1,8 +1,8 @@
 /*
 There should be no reason to edit this file directly.
 
-To add user-defined hotkeys, edit the file   : HotScriptKeys.ahk
-To add user-defined hotstrings, edit the file: HotScriptStrings.ahk
+To add user-defined HotKeys, edit the file   : HotScriptKeys.ahk
+To add user-defined HotStrings, edit the file: HotScriptStrings.ahk
 To change global values, copy values from    : HotScriptDefault.ini to HotScriptUser.ini
 
 For further information, assistance or bug-reporting,
@@ -30,11 +30,12 @@ COMMENT_HEADER_LINE := " " . repeatStr("-", 70)
 EOL_MAC := "`r"
 EOL_NIX := "`n"
 EOL_WIN := "`r`n"
+EOL_REGEX := "(\r\n|\n|\r)"
 LINE_SEP := repeatStr("·", 157)
 MENU_SEP := "-"
 MY_TITLE := "HotScript"
 MY_BASE := A_ScriptDir . "\" . MY_TITLE
-MY_VERSION := "20140728.6"
+MY_VERSION := "20150105.3"
 SKIP_FIELDS := Array("file", "hkSessionCount", "hsSessionCount")
 SPLASH_TITLE := MY_TITLE . "Splash"
 USER_KEYS := A_ScriptDir . "\" . MY_TITLE . "Keys.ahk"
@@ -61,6 +62,9 @@ init()
 #Include *i HotScriptStrings.ahk
 ; Aliases
 ;--------
+;#If, toBool(configUser.enableHsAlias)
+    ;regexHotString("O)(B|b)i(\d+)" . EOL_REGEX, "hsBackInX")
+;#If
 #If, toBool(configUser.enableHsAlias)
     :*ch:bbl:: ;; be back later
         addHotString()
@@ -132,7 +136,7 @@ init()
         addHotString()
         sendText("Never mind, I found it.")
         return
-    :*c:np:: ;; no problem
+    :c:np:: ;; no problem
         addHotString()
         sendText("no problem")
         return
@@ -298,7 +302,7 @@ init()
 #If, toBool(configUser.enableHsHtml)
     :?*b0:<a :: ;; auto-completion of the HTML 'a' tag (with 'href' attribute)
         addHotString()
-        sendText("href=""""></a>", "{Left 4}")
+        sendText("href=''></a>", "{Left 4}")
         return
     :?b0o:<b:: ;; auto-completion of the HTML 'b' tag
         addHotString()
@@ -342,7 +346,7 @@ init()
         return
     :?*b0:<div:: ;; auto-completion of the HTML 'div' tag (with 'id' attribute)
         addHotString()
-        sendText(" id="""">", "{Enter}{Tab}{Enter}{Backspace}")
+        sendText(" id=''>", "{Enter}{Tab}{Enter}{Backspace}")
         sendText("</div>", "{Up}{End}")
         return
     :?*b0:<em:: ;; auto-completion of the HTML 'em' tag
@@ -417,15 +421,15 @@ init()
     :?*b0:<iframe:: ;; auto-completion of the HTML 'iframe' tag
     :?*b0:<img:: ;; auto-completion of the HTML 'img' tag (with 'src' attribute)
         addHotString()
-        sendText(" src=""""/>", "{Left 3}")
+        sendText(" src=''/>", "{Left 3}")
         return
     :?*b0:<input:: ;; auto-completion of the HTML 'input' tag (with 'type', 'name', 'id' and 'value' attributes)
         addHotString()
-        sendText(" type="""" name="""" id="""" value=""""/>", "{End}{Home}{Right 13}")
+        sendText(" type='' name='' id='' value=''/>", "{End}{Home}{Right 13}")
         return
     :?*b0:<label:: ;; auto-completion of the HTML 'label' tag (with 'for' attribute)
         addHotString()
-        sendText(" for=""""></label>", "{Left 10}")
+        sendText(" for=''></label>", "{Left 10}")
         return
     :?*b0:<legend:: ;; auto-completion of the HTML 'legend' tag
         addHotString()
@@ -437,7 +441,7 @@ init()
         return
     :?*b0:<link:: ;; auto-completion of the HTML 'link' tag (with 'rel', 'type' and 'href' attributes)
         addHotString()
-        sendText(" rel=""stylesheet"" type=""text/css"" href=""""/>", "{Left 3}")
+        sendText(" rel='stylesheet' type='text/css' href=''/>", "{Left 3}")
         return
     :?*b0:<ol:: ;; auto-completion of the HTML 'ol' tag
         addHotString()
@@ -481,7 +485,7 @@ init()
         return
     :?*b0:<select:: ;; auto-completion of the HTML 'sel' tag (with 'name' and 'id' attributes and nested 'option' tag)
         addHotString()
-        sendText(" name="""" id="""">", "{Enter}{Tab}")
+        sendText(" name='' id=''>", "{Enter}{Tab}")
         sendText("<option></option>", "{Enter}{Backspace}")
         sendText("</select>", "{Up}{End}{Left 9}")
         return
@@ -491,11 +495,11 @@ init()
         return
     :?*b0:<source:: ;; auto-completion of the HTML 'source' tag (with 'type' and 'src' attributes)
         addHotString()
-        sendText(" type="""" src=""""/>", "{Left 3}")
+        sendText(" type='' src=''/>", "{Left 3}")
         return
     :?*b0:<span:: ;; auto-completion of the HTML 'span' tag (with 'id' attribute)
         addHotString()
-        sendText(" id=""""></span>", "{Left 7}")
+        sendText(" id=''></span>", "{Left 7}")
         return
     :?*b0:<strong:: ;; auto-completion of the HTML 'strong' tag
         addHotString()
@@ -503,7 +507,7 @@ init()
         return
     :?*b0:<style:: ;; auto-completion of the HTML 'style' tag (with 'type' attribute)
         addHotString()
-        sendText(" type=""text/css"">", "{Enter}{Tab}{Enter}{Backspace}")
+        sendText(" type='text/css'>", "{Enter}{Tab}{Enter}{Backspace}")
         sendText("</style>", "{Up}{End}")
         return
     :?*b0:<sub:: ;; auto-completion of the HTML 'sub' tag
@@ -561,7 +565,7 @@ init()
         return
     :?*b0:<texta:: ;; auto-completion of the HTML 'textarea' tag (with 'rows' and 'cols' attributes)
         addHotString()
-        sendText("rea rows="""" cols="""">", "{Enter}{Tab}{Enter}{Backspace}")
+        sendText("rea rows='' cols=''>", "{Enter}{Tab}{Enter}{Backspace}")
         sendText("</textarea>", "{Up}{End}")
         return
     :?*b0:<title:: ;; auto-completion of the HTML 'title' tag
@@ -580,7 +584,7 @@ init()
         return
     :?*:<xml:: ;; auto-complettion of the XML header in UTF-8
         addHotString()
-        sendText("<?xml version=""1.0"" encoding=""UTF-8""?>", "{Enter}")
+        sendText("<?xml version='1.0' encoding='UTF-8'?>", "{Enter}")
         return
 #If
 ;Jira
@@ -662,6 +666,11 @@ init()
         sendJiraPanel(configUser.jiraPanels.formatYellow)
         return
 #If
+hsBackInX() {
+    global $
+    addHotString()
+    sendText($.1 . "ack in " . $.2 . " minutes...")
+}
 
 ;__________________________________________________
 ;HotKeys
@@ -1220,15 +1229,31 @@ hkHotScriptFullHelp() {
 }
 
 hkHotScriptQuickHelp() {
-    showQuickHelp(1)
+    showQuickHelp(true)
 }
 
 hkHotScriptQuickHelpToggle() {
-    showQuickHelp(0)
+    showQuickHelp(false)
 }
 
 hkHotScriptReload() {
     selfReload()
+}
+
+hkMiscMouseDown() {
+    MouseMove(0, 1)
+}
+
+hkMiscMouseLeft() {
+    MouseMove(-1, 0)
+}
+
+hkMiscMouseRight() {
+    MouseMove(1, 0)
+}
+
+hkMiscMouseUp() {
+    MouseMove(0, -1)
 }
 
 hkMiscPasteClipboardAsText() {
@@ -1272,22 +1297,6 @@ hkScreenMovementDragMouseUp() {
     MouseClickDrag("Left", 0, 0, 0, -1, 0)
 }
 
-hkScreenMovementMouseDown() {
-    MouseMove(0, 1)
-}
-
-hkScreenMovementMouseLeft() {
-    MouseMove(-1, 0)
-}
-
-hkScreenMovementMouseRight() {
-    MouseMove(1, 0)
-}
-
-hkScreenMovementMouseUp() {
-    MouseMove(0, -1)
-}
-
 hkScreenMovementWindowLeft() {
     moveToMonitor("A", -1)
 }
@@ -1304,24 +1313,8 @@ hkScreenMovementPageUp() {
     SendInput, {PgUp}
 }
 
-hkScreenMovementResizeWindow1024() {
-    resizeToResolution(1024, 768)
-}
-
-hkScreenMovementResizeWindow1280() {
-    resizeToResolution(1280, 1024)
-}
-
-hkScreenMovementResizeWindow1366() {
-    resizeToResolution(1366, 768)
-}
-
-hkScreenMovementResizeWindow1600() {
-    resizeToResolution(1600, 1200)
-}
-
-hkScreenMovementResizeWindow1920() {
-    resizeToResolution(1920, 1080)
+hkScreenMovementResizeWindow() {
+    runQuickResolution()
 }
 
 hkScreenMovementResizeWindowAnchor() {
@@ -1568,6 +1561,15 @@ addHotString() {
     IniWrite(configUser.file, "config", "hsTotalCount" . uniqueId, value)
 }
 
+arrayToList(arr, delim:=",", trim:="") {
+    delim := (delim == "" ? "," : delim)
+    arrList := ""
+    for key, val in arr {
+        arrList .= val . delim
+    }
+    return StringTrimRight(arrList, 1)
+}
+
 ask(title, prompt, width:=250, height:=125, defaultValue:="") {
     orig_hWnd := WinExist("A")
     coord := getCenter(width, height)
@@ -1577,7 +1579,7 @@ ask(title, prompt, width:=250, height:=125, defaultValue:="") {
 }
 
 between(value, min, max) {
-    result := 0
+    result := false
     if (min > max) {
         tmp := min
         min := max
@@ -1585,7 +1587,7 @@ between(value, min, max) {
     }
     if value between %min% and %max%
     {
-        result := 1
+        result := true
     }
     return result
 }
@@ -1613,6 +1615,10 @@ binToHex(ByRef bytes, num:=0) {
     return result
 }
 
+boolToStr(value) {
+    return (toBool(value) ? "true" : "false")
+}
+
 centerWindow(title:="A") {
     WinGetPos, winX, winY, winW, winH, %title%
     coord := getCenter(winW, winH)
@@ -1624,14 +1630,12 @@ cleanup20131211_2() {
     global uniqueId
     oldCount := IniRead(configUser.file, "config", "hkTotalCount", 0)
     if (oldCount > 0) {
-        message("origHK = " . configUser.hkTotalCount . "`noldCount = " . oldCount)
         configUser.hkTotalCount += oldCount
         IniWrite(configUser.file, "config", "hkTotalCount" . uniqueId, configUser.hkTotalCount)
         IniDelete(configUser.file, "config", "hkTotalCount")
     }
     oldCount := IniRead(configUser.file, "config", "hsTotalCount", 0)
     if (oldCount > 0) {
-        message("origHS = " . configUser.hsTotalCount . "`noldCount = " . oldCount)
         configUser.hsTotalCount += oldCount
         IniWrite(configUser.file, "config", "hsTotalCount" . uniqueId, configUser.hsTotalCount)
         IniDelete(configUser.file, "config", "hsTotalCount")
@@ -1669,20 +1673,20 @@ compareStr(a, b, direction:="A") {
 }
 
 contains(str, values*) {
-    result := 0
+    result := false
     useCase := toBool(A_StringCaseSense)
     for index, value in values {
         if (IsObject(value)) {
             for key, val in value {
                 if (InStr(str, val, useCase)) {
-                    result := 1
+                    result := true
                     break
                 }
             }
         }
         else {
             if (InStr(str, value, useCase)) {
-                result := 1
+                result := true
                 break
             }
         }
@@ -2814,7 +2818,7 @@ Each hotkey should use the following format:
     if (FileExist(file) == "") {
         FileAppend,
 (
-; All user-defined hotstrings should be declared below.
+; All user-defined HotStrings should be declared below.
 ; Functions defined in HotScript are available for use here.
 
 `/`*
@@ -2825,12 +2829,12 @@ Each hotkey should use the following format:
     B0 `(B followed by a zero`): Automatic backspacing is not done to erase the abbreviation you type.
 
     C1: Do not conform to typed case.
-    Use this option to make auto-replace hotstrings case insensitive and prevent them from conforming to the case of the characters you actually type.
-    Case-conforming hotstrings `(which are the default`) produce their replacement text in all caps if you type the abbreviation in all caps.
+    Use this option to make auto-replace HotStrings case insensitive and prevent them from conforming to the case of the characters you actually type.
+    Case-conforming HotStrings `(which are the default`) produce their replacement text in all caps if you type the abbreviation in all caps.
     If you type only the first letter in caps, the first letter of the replacement will also be capitalized `(if it is a letter`).
     If you type the case in any other way, the replacement is sent exactly as defined.
 
-    O: Omit the ending character of auto-replace hotstrings when the replacement is produced.
+    O: Omit the ending character of auto-replace HotStrings when the replacement is produced.
     This is useful when you want a hotstring to be kept unambiguous by still requiring an ending character, but don't actually want the ending character to be shown on the screen.
 `*`/
 
@@ -2919,11 +2923,11 @@ extractKeys(lines) {
             line := ""
         }
         else if (RegExMatch(Trim(A_LoopField), "^\s*(?<hk>[^: ]+(\s&\s)*[^:, ]*)::(?<cmd>.*?)(?:(?<=\s);;(?<desc>.*))?$", _)) {
-            ;hotkeys
+            ;HotKeys
             line := A_Index . VIRTUAL_SPACE . "hk" . VIRTUAL_SPACE . _hk . VIRTUAL_SPACE . (_desc ? _desc : _cmd) . EOL_NIX
         }
         else if (RegExMatch(Trim(A_LoopField), "^\s*:(?<opt>[^:, ]*):(?<hs>[^:]+)::(?<rep>.*?)(?:(?<=\s);;(?<desc>.*))?$", _)) {
-            ;hotstrings
+            ;HotStrings
             line := A_Index . VIRTUAL_SPACE . "hs" . VIRTUAL_SPACE . _hs . VIRTUAL_SPACE . (_desc ? _desc : _rep) . VIRTUAL_SPACE . _opt . EOL_NIX
         }
         if (line != "") {
@@ -3079,6 +3083,10 @@ getDefaultHotKeyDefs(type) {
         hk["hkHotScriptReload"] := "#2"
     }
     else if (type == "hkMisc") {
+        hk["hkMiscMouseDown"] := "!#down"
+        hk["hkMiscMouseLeft"] := "!#left"
+        hk["hkMiscMouseRight"] := "!#right"
+        hk["hkMiscMouseUp"] := "!#up"
         hk["hkMiscPasteClipboardAsText"] := "^!v"
         hk["hkMiscPasteEnter"] := "#enter"
         hk["hkMiscPasteTab"] := "#tab"
@@ -3091,21 +3099,13 @@ getDefaultHotKeyDefs(type) {
         hk["hkScreenMovementDragMouseLeft"] := "^#left"
         hk["hkScreenMovementDragMouseRight"] := "^#right"
         hk["hkScreenMovementDragMouseUp"] := "^#up"
-        hk["hkScreenMovementMouseDown"] := "!#down"
-        hk["hkScreenMovementMouseLeft"] := "!#left"
-        hk["hkScreenMovementMouseRight"] := "!#right"
-        hk["hkScreenMovementMouseUp"] := "!#up"
         hk["hkScreenMovementWindowLeft-1"] := "wheelleft"
         hk["hkScreenMovementWindowLeft-2"] := "#left"
         hk["hkScreenMovementWindowRight-1"] := "wheelright"
         hk["hkScreenMovementWindowRight-2"] := "#right"
         hk["hkScreenMovementPageDown"] := "!wheeldown"
         hk["hkScreenMovementPageUp"] := "!wheelup"
-        hk["hkScreenMovementResizeWindow1024"] := "^#1"
-        hk["hkScreenMovementResizeWindow1280"] := "^#2"
-        hk["hkScreenMovementResizeWindow1366"] := "^#3"
-        hk["hkScreenMovementResizeWindow1600"] := "^#4"
-        hk["hkScreenMovementResizeWindow1920"] := "^#5"
+        hk["hkScreenMovementResizeWindow"] := "^#r"
         hk["hkScreenMovementResizeWindowAnchor-1"] := "+#down"
         hk["hkScreenMovementResizeWindowAnchor-2"] := "+#left"
         hk["hkScreenMovementResizeWindowAnchor-3"] := "+#right"
@@ -3341,23 +3341,23 @@ init() {
 }
 
 is(value, type) {
-    result := 0
+    result := false
     if value is %type%
     {
-        result := 1
+        result := true
     }
     return result
 }
 
 isUrl(text) {
     ; this does not support mailto urls
-    result := RegExMatch(text, "i)^(?:\b[a-z\d.-]+://[^<>\s]+|\b(?:(?:(?:[^\s!@#$%^&*()_=+[\]{}\|;:'"",.<>/?]+)\.)+(?:ac|ad|aero|ae|af|ag|ai|al|am|an|ao|aq|arpa|ar|asia|as|at|au|aw|ax|az|ba|bb|bd|be|bf|bg|bh|biz|bi|bj|bm|bn|bo|br|bs|bt|bv|bw|by|bz|cat|ca|cc|cd|cf|cg|ch|ci|ck|cl|cm|cn|coop|com|co|cr|cu|cv|cx|cy|cz|de|dj|dk|dm|do|dz|ec|edu|ee|eg|er|es|et|eu|fi|fj|fk|fm|fo|fr|ga|gb|gd|ge|gf|gg|gh|gi|gl|gm|gn|gov|gp|gq|gr|gs|gt|gu|gw|gy|hk|hm|hn|hr|ht|hu|id|ie|il|im|info|int|in|io|iq|ir|is|it|je|jm|jobs|jo|jp|ke|kg|kh|ki|km|kn|kp|kr|kw|ky|kz|la|lb|lc|li|lk|lr|ls|lt|lu|lv|ly|ma|mc|md|me|mg|mh|mil|mk|ml|mm|mn|mobi|mo|mp|mq|mr|ms|mt|museum|mu|mv|mw|mx|my|mz|name|na|nc|net|ne|nf|ng|ni|nl|no|np|nr|nu|nz|om|org|pa|pe|pf|pg|ph|pk|pl|pm|pn|pro|pr|ps|pt|pw|py|qa|re|ro|rs|ru|rw|sa|sb|sc|sd|se|sg|sh|si|sj|sk|sl|sm|sn|so|sr|st|su|sv|sy|sz|tc|td|tel|tf|tg|th|tj|tk|tl|tm|tn|to|tp|travel|tr|tt|tv|tw|tz|ua|ug|uk|um|us|uy|uz|va|vc|ve|vg|vi|vn|vu|wf|ws|xn--0zwm56d|xn--11b5bs3a9aj6g|xn--80akhbyknj4f|xn--9t4b11yi5a|xn--deba0ad|xn--g6w251d|xn--hgbk6aj7f53bba|xn--hlcj6aya9esc7a|xn--jxalpdlp|xn--kgbechtv|xn--zckzah|ye|yt|yu|za|zm|zw)|(?:(?:[0-9]|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5])\.){3}(?:[0-9]|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5]))(?:[;/][^#?<>\s]*)?(?:\?[^#<>\s]*)?(?:#[^<>\s]*)?(?!\w))$", matchStr)
-    return (result == 1)
+    pos := RegExMatch(text, "i)^(?:\b[a-z\d.-]+://[^<>\s]+|\b(?:(?:(?:[^\s!@#$%^&*()_=+[\]{}\|;:'"",.<>/?]+)\.)+(?:ac|ad|aero|ae|af|ag|ai|al|am|an|ao|aq|arpa|ar|asia|as|at|au|aw|ax|az|ba|bb|bd|be|bf|bg|bh|biz|bi|bj|bm|bn|bo|br|bs|bt|bv|bw|by|bz|cat|ca|cc|cd|cf|cg|ch|ci|ck|cl|cm|cn|coop|com|co|cr|cu|cv|cx|cy|cz|de|dj|dk|dm|do|dz|ec|edu|ee|eg|er|es|et|eu|fi|fj|fk|fm|fo|fr|ga|gb|gd|ge|gf|gg|gh|gi|gl|gm|gn|gov|gp|gq|gr|gs|gt|gu|gw|gy|hk|hm|hn|hr|ht|hu|id|ie|il|im|info|int|in|io|iq|ir|is|it|je|jm|jobs|jo|jp|ke|kg|kh|ki|km|kn|kp|kr|kw|ky|kz|la|lb|lc|li|lk|lr|ls|lt|lu|lv|ly|ma|mc|md|me|mg|mh|mil|mk|ml|mm|mn|mobi|mo|mp|mq|mr|ms|mt|museum|mu|mv|mw|mx|my|mz|name|na|nc|net|ne|nf|ng|ni|nl|no|np|nr|nu|nz|om|org|pa|pe|pf|pg|ph|pk|pl|pm|pn|pro|pr|ps|pt|pw|py|qa|re|ro|rs|ru|rw|sa|sb|sc|sd|se|sg|sh|si|sj|sk|sl|sm|sn|so|sr|st|su|sv|sy|sz|tc|td|tel|tf|tg|th|tj|tk|tl|tm|tn|to|tp|travel|tr|tt|tv|tw|tz|ua|ug|uk|um|us|uy|uz|va|vc|ve|vg|vi|vn|vu|wf|ws|xn--0zwm56d|xn--11b5bs3a9aj6g|xn--80akhbyknj4f|xn--9t4b11yi5a|xn--deba0ad|xn--g6w251d|xn--hgbk6aj7f53bba|xn--hlcj6aya9esc7a|xn--jxalpdlp|xn--kgbechtv|xn--zckzah|ye|yt|yu|za|zm|zw)|(?:(?:[0-9]|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5])\.){3}(?:[0-9]|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5]))(?:[;/][^#?<>\s]*)?(?:\?[^#<>\s]*)?(?:#[^<>\s]*)?(?!\w))$", matchStr)
+    return (pos == 1)
 }
 
 isWindow(hWnd) {
     WinGet, s, Style, ahk_id %hWnd%
-    return (s & 0xC00000 ? (s & 0x80000000 ? 0 : 1) : 0)
+    return (s & 0xC00000 ? (s & 0x80000000 ? false : true) : false)
 }
 
 lineUnwrapSelected() {
@@ -3400,9 +3400,9 @@ loadConfig() {
     global configUser
     global uniqueId
     file := configDefault.file
-    saveDefault := 0
+    saveDefault := false
     if (FileExist(configDefault.file) == "") {
-        saveDefault := 1
+        saveDefault := true
         configDefault.version := MY_VERSION
     }
     else {
@@ -3411,28 +3411,28 @@ loadConfig() {
         if (configDefault.version != MY_VERSION) {
             ; different version so need to delete it
             FileDelete(file)
-            saveDefault := 1
+            saveDefault := true
             configDefault.version := MY_VERSION
         }
     }
     ; load from default config first
     configDefault.editor := IniRead(configDefault.file, "config", "editor", configDefault.editor)
-    configDefault.enableHkAction := IniRead(configDefault.file, "config", "enableHkAction", configDefault.enableHkAction)
-    configDefault.enableHkDos := IniRead(configDefault.file, "config", "enableHkDos", configDefault.enableHkDos)
-    configDefault.enableHkEpp := IniRead(configDefault.file, "config", "enableHkEpp", configDefault.enableHkEpp)
-    configDefault.enableHkMisc := IniRead(configDefault.file, "config", "enableHkMisc", configDefault.enableHkMisc)
-    configDefault.enableHkScreenMovement := IniRead(configDefault.file, "config", "enableHkScreenMovement", configDefault.enableHkScreenMovement)
-    configDefault.enableHkText := IniRead(configDefault.file, "config", "enableHkText", configDefault.enableHkText)
-    configDefault.enableHkTransform := IniRead(configDefault.file, "config", "enableHkTransform", configDefault.enableHkTransform)
-    configDefault.enableHsAlias := IniRead(configDefault.file, "config", "enableHsAlias", configDefault.enableHsAlias)
-    configDefault.enableHsAutoCorrect := IniRead(configDefault.file, "config", "enableHsAutoCorrect", configDefault.enableHsAutoCorrect)
-    configDefault.enableHsCode := IniRead(configDefault.file, "config", "enableHsCode", configDefault.enableHsCode)
-    configDefault.enableHsDates := IniRead(configDefault.file, "config", "enableHsDates", configDefault.enableHsDates)
-    configDefault.enableHsDos := IniRead(configDefault.file, "config", "enableHsDos", configDefault.enableHsDos)
-    configDefault.enableHsHtml := IniRead(configDefault.file, "config", "enableHsHtml", configDefault.enableHsHtml)
-    configDefault.enableHsJira := IniRead(configDefault.file, "config", "enableHsJira", configDefault.enableHsJira)
-    configDefault.hkTotalCount := IniRead(configDefault.file, "config", "hkTotalCount" . uniqueId, configDefault.hkTotalCount)
-    configDefault.hsTotalCount := IniRead(configDefault.file, "config", "hsTotalCount" . uniqueId, configDefault.hsTotalCount)
+    configDefault.enableHkAction := IniRead(configDefault.file, "config", "enableHkAction", toBool(configDefault.enableHkAction))
+    configDefault.enableHkDos := IniRead(configDefault.file, "config", "enableHkDos", toBool(configDefault.enableHkDos))
+    configDefault.enableHkEpp := IniRead(configDefault.file, "config", "enableHkEpp", toBool(configDefault.enableHkEpp))
+    configDefault.enableHkMisc := IniRead(configDefault.file, "config", "enableHkMisc", toBool(configDefault.enableHkMisc))
+    configDefault.enableHkScreenMovement := IniRead(configDefault.file, "config", "enableHkScreenMovement", toBool(configDefault.enableHkScreenMovement))
+    configDefault.enableHkText := IniRead(configDefault.file, "config", "enableHkText", toBool(configDefault.enableHkText))
+    configDefault.enableHkTransform := IniRead(configDefault.file, "config", "enableHkTransform", toBool(configDefault.enableHkTransform))
+    configDefault.enableHsAlias := IniRead(configDefault.file, "config", "enableHsAlias", toBool(configDefault.enableHsAlias))
+    configDefault.enableHsAutoCorrect := IniRead(configDefault.file, "config", "enableHsAutoCorrect", toBool(configDefault.enableHsAutoCorrect))
+    configDefault.enableHsCode := IniRead(configDefault.file, "config", "enableHsCode", toBool(configDefault.enableHsCode))
+    configDefault.enableHsDates := IniRead(configDefault.file, "config", "enableHsDates", toBool(configDefault.enableHsDates))
+    configDefault.enableHsDos := IniRead(configDefault.file, "config", "enableHsDos", toBool(configDefault.enableHsDos))
+    configDefault.enableHsHtml := IniRead(configDefault.file, "config", "enableHsHtml", toBool(configDefault.enableHsHtml))
+    configDefault.enableHsJira := IniRead(configDefault.file, "config", "enableHsJira", toBool(configDefault.enableHsJira))
+    configDefault.hkTotalCount := 0
+    configDefault.hsTotalCount := 0
     configDefault.inputBoxFieldFont := IniRead(configDefault.file, "config", "inputBoxFieldFont", configDefault.inputBoxFieldFont)
     configDefault.inputBoxOptions := IniRead(configDefault.file, "config", "inputBoxOptions", configDefault.inputBoxOptions)
     configDefault.jiraPanels.format := IniRead(configDefault.file, "jira", "panelFormat", configDefault.jiraPanels.format)
@@ -3440,7 +3440,13 @@ loadConfig() {
     configDefault.jiraPanels.formatGreen := IniRead(configDefault.file, "jira", "panelFormatGreen", configDefault.jiraPanels.formatGreen)
     configDefault.jiraPanels.formatRed := IniRead(configDefault.file, "jira", "panelFormatRed", configDefault.jiraPanels.formatRed)
     configDefault.jiraPanels.formatYellow := IniRead(configDefault.file, "jira", "panelFormatYellow", configDefault.jiraPanels.formatYellow)
-    configDefault.options.oracleTransformRemainderToLower := IniRead(configDefault.file, "options", "oracleTransformRemainderToLower", configDefault.options.oracleTransformRemainderToLower)
+    configDefault.options.oracleTransformRemainderToLower := IniRead(configDefault.file, "options", "oracleTransformRemainderToLower", toBool(configDefault.options.oracleTransformRemainderToLower))
+    configDefault.options.resolutions := IniRead(configDefault.file, "options", "resolutions")
+    if (configDefault.options.resolutions == "ERROR" || getSize(configDefault.options.resolutions) == 0) {
+        configDefault.options.resolutions := "640x480,&800x600,&1024x768,1280x720,1280x768,1280x800,1280x960,1&280x1024,1360x768,1&366x768,1&440x900,1600x900,1&600x1024,1680x1050,1&768x992,1&920x1080"
+        saveDefault := true
+    }
+    configDefault.options.resolutions := listToArray(configDefault.options.resolutions, ",")
     configDefault.templates.html := IniRead(configDefault.file, "templates", "html", configDefault.templates.html)
     configDefault.templates.htmlKeys := IniRead(configDefault.file, "templates", "htmlKeys", configDefault.templates.htmlKeys)
     configDefault.templates.java := IniRead(configDefault.file, "templates", "java", configDefault.templates.java)
@@ -3450,7 +3456,7 @@ loadConfig() {
     configDefault.templates.sql := IniRead(configDefault.file, "templates", "sql", configDefault.templates.sql)
     configDefault.templates.sqlKeys := IniRead(configDefault.file, "templates", "sqlKeys", configDefault.templates.sqlKeys)
     if (loadHotKeyDefs(configDefault)) {
-        saveDefault := 1
+        saveDefault := true
     }
     sites := loadQuickLookupSites(configDefault)
     if (sites == "") {
@@ -3468,30 +3474,34 @@ loadConfig() {
             http://www.google.com/search?q=@selection@
             Google &Images
             http://images.google.com/images?q=@selection@
+            Google Trans&late
+            https://translate.google.com/#auto/en/@selection@
             -
             -
             &Dictionary
             http://dictionary.reference.com/browse/@selection@
-            &Thesaurus
-            http://thesaurus.com/browse/@selection@
-            &Wikipedia
-            http://en.wikipedia.org/w/wiki.phtml?search=@selection@
             I&MDB
             http://www.imdb.com/find?q=@selection@
+            &Thesaurus
+            http://thesaurus.com/browse/@selection@
+            &Urban Dictionary
+            http://www.urbandictionary.com/define.php?term=@selection@
+            &Wikipedia
+            http://en.wikipedia.org/w/wiki.phtml?search=@selection@
             &YouTube
             http://www.youtube.com/results?search_query=@selection@
             -
             -
             AutoHotkey Manual
-            http://www.autohotkey.com/docs/commands/@selection@.htm
+            http://ahkscript.org/docs/commands/@selection@.htm
             AutoHotKey Forum
-            http://www.google.com/search?ie=utf-8&num=100&oe=utf-8&q=@selection@ site:autohotkey.com/forum/
+            http://ahkscript.org/boards/search.php?keywords=@selection@
             -
             -
             Cancel
             Cancel
         )
-        saveDefault := 1
+        saveDefault := true
     }
     configDefault.quickLookupSites := sites
     if (saveDefault) {
@@ -3499,20 +3509,20 @@ loadConfig() {
     }
     ; now load from the user config, using the values from default if necessary
     configUser.editor := IniRead(configUser.file, "config", "editor", configDefault.editor)
-    configUser.enableHkAction := IniRead(configUser.file, "config", "enableHkAction", configDefault.enableHkAction)
-    configUser.enableHkDos := IniRead(configUser.file, "config", "enableHkDos", configDefault.enableHkDos)
-    configUser.enableHkEpp := IniRead(configUser.file, "config", "enableHkEpp", configDefault.enableHkEpp)
-    configUser.enableHkMisc := IniRead(configUser.file, "config", "enableHkMisc", configDefault.enableHkMisc)
-    configUser.enableHkScreenMovement := IniRead(configUser.file, "config", "enableHkScreenMovement", configDefault.enableHkScreenMovement)
-    configUser.enableHkText := IniRead(configUser.file, "config", "enableHkText", configDefault.enableHkText)
-    configUser.enableHkTransform := IniRead(configUser.file, "config", "enableHkTransform", configDefault.enableHkTransform)
-    configUser.enableHsAlias := IniRead(configUser.file, "config", "enableHsAlias", configDefault.enableHsAlias)
-    configUser.enableHsAutoCorrect := IniRead(configUser.file, "config", "enableHsAutoCorrect", configDefault.enableHsAutoCorrect)
-    configUser.enableHsCode := IniRead(configUser.file, "config", "enableHsCode", configDefault.enableHsCode)
-    configUser.enableHsDates := IniRead(configUser.file, "config", "enableHsDates", configDefault.enableHsDates)
-    configUser.enableHsDos := IniRead(configUser.file, "config", "enableHsDos", configDefault.enableHsDos)
-    configUser.enableHsHtml := IniRead(configUser.file, "config", "enableHsHtml", configDefault.enableHsHtml)
-    configUser.enableHsJira := IniRead(configUser.file, "config", "enableHsJira", configDefault.enableHsJira)
+    configUser.enableHkAction := toBool(IniRead(configUser.file, "config", "enableHkAction", configDefault.enableHkAction))
+    configUser.enableHkDos := toBool(IniRead(configUser.file, "config", "enableHkDos", configDefault.enableHkDos))
+    configUser.enableHkEpp := toBool(IniRead(configUser.file, "config", "enableHkEpp", configDefault.enableHkEpp))
+    configUser.enableHkMisc := toBool(IniRead(configUser.file, "config", "enableHkMisc", configDefault.enableHkMisc))
+    configUser.enableHkScreenMovement := toBool(IniRead(configUser.file, "config", "enableHkScreenMovement", configDefault.enableHkScreenMovement))
+    configUser.enableHkText := toBool(IniRead(configUser.file, "config", "enableHkText", configDefault.enableHkText))
+    configUser.enableHkTransform := toBool(IniRead(configUser.file, "config", "enableHkTransform", configDefault.enableHkTransform))
+    configUser.enableHsAlias := toBool(IniRead(configUser.file, "config", "enableHsAlias", configDefault.enableHsAlias))
+    configUser.enableHsAutoCorrect := toBool(IniRead(configUser.file, "config", "enableHsAutoCorrect", configDefault.enableHsAutoCorrect))
+    configUser.enableHsCode := toBool(IniRead(configUser.file, "config", "enableHsCode", configDefault.enableHsCode))
+    configUser.enableHsDates := toBool(IniRead(configUser.file, "config", "enableHsDates", configDefault.enableHsDates))
+    configUser.enableHsDos := toBool(IniRead(configUser.file, "config", "enableHsDos", configDefault.enableHsDos))
+    configUser.enableHsHtml := toBool(IniRead(configUser.file, "config", "enableHsHtml", configDefault.enableHsHtml))
+    configUser.enableHsJira := toBool(IniRead(configUser.file, "config", "enableHsJira", configDefault.enableHsJira))
     configUser.hkTotalCount := IniRead(configUser.file, "config", "hkTotalCount" . uniqueId, configDefault.hkTotalCount)
     configUser.hsTotalCount := IniRead(configUser.file, "config", "hsTotalCount" . uniqueId, configDefault.hsTotalCount)
     configUser.inputBoxFieldFont := IniRead(configUser.file, "config", "inputBoxFieldFont", configDefault.inputBoxFieldFont)
@@ -3522,7 +3532,8 @@ loadConfig() {
     configUser.jiraPanels.formatGreen := IniRead(configUser.file, "jira", "panelFormatGreen", configDefault.jiraPanels.formatGreen)
     configUser.jiraPanels.formatRed := IniRead(configUser.file, "jira", "panelFormatRed", configDefault.jiraPanels.formatRed)
     configUser.jiraPanels.formatYellow := IniRead(configUser.file, "jira", "panelFormatYellow", configDefault.jiraPanels.formatYellow)
-    configUser.options.oracleTransformRemainderToLower := IniRead(configUser.file, "options", "oracleTransformRemainderToLower", configDefault.options.oracleTransformRemainderToLower)
+    configUser.options.oracleTransformRemainderToLower := toBool(IniRead(configUser.file, "options", "oracleTransformRemainderToLower", configDefault.options.oracleTransformRemainderToLower))
+    configUser.options.resolutions := listToArray(IniRead(configUser.file, "options", "resolutions", arrayToList(configDefault.options.resolutions, ",")), ",")
     configUser.templates.html := IniRead(configUser.file, "templates", "html", configDefault.templates.html)
     configUser.templates.java := IniRead(configUser.file, "templates", "java", configDefault.templates.java)
     configUser.templates.perl := IniRead(configUser.file, "templates", "perl", configDefault.templates.perl)
@@ -3541,30 +3552,30 @@ loadConfig() {
 }
 
 loadHotKeyDefs(config) {
-    needToSave := 0
+    needToSave := false
     if (not loadHotKeys(config, "hkAction")) {
-        needToSave := 1
+        needToSave := true
     }
     if (not loadHotKeys(config, "hkDos")) {
-        needToSave := 1
+        needToSave := true
     }
     if (not loadHotKeys(config, "hkEpp")) {
-        needToSave := 1
+        needToSave := true
     }
     if (not loadHotKeys(config, "hkHotScript")) {
-        needToSave := 1
+        needToSave := true
     }
     if (not loadHotKeys(config, "hkMisc")) {
-        needToSave := 1
+        needToSave := true
     }
     if (not loadHotKeys(config, "hkScreenMovement")) {
-        needToSave := 1
+        needToSave := true
     }
     if (not loadHotKeys(config, "hkText")) {
-        needToSave := 1
+        needToSave := true
     }
     if (not loadHotKeys(config, "hkTransform")) {
-        needToSave := 1
+        needToSave := true
     }
     return needToSave
 }
@@ -3575,14 +3586,14 @@ loadHotKeys(config, section) {
     keys := IniRead(file, section)
     keyArr := {}
     isDefault := containsIgnoreCase(config.file, "default")
-    found := 0
+    found := false
     Loop Parse, keys, %EOL_NIX%
     {
         pos := InStr(A_LoopField, "=")
         key := SubStr(A_LoopField, 1, (pos - 1))
         value := SubStr(A_LoopField, (pos + 1))
         keyArr[(key)] := value
-        found := 1
+        found := true
     }
     if (not IsObject(config.hotkeys[(section)])) {
         config.hotkeys[(section)] := {}
@@ -3685,7 +3696,7 @@ moveCurrentLineUp() {
     SendInput, {Up}
 }
 
-moveToMonitor(hWnd:="", direction:=1, keepRelativeSize:=1) {
+moveToMonitor(hWnd:="", direction:=1, keepRelativeSize:=true) {
     hWnd := setCase(Trim(hWnd), "U")
     if (hWnd == "" || hWnd == "A") {
         hWnd := WinExist("A")
@@ -3697,12 +3708,12 @@ moveToMonitor(hWnd:="", direction:=1, keepRelativeSize:=1) {
     if (!WinExist("ahk_id " . hWnd)) {
         SoundPlay, *64
         ;MsgBox, 16, moveToMonitor() - Error, Specified window does not exist. Window ID = %hWnd%
-        return 0
+        return false
     }
 
     SysGet, monCount, MonitorCount
     if (monCount <= 1) {
-        return 1
+        return true
     }
 
     Loop, %monCount%
@@ -3714,7 +3725,7 @@ moveToMonitor(hWnd:="", direction:=1, keepRelativeSize:=1) {
     }
     WinGet, origMinMax, MinMax, ahk_id %hWnd%
     if (origMinMax == -1) {
-        return 0
+        return false
     }
     if (origMinMax == 1) {
         WinRestore, ahk_id %hWnd%
@@ -3744,7 +3755,8 @@ moveToMonitor(hWnd:="", direction:=1, keepRelativeSize:=1) {
 
     WinGetClass, winClass, A
     if (winClass == "CalcFrame") {
-        keepRelativeSize := 0
+        ; TODO - also for Windows Start menu
+        keepRelativeSize := false
     }
     if (keepRelativeSize) {
         WinMoveW := WinW * Monitor%NextMonitor%Width // Monitor%curMonitor%Width
@@ -3759,7 +3771,7 @@ moveToMonitor(hWnd:="", direction:=1, keepRelativeSize:=1) {
     if (origMinMax == 1) {
         WinMaximize, ahk_id %hWnd%
     }
-    return 1
+    return true
 }
 
 numberRemoveSelected() {
@@ -3772,12 +3784,12 @@ numberRemoveSelected() {
     }
     if (selText != "") {
         eol := getEol(selText)
-        first := 1
+        first := true
         newText := ""
         Loop, Parse, selText, %EOL_NIX%, %EOL_MAC%
         {
             if (first) {
-                first := 0
+                first := false
             }
             else {
                 newText .= eol
@@ -3860,35 +3872,6 @@ pasteText(text:="")
     return
 }
 
-qmenuCreate(menuName, menuDef, menuLabel)
-{
-    global EOL_NIX
-    global MENU_SEP
-    Loop Parse, menuDef, %EOL_NIX%
-    {
-        if (Mod(A_Index, 2) == 1) {
-            qtext := (A_LoopField == MENU_SEP ? "" : A_LoopField)
-            Menu, %menuName%, Add, %qtext%, %menuLabel%
-        }
-    }
-}
-
-qmenuRun(idx, text) {
-    global EOL_NIX
-    global configUser
-    menuDef := configUser.quickLookupSites
-    Loop Parse, menuDef, %EOL_NIX%
-    {
-        if (idx * 2 == A_Index) {
-            if (A_LoopField != "Cancel") {
-                command := StringReplace(A_LoopField, "@selection@", text, "All")
-                Run(command)
-                break
-            }
-        }
-    }
-}
-
 readKeysFromFile(script) {
     static file := ""
     static formatted := ""
@@ -3934,6 +3917,115 @@ refreshMonitors() {
         curMon.workWidth := (monWorkRight - monWorkLeft)
         monitors[curMon.idx] := curMon
     }
+}
+
+; sourced from: http://www.autohotkey.com/board/topic/114764-regex-dynamic-hotstrings/#entry667522
+regexHotString(k, a = "")
+{
+    static z, m = "~$", m_ = "*~$", s, t, w = 2000, sd, d = "Left,Right,Up,Down,Home,End,RButton,LButton", f = "!,+,^,#", f_="{,}"
+    global $
+    If z = ; init
+    {
+        RegRead, sd, HKCU, Control Panel\International, sDecimal
+        Loop, 94
+        {
+            c := Chr(A_Index + 32)
+            If A_Index between 33 and 58
+                Hotkey, %m_%%c%, __hs
+                else If A_Index not between 65 and 90
+                Hotkey, %m%%c%, __hs
+        }
+        e = 0,1,2,3,4,5,6,7,8,9,Dot,Div,Mult,Add,Sub,Enter
+        Loop, Parse, e, `,
+            Hotkey, %m%Numpad%A_LoopField%, __hs
+        e = BS,Shift,Space,Enter,Return,Tab,%d%
+        Loop, Parse, e, `,
+            Hotkey, %m%%A_LoopField%, __hs
+        z = 1
+    }
+    If (a == "" and k == "") ; poll
+    {
+        q:=RegExReplace(A_ThisHotkey, "\*\~\$(.*)", "$1")
+        q:=RegExReplace(q, "\~\$(.*)", "$1")
+        If q = BS
+        {
+            If (SubStr(s, 0) != "}")
+                StringTrimRight, s, s, 1
+        }
+        Else If q in %d%
+            s =
+        Else
+        {
+            If q = Shift
+            return
+            Else If q = Space
+                q := " "
+            Else If q = Tab
+                q := "`t"
+            Else If q in Enter,Return,NumpadEnter
+                q := "`n"
+            Else If (RegExMatch(q, "Numpad(.+)", n))
+            {
+                q := n1 == "Div" ? "/" : n1 == "Mult" ? "*" : n1 == "Add" ? "+" : n1 == "Sub" ? "-" : n1 == "Dot" ? sd : ""
+                If n1 is digit
+                    q = %n1%
+            }
+            Else If (GetKeyState("Shift") ^ !GetKeyState("CapsLock", "T"))
+                StringLower, q, q
+            s .= q
+        }
+        Loop, Parse, t, `n ; check
+        {
+            StringSplit, x, A_LoopField, `r
+            If (RegExMatch(s, x1 . "$", $)) ; match
+            {
+                ; try match object first
+                l := $.len
+                if (l > 0) {
+                    ; found it - written this way because we cannot know if a match object was used nor if len actually had a value
+                }
+                else {
+                    StringLen, l, $
+                }
+                StringTrimRight, s, s, l
+                SendInput, {BS %l%}
+                If (IsFunc(x2))
+                    %x2%($)
+                Else If (IsLabel(x2))
+                    Gosub, %x2%
+                Else
+                {
+                    Transform, x0, Deref, %x2%
+                    Loop, Parse, f_, `,
+                    StringReplace, x0, x0, %A_LoopField%, ¥%A_LoopField%¥, All
+                    Loop, Parse, f_, `,
+                    StringReplace, x0, x0, ¥%A_LoopField%¥, {%A_LoopField%}, All
+                    Loop, Parse, f, `,
+                    StringReplace, x0, x0, %A_LoopField%, {%A_LoopField%}, All
+                    SendInput, %x0%
+                }
+            }
+        }
+        If (StrLen(s) > w)
+            StringTrimLeft, s, s, w // 2
+    }
+    Else ; assert
+    {
+        StringReplace, k, k, `n, \n, All ; normalize
+        StringReplace, k, k, `r, \r, All
+        Loop, Parse, t, `n
+        {
+            l = %A_LoopField%
+            If (SubStr(l, 1, InStr(l, "`r") - 1) == k)
+                StringReplace, t, t, `n%l%
+        }
+        If a !=
+            t = %t%`n%k%`r%a%
+    }
+    Return
+    __hs: ; event
+    regexHotString("", "")
+    Return
 }
 
 registerHotkey(hkStr, funcName, restrict:="", args*) {
@@ -4028,10 +4120,10 @@ resizeTo(anchor) {
     anchor := setCase(anchor, "U")
     curMonitor := getActiveMonitor()
     curMon := monitors[curMonitor]
-    noResize := 0
+    noResize := false
     WinGetClass, winClass, A
     if (winClass == "CalcFrame") {
-        noResize := 1
+        noResize := true
     }
     hWnd := WinExist("A")
     if (anchor == "T") {
@@ -4265,13 +4357,22 @@ runHotkey(label) {
 }
 
 runQuickLookup() {
+    global EOL_NIX
     global EOL_WIN
+    global MENU_SEP
     global configUser
     text := getSelectedTextOrPrompt("Quick Lookup")
     text := Trim(text, (" `t" . EOL_WIN))
     if (text != "") {
         text := urlEncode(text)
-        qmenuCreate("qlookupMenu", configUser.quickLookupSites, "doQuickLookup")
+        menuDef := configUser.quickLookupSites
+        Loop Parse, menuDef, %EOL_NIX%
+        {
+            if (Mod(A_Index, 2) == 1) {
+                qtext := (A_LoopField == MENU_SEP ? "" : A_LoopField)
+                Menu, qLookupMenu, Add, %qtext%, doQuickLookup
+            }
+        }
         Menu qlookupMenu, Color, FFFFDD
         Menu qlookupMenu, Show
         Menu qlookupMenu, Delete
@@ -4279,7 +4380,36 @@ runQuickLookup() {
     return
 
     doQuickLookup:
-        qmenuRun(A_ThisMenuItemPos, text)
+        Loop Parse, menuDef, %EOL_NIX%
+        {
+            if (A_ThisMenuItemPos * 2 == A_Index) {
+                if (A_LoopField != "Cancel") {
+                    command := StringReplace(A_LoopField, "@selection@", text, "All")
+                    Run(command)
+                    break
+                }
+            }
+        }
+        return
+}
+
+runQuickResolution() {
+    global configUser
+    for key, value in configUser.options.resolutions {
+        Menu, qResMenu, Add, %value%, doQuickResolution
+    }
+    Menu, qResMenu, Add
+    Menu, qResMenu, Add, Cancel, doQuickResolution
+    Menu qResMenu, Color, FFFFDD
+    Menu qResMenu, Show
+    Menu qResMenu, Delete
+    return
+
+    doQuickResolution:
+        if (A_LoopField != "" && A_LoopField != "Cancel") {
+            newRes := listToArray(StringReplace(A_ThisMenuItem, "&", ""), "x")
+            resizeToResolution(newRes[1], newRes[2])
+        }
         return
 }
 
@@ -4320,31 +4450,29 @@ runTarget(target, workDir:="") {
     }
 }
 
-saveConfig(config, defaultConfig:=0) {
+saveConfig(config, defaultConfig:=-1) {
     global MY_VERSION
     global uniqueId
     file := config.file
     ; always save these values
-    IniWrite(config.file, "config", "hkTotalCount" . uniqueId, config.hkTotalCount)
-    IniWrite(config.file, "config", "hsTotalCount" . uniqueId, config.hsTotalCount)
-    if (defaultConfig == 0) {
+    IniWrite(config.file, "config", "version", MY_VERSION)
+    if (defaultConfig == -1) {
         ; save it, since nothing to compare against
-        IniWrite(config.file, "config", "version", MY_VERSION)
         IniWrite(config.file, "config", "editor", config.editor)
-        IniWrite(config.file, "config", "enableHkAction", config.enableHkAction)
-        IniWrite(config.file, "config", "enableHkDos", config.enableHkDos)
-        IniWrite(config.file, "config", "enableHkEpp", config.enableHkEpp)
-        IniWrite(config.file, "config", "enableHkMisc", config.enableHkMisc)
-        IniWrite(config.file, "config", "enableHkScreenMovement", config.enableHkScreenMovement)
-        IniWrite(config.file, "config", "enableHkText", config.enableHkText)
-        IniWrite(config.file, "config", "enableHkTransform", config.enableHkTransform)
-        IniWrite(config.file, "config", "enableHsAlias", config.enableHsAlias)
-        IniWrite(config.file, "config", "enableHsAutoCorrect", config.enableHsAutoCorrect)
-        IniWrite(config.file, "config", "enableHsCode", config.enableHsCode)
-        IniWrite(config.file, "config", "enableHsDates", config.enableHsDates)
-        IniWrite(config.file, "config", "enableHsDos", config.enableHsDos)
-        IniWrite(config.file, "config", "enableHsHtml", config.enableHsHtml)
-        IniWrite(config.file, "config", "enableHsJira", config.enableHsJira)
+        IniWrite(config.file, "config", "enableHkAction", boolToStr(config.enableHkAction))
+        IniWrite(config.file, "config", "enableHkDos", boolToStr(config.enableHkDos))
+        IniWrite(config.file, "config", "enableHkEpp", boolToStr(config.enableHkEpp))
+        IniWrite(config.file, "config", "enableHkMisc", boolToStr(config.enableHkMisc))
+        IniWrite(config.file, "config", "enableHkScreenMovement", boolToStr(config.enableHkScreenMovement))
+        IniWrite(config.file, "config", "enableHkText", boolToStr(config.enableHkText))
+        IniWrite(config.file, "config", "enableHkTransform", boolToStr(config.enableHkTransform))
+        IniWrite(config.file, "config", "enableHsAlias", boolToStr(config.enableHsAlias))
+        IniWrite(config.file, "config", "enableHsAutoCorrect", boolToStr(config.enableHsAutoCorrect))
+        IniWrite(config.file, "config", "enableHsCode", boolToStr(config.enableHsCode))
+        IniWrite(config.file, "config", "enableHsDates", boolToStr(config.enableHsDates))
+        IniWrite(config.file, "config", "enableHsDos", boolToStr(config.enableHsDos))
+        IniWrite(config.file, "config", "enableHsHtml", boolToStr(config.enableHsHtml))
+        IniWrite(config.file, "config", "enableHsJira", boolToStr(config.enableHsJira))
         IniWrite(config.file, "config", "inputBoxFieldFont", config.inputBoxFieldFont)
         IniWrite(config.file, "config", "inputBoxOptions", config.inputBoxOptions)
         IniWrite(config.file, "jira", "panelFormat", config.jiraPanels.format)
@@ -4352,7 +4480,8 @@ saveConfig(config, defaultConfig:=0) {
         IniWrite(config.file, "jira", "panelFormatGreen", config.jiraPanels.formatGreen)
         IniWrite(config.file, "jira", "panelFormatRed", config.jiraPanels.formatRed)
         IniWrite(config.file, "jira", "panelFormatYellow", config.jiraPanels.formatYellow)
-        IniWrite(config.file, "options", "oracleTransformRemainderToLower", config.options.oracleTransformRemainderToLower)
+        IniWrite(config.file, "options", "oracleTransformRemainderToLower", boolToStr(config.options.oracleTransformRemainderToLower))
+        IniWrite(config.file, "options", "resolutions", arrayToList(config.options.resolutions, ","))
         IniWrite(config.file, "templates", "html", config.templates.html)
         IniWrite(config.file, "templates", "htmlKeys", config.templates.htmlKeys)
         IniWrite(config.file, "templates", "java", config.templates.java)
@@ -4369,44 +4498,44 @@ saveConfig(config, defaultConfig:=0) {
         if (config.editor != defaultConfig.editor) {
             IniWrite(config.file, "config", "editor", config.editor)
         }
-        if (config.enableHkAction != defaultConfig.enableHkAction) {
-            IniWrite(config.file, "config", "enableHkAction", config.enableHkAction)
+        if (boolToStr(config.enableHkAction) != boolToStr(defaultConfig.enableHkAction)) {
+            IniWrite(config.file, "config", "enableHkAction", boolToStr(config.enableHkAction))
         }
-        if (config.enableHkDos != defaultConfig.enableHkDos) {
-            IniWrite(config.file, "config", "enableHkDos", config.enableHkDos)
+        if (boolToStr(config.enableHkDos) != boolToStr(defaultConfig.enableHkDos)) {
+            IniWrite(config.file, "config", "enableHkDos", boolToStr(config.enableHkDos))
         }
-        if (config.enableHkEpp != defaultConfig.enableHkEpp) {
-            IniWrite(config.file, "config", "enableHkEpp", config.enableHkEpp)
+        if (boolToStr(config.enableHkEpp) != boolToStr(defaultConfig.enableHkEpp)) {
+            IniWrite(config.file, "config", "enableHkEpp", boolToStr(config.enableHkEpp))
         }
-        if (config.enableHkMisc != defaultConfig.enableHkMisc) {
-            IniWrite(config.file, "config", "enableHkMisc", config.enableHkMisc)
+        if (boolToStr(config.enableHkMisc) != boolToStr(defaultConfig.enableHkMisc)) {
+            IniWrite(config.file, "config", "enableHkMisc", boolToStr(config.enableHkMisc))
         }
-        if (config.enableHkScreenMovement != defaultConfig.enableHkScreenMovement) {
-            IniWrite(config.file, "config", "enableHkScreenMovement", config.enableHkScreenMovement)
+        if (boolToStr(config.enableHkScreenMovement) != boolToStr(defaultConfig.enableHkScreenMovement)) {
+            IniWrite(config.file, "config", "enableHkScreenMovement", boolToStr(config.enableHkScreenMovement))
         }
-        if (config.enableHkText != defaultConfig.enableHkText) {
-            IniWrite(config.file, "config", "enableHkText", config.enableHkText)
+        if (boolToStr(config.enableHkText) != boolToStr(defaultConfig.enableHkText)) {
+            IniWrite(config.file, "config", "enableHkText", boolToStr(config.enableHkText))
         }
-        if (config.enableHsAlias != defaultConfig.enableHsAlias) {
-            IniWrite(config.file, "config", "enableHsAlias", config.enableHsAlias)
+        if (boolToStr(config.enableHsAlias) != boolToStr(defaultConfig.enableHsAlias)) {
+            IniWrite(config.file, "config", "enableHsAlias", boolToStr(config.enableHsAlias))
         }
-        if (config.enableHsAutoCorrect != defaultConfig.enableHsAutoCorrect) {
-            IniWrite(config.file, "config", "enableHsAutoCorrect", config.enableHsAutoCorrect)
+        if (boolToStr(config.enableHsAutoCorrect) != boolToStr(defaultConfig.enableHsAutoCorrect)) {
+            IniWrite(config.file, "config", "enableHsAutoCorrect", boolToStr(config.enableHsAutoCorrect))
         }
-        if (config.enableHsCode != defaultConfig.enableHsCode) {
-            IniWrite(config.file, "config", "enableHsCode", config.enableHsCode)
+        if (boolToStr(config.enableHsCode) != boolToStr(defaultConfig.enableHsCode)) {
+            IniWrite(config.file, "config", "enableHsCode", boolToStr(config.enableHsCode))
         }
-        if (config.enableHsDates != defaultConfig.enableHsDates) {
-            IniWrite(config.file, "config", "enableHsDates", config.enableHsDates)
+        if (boolToStr(config.enableHsDates) != boolToStr(defaultConfig.enableHsDates)) {
+            IniWrite(config.file, "config", "enableHsDates", boolToStr(config.enableHsDates))
         }
-        if (config.enableHsDos != defaultConfig.enableHsDos) {
-            IniWrite(config.file, "config", "enableHsDos", config.enableHsDos)
+        if (boolToStr(config.enableHsDos) != boolToStr(defaultConfig.enableHsDos)) {
+            IniWrite(config.file, "config", "enableHsDos", boolToStr(config.enableHsDos))
         }
-        if (config.enableHsHtml != defaultConfig.enableHsHtml) {
-            IniWrite(config.file, "config", "enableHsHtml", config.enableHsHtml)
+        if (boolToStr(config.enableHsHtml) != boolToStr(defaultConfig.enableHsHtml)) {
+            IniWrite(config.file, "config", "enableHsHtml", boolToStr(config.enableHsHtml))
         }
-        if (config.enableHsJira != defaultConfig.enableHsJira) {
-            IniWrite(config.file, "config", "enableHsJira", config.enableHsJira)
+        if (boolToStr(config.enableHsJira) != boolToStr(defaultConfig.enableHsJira)) {
+            IniWrite(config.file, "config", "enableHsJira", boolToStr(config.enableHsJira))
         }
         if (config.inputBoxFieldFont != defaultConfig.inputBoxFieldFont) {
             IniWrite(config.file, "config", "inputBoxFieldFont", config.inputBoxFieldFont)
@@ -4414,6 +4543,9 @@ saveConfig(config, defaultConfig:=0) {
         if (config.inputBoxOptions != defaultConfig.inputBoxOptions) {
             IniWrite(config.file, "config", "inputBoxOptions", config.inputBoxOptions)
         }
+        ; always save these values
+        IniWrite(config.file, "config", "hkTotalCount" . uniqueId, config.hkTotalCount)
+        IniWrite(config.file, "config", "hsTotalCount" . uniqueId, config.hsTotalCount)
         if (config.jiraPanels.format != defaultConfig.jiraPanels.format) {
             IniWrite(config.file, "jira", "panelFormat", config.jiraPanels.format)
         }
@@ -4430,7 +4562,10 @@ saveConfig(config, defaultConfig:=0) {
             IniWrite(config.file, "jira", "panelFormatYellow", config.jiraPanels.formatYellow)
         }
         if (config.options.oracleTransformRemainderToLower != defaultConfig.options.oracleTransformRemainderToLower) {
-            IniWrite(config.file, "options", "oracleTransformRemainderToLower", config.options.oracleTransformRemainderToLower)
+            IniWrite(config.file, "options", "oracleTransformRemainderToLower", boolToStr(config.options.oracleTransformRemainderToLower))
+        }
+        if (arrayToList(config.options.resolutions, ",") != arrayToList(defaultConfig.options.resolutions, ",")) {
+            IniWrite(config.file, "options", "resolutions", arrayToList(config.options.resolutions, ","))
         }
         if (config.templates.html != defaultConfig.templates.html) {
             IniWrite(config.file, "templates", "html", config.templates.html)
@@ -4463,19 +4598,19 @@ saveConfig(config, defaultConfig:=0) {
     }
 }
 
-saveHotKeyDefs(config, defaultConfig:=0) {
+saveHotKeyDefs(config, defaultConfig:=false) {
     global EOL_NIX
     IniDelete(config.file, "hotkeys")
     for section, svalue in config.hotkeys {
         for key, kvalue in config.hotkeys[(section)] {
-            doSave := 0
-            if (defaultConfig == 0) {
-                doSave := 1
+            doSave := false
+            if (!defaultConfig) {
+                doSave := true
             }
             else {
                 defKeyValue := defaultConfig.hotkeys[(section)][(key)]
                 if (kvalue != defKeyValue) {
-                    doSave := 1
+                    doSave := true
                 }
             }
             if (doSave) {
@@ -4485,7 +4620,7 @@ saveHotKeyDefs(config, defaultConfig:=0) {
     }
 }
 
-saveQuickLookupSites(config, defaultConfig:=0) {
+saveQuickLookupSites(config) {
     global EOL_NIX
     sites := config.quickLookupSites
     keyCount := 1
@@ -4735,11 +4870,11 @@ showQuickHelp(waitforKey) {
     global SPLASH_TITLE
     global VIRTUAL_SPACE
     global configUser
-    static isShowing := 0
+    static isShowing := false
     if (isShowing) {
         KeyWait("h")
         Progress("off")
-        isShowing := 0
+        isShowing := false
         return
     }
 
@@ -4855,16 +4990,12 @@ showQuickHelp(waitforKey) {
     hkScreenMovementHelpDisabled := replaceEachLine(hkScreenMovementHelpEnabled, spacer)
     hkScreenMovementHelp := (configUser.enableHkScreenMovement ? hkScreenMovementHelpEnabled : hkScreenMovementHelpDisabled)
 
-    hkScreenResizingHelpEnabled =
+    hkWindowResizingHelpEnabled =
     ( LTrim
         %spacer%
-        Screen Resizing hotkeys`t`t`t
+        Window Resizing hotkeys`t`t`t
         %colLine%
-        CtrlWin-1`tResize to 1024x768`t
-        CtrlWin-2`tResize to 1280x1024`t
-        CtrlWin-3`tResize to 1366x768`t
-        CtrlWin-4`tResize to 1600x1200`t
-        CtrlWin-5`tResize to 1920x1080`t
+        CtrlWin-R`tResize to select res`t
         ShiftWin-ARROW`tResize to edge (50`%)`t
         ShiftWin-DnLt`tResize to corner (25`%)`t
         ShiftWin-DnRt`tResize to corner (25`%)`t
@@ -4872,9 +5003,13 @@ showQuickHelp(waitforKey) {
         ShiftWin-UpRt`tResize to corner (25`%)`t
         Win-KEY`t`tResize to grid (11`%)`t
         %A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%KEY is: NumPad # (1-9)`t`t
+        %spacer%
+        %spacer%
+        %spacer%
+        %spacer%
     )
-    hkScreenResizingHelpDisabled := replaceEachLine(hkScreenResizingHelpEnabled, spacer)
-    hkScreenResizingHelp := (configUser.enableHkScreenMovement ? hkScreenResizingHelpEnabled : hkScreenResizingHelpDisabled)
+    hkWindowResizingHelpDisabled := replaceEachLine(hkWindowResizingHelpEnabled, spacer)
+    hkWindowResizingHelp := (configUser.enableHkScreenMovement ? hkWindowResizingHelpEnabled : hkWindowResizingHelpDisabled)
 
     hkTextHelpEnabled =
     ( LTrim
@@ -4922,7 +5057,7 @@ showQuickHelp(waitforKey) {
     hkTransformHelp := (configUser.enableHkTransform ? hkTransformHelpEnabled : hkTransformHelpDisabled)
 
     hkCol1 := hkActionHelp . EOL_NIX . hkMiscHelp
-    hkCol2 := hkScreenMovementHelp . EOL_NIX . hkScreenResizingHelp
+    hkCol2 := hkScreenMovementHelp . EOL_NIX . hkWindowResizingHelp
     hkCol3 := hkTransformHelp
     hkCol4 := hkHotScriptHelp . EOL_NIX . hkDosHelp
 ;    hkCol5 := hkEppHelp
@@ -5094,11 +5229,11 @@ showQuickHelp(waitforKey) {
 
     quickHelp := hkResult . LINE_SEP . EOL_NIX . Trim(hsResult, (" `t" . EOL_WIN))
     Progress("B1 C00 CT000000 CWFFFFDD FM11 FS8 W1125 WM1200 ZH0", quickHelp,, SPLASH_TITLE, "Courier New")
-    isShowing := 1
+    isShowing := true
     centerWindow(SPLASH_TITLE)
     if (waitForKey) {
         KeyWait("h")
-        isShowing := 0
+        isShowing := false
         Progress("off")
     }
     return
@@ -5406,10 +5541,10 @@ toBool(value)
     static trueList := "1,active,enabled,on,t,true,y,yes"
     value := StringLower(value)
     value := Trim(value)
-    result := 0
+    result := false
     if value in %trueList%
     {
-        result := 1
+        result := true
     }
     return result
 }
@@ -5480,7 +5615,7 @@ transformSelected(type,types:="I|L|R|S|T|U") {
     type := setCase(type, "L")
     if (!InStr(types, type)) {
         MsgBox, 16, transformSelected() - Invalid parameter, illegal value for 'type' specified as: [%type%]
-        return 0
+        return false
     }
     selText := getSelectedText()
     if (selText != "") {
@@ -5504,11 +5639,11 @@ upperCaseOracle() {
     global configUser
     selText := getSelectedText()
     if (selText != "") {
-        if (configUser.options.oracleTransformRemainderToLower == 1) {
+        if (configUser.options.oracleTransformRemainderToLower) {
             selText := setCase(selText, "L")
         }
         oracleWords := "i)\b(ABORT|ABS|ACCEPT|ACCESS|ACCOUNT|ACOS|ACTIVATE|ADD|ADD_MONTHS|ADJ_DATE|ADMIN|ADVISE|AFTER|AGENT|AGGREGATE|ALL|ALL_ROWS|ALLOCATE|ALTER|ANALYZE|AND|ANY|APPENDCHILDXML|ARCHIVE|ARCHIVELOG|ARRAY|ARRAYLEN|ARROW|AS|ASC|ASCII|ASCIISTR|ASIN|ASSERT|ASSIGN|AT|ATAN|ATAN2|ATTRIBUTE|AUDIT|AUTHENTICATED|AUTHID|AUTHORIZATION|AUTOEXTEND|AUTOMATIC|AVG|BACKUP|BASE_TABLE|BECOME|BEFORE|BEGIN|BETWEEN|BFILE|BFILE_BASE|BFILENAME|BIN_TO_NUM|BINARY|BINARY_INTEGER|BINARY2VARCHAR|BIT_COMPLEMENT|BIT_OR|BIT_XOR|BITAND|BITMAP|BLOB|BLOB_BASE|BLOCK|BODY|BOOL_TO_INT|BOOLEAN|BOTH|BOUND|BULK|BY|BYTE|CACHE|CACHE_INSTANCES|CALL|CALLING|CANCEL|CARDINALITY|CASCADE|CASE|CAST|CAST_FROM_BINARY|CAST_FROM_NUMBER|CAST_TO_BINARY|CAST_TO_BINARY_FLOAT|CAST_TO_NUMBER|CAST_TO_NVARCHAR2|CAST_TO_RAW|CAST_TO_VARCHAR|CEIL|CFILE|CHAINED|CHANGE|CHAR|CHAR_BASE|CHAR_CS|CHARACTER|CHARSET|CHARSETFORM|CHARSETID|CHARTOROWID|CHECK|CHECKPOINT|CHOOSE|CHR|CHUNK|CLEAR|CLOB|CLOB_BASE|CLONE|CLOSE|CLOSE_CACHED_OPEN_CURSORS|CLUSTER|CLUSTER_ID|CLUSTER_PROBABILITY|CLUSTER_SET|CLUSTERS|COALESCE|COBOL|COLAUTH|COLLECT|COLUMN|COLUMNS|COMMENT|COMMIT|COMMITTED|COMPATIBILITY|COMPILE|COMPILED|COMPLETE|COMPOSE|COMPOSITE_LIMIT|COMPRESS|COMPUTE|CONCAT|CONNECT|CONNECT_TIME|CONSTANT|CONSTRAINT|CONSTRAINTS|CONSTRUCTOR|CONTENTS|CONTEXT|CONTINUE|CONTROLFILE|CONVERT|CORR|CORR_K|CORR_S|COS|COSH|COST|COUNT|COVAR_POP|COVAR_SAMP|CPU_PER_CALL|CPU_PER_SESSION|CRASH|CREATE|CUME_DIST|CURRENT|CURRENT_DATE|CURRENT_SCHEMA|CURRENT_TIMESTAMP|CURRENT_USER|CURRVAL|CURSOR|CUSTOMDATUM|CV|CYCLE|DANGLING|DATA|DATA_BASE|DATABASE|DATAFILE|DATAFILES|DATAOBJNO|DATE|DATE_BASE|DAY|DBA|DBHIGH|DBLOW|DBMAC|DBTIMEZONE|DEALLOCATE|DEBUG|DEBUGOFF|DEBUGON|DEC|DECIMAL|DECLARE|DECODE|DECOMPOSE|DEFAULT|DEFERRABLE|DEFERRED|DEFINE|DEFINITION|DEGREE|DELAY|DELETE|DELETEXML|DELTA|DENSE_RANK|DEPTH|DEREF|DESC|DETERMINISTIC|DIGITS|DIRECTORY|DISABLE|DISCONNECT|DISMOUNT|DISPOSE|DISTINCT|DISTRIBUTED|DML|DO|DOUBLE|DROP|DUMP|DURATION|EACH|ELEMENT|ELSE|ELSIF|EMPTY|EMPTY_BLOB|EMPTY_CLOB|ENABLE|END|ENFORCE|ENTRY|ESCAPE|ESTIMATE_CPU_UNITS|EVENTS|EXCEPT|EXCEPTION|EXCEPTION_INIT|EXCEPTIONS|EXCHANGE|EXCLUDING|EXCLUSIVE|EXEC|EXECUTE|EXISTS|EXISTSNODE|EXIT|EXP|EXPIRE|EXPLAIN|EXTENT|EXTENTS|EXTERNAL|EXTERNALLY|EXTRACT|EXTRACTVALUE|FAILED_LOGIN_ATTEMPTS|FALSE|FAST|FEATURE_ID|FEATURE_SET|FEATURE_VALUE|FETCH|FILE|FINAL|FIRST|FIRST_ROWS|FIRST_VALUE|FIXED|FLAGGER|FLOAT|FLOB|FLOOR|FLUSH|FOR|FORALL|FORCE|FOREIGN|FORM|FORTRAN|FOUND|FREELIST|FREELISTS|FROM|FROM_TZ|FULL|FUNCTION|GENERAL|GENERIC|GET_CLOCK_TIME|GET_DDL|GET_DEPENDENT_DDL|GET_DEPENDENT_XML|GET_GRANTED_DDL|GET_GRANTED_XDL|GET_HASH|GET_REBUILD_COMMAND|GET_SCN|GET_XML|GLOBAL|GLOBAL_NAME|GLOBALLY|GO|GOTO|GRANT|GREATEST|GROUP|GROUP_ID|GROUPING|GROUPING_ID|GROUPS|HASH|HASHKEYS|HAVING|HEADER|HEAP|HEXTORAW|HIDDEN|HOUR|IDENTIFIED|IDGENERATORS|IDLE_TIME|IF|IMMEDIATE|IN|INCLUDING|INCREMENT|IND_PARTITION|INDEX|INDEXED|INDEXES|INDICATOR|INDICES|INFINITE|INITCAP|INITIAL|INITIALLY|INITRANS|INNER|INSERT|INSERTCHILDXML|INSERTXMLBEFORE|INSTANCE|INSTANCES|INSTANTIABLE|INSTEAD|INSTR|INSTR2|INSTR4|INSTRB|INSTRC|INT|INT_TO_BOOL|INTEGER|INTERFACE|INTERMEDIATE|INTERSECT|INTERVAL|INTO|INVALIDATE|IS|ISOLATION|ISOLATION_LEVEL|ITERATE|ITERATION_NUMBER|JAVA|JOIN|KEEP|KEY|KILL|LABEL|LAG|LANGUAGE|LARGE|LAST|LAST_DAY|LAST_VALUE|LAYER|LEAD|LEADING|LEAST|LEFT|LENGTH|LENGTH2|LENGTH4|LENGTHB|LENGTHC|LESS|LEVEL|LIBRARY|LIKE|LIKE2|LIKE4|LIKEC|LIMIT|LIMITED|LINK|LIST|LISTS|LN|LNNVL|LOB|LOCAL|LOCALTIMESTAMP|LOCK|LOCKED|LOG|LOGFILE|LOGGING|LOGICAL_READS_PER_CALL|LOGICAL_READS_PER_SESSION|LONG|LOOP|LOWER|LPAD|LTRIM|MAKE_REF|MAKEREF|MANAGE|MANUAL|MAP|MASTER|MAX|MAXARCHLOGS|MAXDATAFILES|MAXEXTENTS|MAXINSTANCES|MAXLEN|MAXLOGFILES|MAXLOGHISTORY|MAXLOGMEMBERS|MAXSIZE|MAXTRANS|MAXVALUE|MEDIAN|MEMBER|MERGE|MIN|MINEXTENTS|MINIMUM|MINUS|MINUTE|MINVALUE|MLS_LABEL_FORMAT|MLSLABEL|MOD|MODE|MODIFY|MODULE|MONTH|MONTHS_BETWEEN|MOUNT|MOVE|MTS_DISPATCHERS|MULTISET|NAN|NANVL|NATIONAL|NATIVE|NATURAL|NCHAR|NCHAR_CS|NCLOB|NEEDED|NESTED|NETWORK|NEW|NEW_TIME|NEXT|NEXT_DAY|NEXTVAL|NHEXTORAW|NLS_CHARSET_DECL_LEN|NLS_CHARSET_ID|NLS_CHARSET_NAME|NLS_INITCAP|NLS_LOWER|NLS_UPPER|NLSSORT|NOARCHIVELOG|NOAUDIT|NOCACHE|NOCOMPRESS|NOCOPY|NOCYCLE|NOFORCE|NOLOGGING|NOMAXVALUE|NOMINVALUE|NONE|NOORDER|NOOVERRIDE|NOPARALLEL|NORESETLOGS|NOREVERSE|NORMAL|NOSORT|NOT|NOTFOUND|NOTHING|NOWAIT|NTILE|NULL|NULLFN|NULLIF|NULLS FIRST|NULLS LAST|NUMBER|NUMBER_BASE|NUMERIC|NUMTODSINTERVAL|NUMTOHEX|NUMTOHEX2|NUMTOYMINTERVAL|NVARCHAR2|NVL|NVL2|OBJECT|OBJNO|OBJNO_REUSE|OCICOLL|OCIDATE|OCIDATETIME|OCIDURATION|OCIINTERVAL|OCILOBLOCATOR|OCINUMBER|OCIRAW|OCIREF|OCIREFCURSOR|OCIROWID|OCISTRING|OCITYPE|OF|OFF|OFFLINE|OID|OIDINDEX|OLD|ON|ONLINE|ONLY|OPAQUE|OPCODE|OPEN|OPERATOR|OPTIMAL|OPTIMIZER_GOAL|OPTION|OR|ORA_HASH|ORACLE|ORADATA|ORDER|ORGANIZATION|ORLANY|ORLVARY|OSLABEL|OTHERS|OUT|OUTER|OVERFLOW|OVERLAPS|OVERRIDING|OWN|PACKAGE|PARALLEL|PARALLEL_ENABLE|PARAMETER|PARAMETERS|PARTITION|PASCAL|PASSWORD|PASSWORD_GRACE_TIME|PASSWORD_LIFE_TIME|PASSWORD_LOCK_TIME|PASSWORD_REUSE_MAX|PASSWORD_REUSE_TIME|PASSWORD_VERIFY_FUNCTION|PATH|PCTFREE|PCTINCREASE|PCTTHRESHOLD|PCTUSED|PCTVERSION|PERCENT|PERCENT_RANK|PERCENTILE_CONT|PERCENTILE_DISC|PERMANENT|PIPE|PIPELINED|PIVOT|PLAN|PLI|PLSQL_DEBUG|POSITIVE|POST_TRANSACTION|POWER|POWERMULTISET|POWERMULTISET_BY_CARDINALITY|PRAGMA|PRECISION|PREDICTION|PREDICTION_BOUNDS|PREDICTION_COST|PREDICTION_DETAILS|PREDICTION_PROBABILITY|PREDICTION_SET|PRESENTNNV|PRESENTV|PRESERVE|PREVIOUS|PRIMARY|PRIOR|PRIVATE|PRIVATE_SGA|PRIVILEGE|PRIVILEGES|PROCEDURE|PROFILE|PUBLIC|PURGE|QUEUE|QUOTA|QUOTE DELIMITERS|RAISE|RANDOMBYTES|RANDOMINTEGER|RANDOMNUMBER|RANGE|RANK|RATIO_TO_REPORT|RAW|RAW_TO_CHAR|RAW_TO_NCHAR|RAW_TO_VARCHAR2|RAWTOHEX|RAWTONHEX|RAWTONUM|RAWTONUM2|RBA|READ|READUP|REAL|REBUILD|RECORD|RECOVER|RECOVERABLE|RECOVERY|REF|REFERENCE|REFERENCES|REFERENCING|REFRESH|REFTOHEX|REGEXP_COUNT|REGEXP_INSTR|REGEXP_REPLACE|REGEXP_SUBSTR|REGR_AVGX|REGR_AVGY|REGR_COUNT|REGR_INTERCEPT|REGR_R2|REGR_SLOPE|REGR_SXX|REGR_SXY|REGR_SYY|RELEASE|REM|REMAINDER|REMR|RENAME|REPLACE|RESET|RESETLOGS|RESIZE|RESOURCE|RESTRICTED|RESULT|RETURN|RETURNING|REUSE|REVERSE|REVOKE|RIGHT|ROLE|ROLES|ROLLBACK|ROUND|ROW|ROW_NUMBER|ROWID|ROWIDTOCHAR|ROWIDTONCHAR|ROWLABEL|ROWNUM|ROWS|ROWTYPE|RPAD|RTRIM|RULE|RUN|SAMPLE|SAVE|SAVEPOINT|SB1|SB2|SB4|SCAN_INSTANCES|SCHEMA|SCN|SCN_TO_TIMESTAMP|SCOPE|SD_ALL|SD_INHIBIT|SD_SHOW|SECOND|SECTION|SEG_BLOCK|SEG_FILE|SEGMENT|SELECT|SELF|SEPARATE|SEQUENCE|SERIALIZABLE|SESSION|SESSION_CACHED_CURSORS|SESSIONS_PER_USER|SESSIONTIMEZONE|SET|SHARE|SHARED|SHARED_POOL|SHORT|SHRINK|SIGN|SIN|SINH|SIZE|SIZE_T|SKIP|SKIP_UNUSABLE_INDEXES|SMALLINT|SNAPSHOT|SOME|SORT|SOUNDEX|SPACE|SPARSE|SPECIFICATION|SPLIT|SQL|SQL_TRACE|SQLBUF|SQLCODE|SQLDATA|SQLERRM|SQLERROR|SQLNAME|SQLSTATE|SQRT|STANDARD|STANDBY|START|STATEMENT|STATEMENT_ID|STATIC|STATISTICS|STATS_BINOMIAL_TEST|STATS_CROSSTAB|STATS_F_TEST|STATS_KS_TEST|STATS_MODE|STATS_MW_TEST|STATS_ONE_WAY_ANOVA|STATS_T_TEST|STATS_T_TEST_ONE|STATS_T_TEST_PAIRED|STATS_T_TEST_INDEP|STATS_T_TEST_INDEPU|STATS_WSR_TEST|STDDEV|STDDEV_POP|STDDEV_SAMP|STOP|STORAGE|STORE|STORED|STRING|STRING_TO_RAW|STRUCT|STRUCTURE|STYLE|SUBMULTISET|SUBPARTITION|SUBSTITUTABLE|SUBSTR|SUBSTR2|SUBSTR4|SUBSTRB|SUBSTRC|SUBTYPE|SUCCESSFUL|SUM|SWITCH|SYNONYM|SYS_CONNECT_BY_PATH|SYS_CONTEXT|SYS_DBURIGEN|SYS_EXTRACT_UTC|SYS_GUID|SYS_OP_COMBINED_HASH|SYS_OP_DESCEND|SYS_OP_DISTINCT|SYS_OP_GUID|SYS_OP_LBID|SYS_OP_MAP_NONNULL|SYS_OP_RAWTONUM|SYS_OP_RPB|SYS_OP_TOSETID|SYS_TYPEID|SYS_XMLAGG|SYS_XMLGEN|SYSDATE|SYSDBA|SYSOPER|SYSTEM|SYSTIMESTAMP|TABAUTH|TABLE|TABLES|TABLESPACE|TABLESPACE_NO|TABNO|TAN|TANH|TASK|TDO|TEMPORARY|TERMINATE|THAN|THE|THEN|THREAD|TIME|TIMESTAMP|TIMESTAMP_TO_SCN|TIMEZONE_ABBR|TIMEZONE_HOUR|TIMEZONE_MINUTE|TIMEZONE_REGION|TO|TO_BINARY_DOUBLE|TO_BINARY_FLOAT|TO_BINARYDOUBLE|TO_BINARYFLOAT|TO_CHAR|TO_CLOB|TO_DATE|TO_DSINTERVAL|TO_LOB|TO_MULTI_BYTE|TO_NCHAR|TO_NCLOB|TO_NUMBER|TO_SINGLE_BYTE|TO_TIMESTAMP|TO_TIMESTAMP_TZ|TO_YMINTERVAL|TOPLEVEL|TRACE|TRACING|TRAILING|TRANSAC|TRANSACTION|TRANSACTIONAL|TRANSITIONAL|TRANSLATE|TRANSLITERATE|TREAT|TRIGGER|TRIGGERS|TRIM|TRUE|TRUNC|TRUNCATE|TRUSTED|TX|TYPE|TZ_OFFSET|UB1|UB2|UB4|UBA|UID|UNBOUNDED FOLLOWING|UNBOUNDED PRECEDING|UNDER|UNION|UNIQUE|UNISTR|UNLIMITED|UNLOCK|UNRECOVERABLE|UNSIGNED|UNTIL|UNTRUSTED|UNUSABLE|UNUSED|UPDATABLE|UPDATE|UPDATEXML|UPPER|USAGE|USE|USER|USERENV|USING|VALIDATE|VALIDATION|VALIST|VALUE|VALUES|VAR_POP|VAR_SAMP|VARCHAR|VARCHAR2|VARIABLE|VARIANCE|VARRAY|VARYING|VERIFY_OWNER|VERIFY_TABLE|VERTICAL BARS|VIEW|VIEWS|VOID|VSIZE|WHEN|WHENEVER|WHERE|WHILE|WIDTH_BUCKET|WITH|WITHOUT|WORK|WRAPPED|WRITE|WRITEDOWN|WRITEUP|XID|XMLAGG|XMLCAST|XMLCDATA|XMLCOLATTVAL|XMLCOLLATVAL|XMLCOMMENT|XMLCONCAT|XMLDIFF|XMLELEMENT|XMLEXISTS|XMLFOREST|XMLISVALID|XMLPARSE|XMLPATCH|XMLPI|XMLQUERY|XMLROOT|XMLSEQUENCE|XMLSERIALIZE|XMLTABLE|XMLTRANSFORM|XOR|YEAR|ZONE)\b"
-        inComment := 0
+        inComment := false
         upper := ""
         Loop, Parse, selText, %EOL_NIX%
         {
@@ -5517,7 +5652,7 @@ upperCaseOracle() {
                 if (pos > 0) {
                     line1 := Substr(A_LoopField, 1, (pos - 1))
                     line2 := Substr(A_LoopField, pos)
-                    inComment := 0
+                    inComment := false
                 }
                 else {
                     line1 := A_LoopField
@@ -5530,7 +5665,7 @@ upperCaseOracle() {
                 if (pos > 0) {
                     line1 := Substr(A_LoopField, 1, (pos - 1))
                     line2 := Substr(A_LoopField, pos)
-                    inComment := 1
+                    inComment := true
                 }
                 else {
                     pos := InStr(A_LoopField, "--")
@@ -5660,7 +5795,7 @@ zoomStart() {
     global zoomWindowDimension := 0
     global zoomWindowH := 100
     global zoomWindowW := 240
-    global zoomFollow := 1
+    global zoomFollow := true
     global zoomHdcFrame
     global zoomHddFrame
 
@@ -5742,7 +5877,7 @@ zoomStart() {
             , Int , (zoomWindowW / zoomAmount)                      ; nWidthSrc
             , Int , (zoomWindowH / zoomAmount)                      ; nHeightSrc
             , UInt, 0xCC0020)                                       ; dwRop (raster operation)
-        if (zoomFollow == 1) {
+        if (zoomFollow) {
             WinMove, zoomWindow, , (zoomMouseX - zoomWindowW / 2), (zoomMouseY - zoomWindowH / 2), %zoomWindowW%, %zoomWindowH%
         }
         SetTimer("zoomRepaint", 10)
@@ -5781,7 +5916,6 @@ lvHelp:
         ;message(A_GuiEvent . " event for " . A_GuiControl)
     }
     return
-
 ;--------------------------------------------------
 ;classes
 ;--------------------------------------------------
@@ -6091,20 +6225,20 @@ class ArrayList {
 class OldConfig {
     __New(rootName:="") {
         this.editor := "notepad.exe"
-        this.enableHkAction := 1
-        this.enableHkDos := 1
-        this.enableHkEpp := 1
-        this.enableHkMisc := 1
-        this.enableHkScreenMovement := 1
-        this.enableHkText := 1
-        this.enableHkTransform := 1
-        this.enableHsAlias := 1
-        this.enableHsAutoCorrect := 1
-        this.enableHsCode := 1
-        this.enableHsDates := 1
-        this.enableHsDos := 1
-        this.enableHsHtml := 1
-        this.enableHsJira := 1
+        this.enableHkAction := true
+        this.enableHkDos := true
+        this.enableHkEpp := true
+        this.enableHkMisc := true
+        this.enableHkScreenMovement := true
+        this.enableHkText := true
+        this.enableHkTransform := true
+        this.enableHsAlias := true
+        this.enableHsAutoCorrect := true
+        this.enableHsCode := true
+        this.enableHsDates := true
+        this.enableHsDos := true
+        this.enableHsHtml := true
+        this.enableHsJira := true
         this.file := ""
         this.hkSessionCount := 0
         this.hsSessionCount := 0
@@ -6161,7 +6295,8 @@ class MonitorInfo {
 
 class Options {
     __New() {
-        this.oracleTransformRemainderToLower := 0
+        this.oracleTransformRemainderToLower := false
+        this.resolutions := ""
     }
 }
 
