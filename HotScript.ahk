@@ -17,7 +17,7 @@ please contact Mike Viens. (mike.viens@pearson.com)
 #Warn
 Autotrim, off
 ListLines, off
-SendMode Input
+;SendMode Input
 SetBatchLines -1
 SetKeyDelay, -1
 SetTitleMatchMode, Regex
@@ -35,7 +35,7 @@ LINE_SEP := repeatStr("·", 157)
 MENU_SEP := "-"
 MY_TITLE := "HotScript"
 MY_BASE := A_ScriptDir . "\" . MY_TITLE
-MY_VERSION := "20150105.3"
+MY_VERSION := "20150304.1"
 SKIP_FIELDS := Array("file", "hkSessionCount", "hsSessionCount")
 SPLASH_TITLE := MY_TITLE . "Splash"
 USER_KEYS := A_ScriptDir . "\" . MY_TITLE . "Keys.ahk"
@@ -1395,7 +1395,7 @@ hkTextDuplicateCurrentLine() {
 
 hkTextMoveCurrentLineDown() {
     if (WinActive("ahk_exe i)EditPadPro\d*\.exe")) {
-        SendInput, ^!{Down}
+        Send, ^!+{Down}
     }
     else {
         moveCurrentLineDown()
@@ -1404,7 +1404,7 @@ hkTextMoveCurrentLineDown() {
 
 hkTextMoveCurrentLineUp() {
     if (WinActive("ahk_exe i)EditPadPro\d*\.exe")) {
-        SendInput, ^!{Up}
+        Send, ^!+{Up}
     }
     else {
         moveCurrentLineUp()
@@ -1421,7 +1421,7 @@ hkTransformInvertCase() {
 
 hkTransformLowerCase() {
     if (WinActive("ahk_exe i)EditPadPro\d*\.exe")) {
-        SendPlay, ^+l
+        Send, ^+l
     }
     else {
         transformSelected("L")
@@ -1467,7 +1467,7 @@ hkTransformTagify() {
 hkTransformTitleCase() {
     WinActive("ahk_class ConsoleWindowClass")
     if (WinActive("ahk_class Chrome_WidgetWin_1") || WinActive("ahk_class MozillaWindowClass")) {
-        SendPlay, ^+t
+        Send, ^+t
     }
     else {
         transformSelected("T")
@@ -1480,7 +1480,7 @@ hkTransformUnwrapText() {
 
 hkTransformUpperCase() {
     if (WinActive("ahk_exe i)EditPadPro\d*\.exe")) {
-        SendPlay, ^+u
+        Send, ^+u
     }
     else {
         transformSelected("U")
@@ -3140,7 +3140,7 @@ getDefaultHotKeyDefs(type) {
     else if (type == "hkTransform") {
         hk["hkTransformEncrypt"] := "^+e"
         hk["hkTransformInvertCase"] := "^+i"
-        hk["hkTransformLowerCase"] := "^+l"
+        hk["hkTransformLowerCase"] := "$^+l"
         hk["hkTransformNumberPrepend"] := "^+n"
         hk["hkTransformNumberPrependPrompt"] := "^!+n"
         hk["hkTransformNumberStrip"] := "^!n"
@@ -3151,9 +3151,9 @@ getDefaultHotKeyDefs(type) {
         hk["hkTransformSortDescending"] := "^+d"
         hk["hkTransformTagify1"] := "!+,"
         hk["hkTransformTagify2"] := "!+."
-        hk["hkTransformTitleCase"] := "^+t"
+        hk["hkTransformTitleCase"] := "$^+t"
         hk["hkTransformUnwrapText"] := "^!w"
-        hk["hkTransformUpperCase"] := "^+u"
+        hk["hkTransformUpperCase"] := "$^+u"
         hk["hkTransformWrapEachInBrackets-1"] := "#!["
         hk["hkTransformWrapEachInBrackets-2"] := "#!]"
         hk["hkTransformWrapEachInCurlys-1"] := "#+["
@@ -4406,7 +4406,7 @@ runQuickResolution() {
     return
 
     doQuickResolution:
-        if (A_LoopField != "" && A_LoopField != "Cancel") {
+        if (A_ThisMenuItem != "" && A_ThisMenuItem != "Cancel") {
             newRes := listToArray(StringReplace(A_ThisMenuItem, "&", ""), "x")
             resizeToResolution(newRes[1], newRes[2])
         }
@@ -4995,7 +4995,7 @@ showQuickHelp(waitforKey) {
         %spacer%
         Window Resizing hotkeys`t`t`t
         %colLine%
-        CtrlWin-R`tResize to select res`t
+        CtrlWin-R`tResize to ...`t`t`t
         ShiftWin-ARROW`tResize to edge (50`%)`t
         ShiftWin-DnLt`tResize to corner (25`%)`t
         ShiftWin-DnRt`tResize to corner (25`%)`t
