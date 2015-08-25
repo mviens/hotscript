@@ -54,10 +54,6 @@ init()
         addHotString()
         sendText("be back soon")
         return
-    :*c:bi5:: ;; back in 5 minutes...
-        addHotString()
-        sendText("back in 5 minutes...")
-        return
     :*c:brb:: ;; be right back
         addHotString()
         sendText("be right back")
@@ -124,15 +120,15 @@ init()
         addHotString()
         sendText("no worries")
         return
-    :c*:okt:: ;; OK, thanks...
+    :*c:okt:: ;; OK, thanks...
         addHotString()
         sendText("OK, thanks...")
         return
-    :c*:thok:: ;; That's OK...
+    :*c:thok:: ;; That's OK...
         addHotString()
         sendText("That's OK...")
         return
-    :c*:thx:: ;; thanks
+    :*c:thx:: ;; thanks
         addHotString()
         sendText("thanks")
         return
@@ -692,15 +688,12 @@ init()
         sendJiraPanel(hs.config.user.jiraPanels.formatYellow)
         return
 #if
-hsBackInX() {
-    global $
-    addHotString()
-    sendText($.1 . "ack in " . $.2 . " minutes...")
-}
 
 ;__________________________________________________
 ;HotKeys
 #Include *i HotScriptKeys.ahk
+
+; TODO - why is this not configurable and part of external definitions?
 #if, toBool(hs.config.user.enableHkMisc)
     #pause:: ;; toggles suspension of this script
         Suspend
@@ -1090,6 +1083,12 @@ WinGetTitle(winTitle:="", winText:="", excludeTitle:="", excludeText:="") {
     v := ""
     WinGetTitle, v, %winTitle%, %winText%, %excludeTitle%, %excludeText%
     return v
+}
+
+;__________________________________________________
+;hotstring functions
+hsBackInX($) {
+    sendText("Back in " . $.value(2) . " minutes...")
 }
 
 ;__________________________________________________
@@ -3025,11 +3024,9 @@ escapeText(text:="") {
     isSelected := false
     if (text == "") {
         text := getSelectedText()
-        debug("Getting selected text...")
         isSelected := true
     }
     if (text != "") {
-        debug("Escaping text: `n" . text)
         text := StringReplace(text, "``", "````", "All")
         text := StringReplace(text, "%", "``%", "All")
         text := StringReplace(text, "(", "``(", "All")
@@ -3431,6 +3428,214 @@ hkToStr(key) {
     return (key . hook)
 }
 
+/*
+; Hotstring(trigger, replace, mode, clear, cond)
+;   trigger    - string or regex to trigger the action
+;   replace    - string to replace trigger, OR label to go to OR function to call
+;   mode 1/2/3 - insensitive/sensitive/regex (default = 1)
+;   clear      - true if the trigger should be erased (default = true)
+;   cond       - function name that should return true/false is the action should be executed
+*/
+hotString(trigger, label, mode:=1, clearTrigger:=1, cond:= "") {
+    global $
+    static keysBound := false
+    static hotkeyPrefix := "~$"
+    static hotstrings := {}
+    static typed := ""
+    static keys := {
+        (LTrim Join
+            symbols: "!""#$%&'()*+,-./:;<=>?@[\]^_``{|}~",
+            num: "0123456789",
+            alpha: "abcdefghijklmnopqrstuvwxyz",
+            other: "BS,Return,Tab,Space",
+            breakKeys: "Left,Right,Up,Down,Home,End,RButton,LButton,LControl,RControl,LAlt,RAlt,AppsKey,Lwin,Rwin,WheelDown,WheelUp,f1,f2,f3,f4,f5,f6,f7,f8,f9,f6,f7,f9,f10,f11,f12",
+            numpad: "Numpad0,Numpad1,Numpad2,Numpad3,Numpad4,Numpad5,Numpad6,Numpad7,Numpad8,Numpad9,NumpadDot,NumpadDiv,NumpadMult,NumpadAdd,NumpadSub,NumpadEnter"
+        )}
+    static effect := {
+        (LTrim Join
+            Return: "`n",
+            Tab: A_Tab,
+            Space: A_Space,
+            Enter: "`n",
+            Dot: ".",
+            Div: "/",
+            Mult: "*",
+            Add: "+",
+            Sub: "-"
+        )}
+
+    if (!keysBound) {
+        ;Binds the keys to watch for triggers
+        for k, v in ["symbols", "num", "alpha"]
+        {
+            ;alphanumeric/symbols
+            v := keys[v]
+            Loop, Parse, v
+            {
+                Hotkey, %hotkeyPrefix%%A_LoopField%, __hotstring
+            }
+        }
+
+        v := keys.alpha
+        Loop, Parse, v
+        {
+            Hotkey, %hotkeyPrefix%+%A_Loopfield%, __hotstring
+        }
+        for k, v in ["other", "breakKeys", "numpad"]
+        {
+            ;comma separated values
+            v := keys[v]
+            Loop, Parse, v, `,
+            {
+                Hotkey, %hotkeyPrefix%%A_LoopField%, __hotstring
+            }
+        }
+        ;keysBound is a static variable, so now the keys won't be bound twice
+        keysBound := true
+    }
+    if (mode == "CALLBACK") {
+        ;Callback for the hotkeys
+        Hotkey := SubStr(A_ThisHotkey, 3)
+        if (StrLen(Hotkey) == 2 && Substr(Hotkey, 1, 1) == "+" && Instr(keys.alpha, Substr(Hotkey, 2, 1))) {
+            Hotkey := Substr(Hotkey, 2)
+            if (!GetKeyState("Capslock", "T")) {
+                StringUpper, Hotkey, Hotkey
+            }
+        }
+        shiftState := GetKeyState("Shift", "P")
+        uppercase := GetKeyState("Capslock", "T") ? !shiftState : shiftState
+        ;if capslock is down, shift's function is reversed (pressing shift and a key while capslock is on will provide the lowercase key)
+        if (uppercase && Instr(keys.alpha, Hotkey)) {
+            StringUpper, Hotkey, Hotkey
+        }
+        if (Instr("," . keys.breakKeys . ",", "," . Hotkey . ",")) {
+            typed := ""
+            return
+        }
+        else if Hotkey in Return,Tab,Space
+        {
+            typed .= effect[Hotkey]
+        }
+        else if (Hotkey == "BS") {
+            ;trim typed var if Backspace was pressed
+            StringTrimRight, typed, typed, 1
+            return
+        }
+        else if (RegExMatch(Hotkey, "Numpad(.+?)", numKey)) {
+            if (numkey1 ~= "\d") {
+                typed .= numkey1
+            }
+            else {
+                typed .= effect[numKey1]
+            }
+        }
+        else {
+            typed .= Hotkey
+        }
+        matched := false
+        for k, v in hotstrings
+        {
+            matchRegex := (v.mode == 1 ? "Oi)" : "") . (v.mode == 3 ? RegExReplace(v.trigger, "\$$", "") : "\Q" . v.trigger . "\E") . "$"
+            if (v.mode == 3) {
+                if (matchRegex ~= "^[^\s\)\(\\]+?\)") {
+                    matchRegex := "O" . matchRegex
+                }
+                else {
+                    matchRegex := "O)" . matchRegex
+                }
+            }
+            if (RegExMatch(typed, matchRegex, local$)) {
+                addHotString()
+                matched := true
+                if (v.mode == 2) {
+                    returnValue := (local$ == "" ? local$.value(0) : local$)
+                }
+                else {
+                    returnValue := (local$.count > 0 ? local$ : local$.value(0))
+                }
+
+                if (v.cond != "" && IsFunc(v.cond)) {
+                    ;if hotstring has a condition function
+                    conditionalFunc := Func(v.cond)
+                    if (conditionalFunc.minParams >= 1) {
+                        ;if the function has at least 1 parameters
+                        conditionalValue := conditionalFunc.(returnValue)
+                    }
+                    else {
+                        conditionalValue := conditionalFunc.()
+                    }
+                    if (!conditionalValue) {
+                        ;if the function returns a non-true value
+                        matched := false
+                        continue
+                    }
+                }
+                if (v.clearTrigger) {
+                    ;delete the trigger
+                    triggerStr := (v.mode == 3 && local$.count > 0 ? local$.value(0) : returnValue)
+                    StringRight, lastChar, triggerStr, 1
+                    SendInput % "{BS " . StrLen(triggerStr) . "}"
+                }
+                if (IsLabel(v.label)) {
+                    $ := returnValue
+                    gosub, % v.label
+                }
+                else if (IsFunc(v.label)) {
+                    callbackFunc := Func(v.label)
+                    if (callbackFunc.minParams >= 1) {
+                        callbackFunc.(returnValue)
+                    }
+                    else {
+                        callbackFunc.()
+                    }
+                }
+                else {
+                    toSend := v.label
+                    ;working out the back-references
+                    if (local$.count() == 0) {
+                        StringReplace, toSend, toSend, % "$0", % local$.value(0), All
+                    }
+                    Loop, % local$.count()
+                    {
+                        StringReplace, toSend, toSend, % "$" . A_Index, % local$.value(A_index), All
+                    }
+                    toSend := RegExReplace(toSend, "([!#\+\^\{\}])", "{$1}") ;Escape modifiers
+                    SendInput, %toSend%
+                }
+            }
+        }
+        if (matched) {
+            typed := ""
+        }
+        else if (StrLen(typed) > 350) {
+            StringTrimLeft, typed, typed, 200
+        }
+    }
+    else {
+        if (hotstrings.HasKey(trigger) && label == "") {
+            ;removing a hotstring
+            hotstrings.remove(trigger)
+        }
+        else {
+            ;add to hotstrings object
+            hotstrings[trigger] := {
+                (LTrim Join
+                    trigger: trigger,
+                    label: label,
+                    mode: mode,
+                    clearTrigger: clearTrigger,
+                    cond: cond
+                )}
+        }
+    }
+    return
+
+    __hotstring:
+        ;this label is triggered every time a key is pressed
+        Hotstring("", "", "CALLBACK")
+        return
+}
+
 init() {
     initInternalVars()
     refreshMonitors()
@@ -3449,10 +3654,17 @@ init() {
             MsgBox, 48,, %msg%
         }
     }
+    initHotStrings()
+}
+
+initHotStrings() {
+    if (toBool(hs.config.user.enableHsAlias)) {
+        hotString("(B|b)i(\d+)" . hs.const.EOL_REGEX, "hsBackInX", 3)
+    }
 }
 
 initInternalVars() {
-    hs.VERSION := "1.20150819.2"
+    hs.VERSION := "1.20150821.2"
     hs.TITLE := "HotScript"
     hs.BASENAME := A_ScriptDir . "\" . hs.TITLE
 
@@ -4002,11 +4214,15 @@ numberSelectedPrompt() {
 }
 
 pasteTemplate(template, tokens:="", keys:="", delay:=250) {
+    /*
+    ; this has the negative side effect of double "enter" when pasting into SqlPlus
+    ; For now, this is disabled - which means the editor must correctly handle using the correct EOL
     eol := getEol(template)
     if (eol == hs.const.EOL_NIX) {
         ; because templates are often from a continuation section, convert EOLs to Windows (CRLF)
         template := StringReplace(template, hs.const.EOL_NIX, hs.const.EOL_WIN, "All")
     }
+    */
     for name, value in tokens {
         token := "{" . name . "}"
         template := StringReplace(template, token, value, "All")
@@ -5079,7 +5295,7 @@ showQuickHelp(waitforKey) {
         %colLine%
         bbl`tbe back later`t`t`t
         bbs`tbe back soon`t`t`t
-        bi5`tback in 5 minutes`t`t
+        bi#`tback in # minutes`t`t
         brb`tbe right back`t`t`t
         brt`tbe right there`t`t`t
         g2g`tGood to go.`t`t`t
@@ -5955,21 +6171,6 @@ zoomStart() {
         GoSub zoomRepaint
         return
 }
-
-
-;--------------------------------------------------
-;labels
-;--------------------------------------------------
-lvHelp:
-    Gui, 98: ListView, %A_GuiControl%
-    if (A_GuiEvent == "DoubleClick") {
-        LV_GetText(hkName, A_EventInfo)
-        runHotkey(hkName)
-    }
-    else {
-        ;message(A_GuiEvent . " event for " . A_GuiControl)
-    }
-    return
 
 
 ;--------------------------------------------------
