@@ -26,44 +26,26 @@ SetWinDelay, 0
 /*
 Things todo/fix/check
 ===============================================================
-Add an inspector prompt
-    Ask for variable name, display it with MsgBox or showArray()
 Full help screen
-    Does not show up on active monitor
-    If "up" option is on for a hot key, the entry does not show on full help screen
-    Add a filter
-    Add third tab for all documentation
-        How to suspend keys
-        A message about "why" some options for hotstrings are set
-        A message about "why" some hotstrings are the way they are to avoid collions
-    Ctrl-Win-H recreates help screen even if it is already showing
     On help screen, add keyboard handling
         LV should get focus
         Down arrow should focus the grid
         Enter should run the currently selected row
             What if no row is currently selected?
                 Do nothing, exit, or select first row?
-    Allow resizing
-    Read the user-defined files for keys/strings, too
-        Indicate if internal or user-defined
-    Add reference to HotScriptKeys.ahk
-    Add reference to HotScriptStrings.ahk
-    Add reference to HotScript.ini
-    Show current configuration
-        Be able to change configuration
 */
 
 
 ;__________________________________________________
 ;private variables
-MENU_SEP := "-"
+COMMENT_HEADER_LINE := " " . repeatStr("-", 70)
 LINE_SEP := repeatStr("·", 165)
-MY_VERSION := "20131202.beta1"
+MENU_SEP := "-"
+MY_VERSION := "20131203.beta1"
 MY_TITLE := "Mike's HotScript"
 QUICK_SPLASH_TITLE := "QuickSplash"
 USER_KEYS := A_ScriptDir . "\HotScriptKeys.ahk"
 USER_STRINGS := A_ScriptDir . "\HotScriptStrings.ahk"
-
 JiraPanels := {format:"", formatBlue:"", formatGreen:"", formatRed:"", formatYellow:""}
 
 Config := Object()
@@ -136,6 +118,18 @@ init()
         addHotString()
         sendText("be right there")
         return
+    :*:chpl:: ;; Comment header for Perl
+       addHotString()
+       sendText("#" . COMMENT_HEADER_LINE, "{Enter}")
+       sendText("#  ", "{Enter}")
+       sendText("#" . COMMENT_HEADER_LINE, "{Up}{End}")
+       return
+    :*:chsql:: ;; Comment header for SQL
+       addHotString()
+       sendText("--" . COMMENT_HEADER_LINE, "{Enter}")
+       sendText("--  ", "{Enter}")
+       sendText("--" . COMMENT_HEADER_LINE, "{Up}{End}")
+       return
     :*:crg:: ;; Code review is good.
         addHotString()
         sendText("Code review is good.")
@@ -806,12 +800,13 @@ init()
     ;#f9::MsgBox % showArray(monitors)
     ;#f10::ListHotkeys
     ;#f11::ListVars
-    #f11::
-        MsgBox % showArray(configUser)
-        return
     #f12:: ;; exits this script, restoring original keyboard functionality
         addHotKey()
         stop()
+        return
+    ^#f12:: ;; Debug only - display the value of any internal variable
+        addHotKey()
+        showDebugVar()
         return
     #insert:: ;; hides the current window
         addHotKey()
@@ -2379,6 +2374,21 @@ showClipboard() {
     Progress, off
 }
 
+showDebugVar() {
+    global
+    local val
+    varName := ask("Debug", "Please enter the name of the variable to inspect:", 330)
+    if (varName != "") {
+        if (IsObject(%varName%)) {
+            val := showArray(%varName%)
+        }
+        else {
+            val := %varname%
+        }
+        MsgBox % varName . " = [" . val . "]"
+    }
+}
+
 showFullHelp() {
     global MY_TITLE
     global MY_VERSION
@@ -2630,8 +2640,6 @@ showQuickHelp(waitforKey) {
         hkResult .= RTrim(value . hkArr2[key] . hkArr3[key] . hkArr4[key]) . "`n"
     }
 
-;
-
     hsAliasHelp =
     ( LTrim
         Alias hotstrings`t`t`t`t
@@ -2656,13 +2664,16 @@ showQuickHelp(waitforKey) {
         yw`tYou're welcome`t`t`t`t
         wyb`tPlease let me know when you are back.`t
         %spacer1%
+        %spacer1%
     )
 
     hsAutoCorHelp =
     ( LTrim
+        %spacer2%
         Auto-correct hotstrings`t`t`t
         %col2line%
         cL`tc:`t`t`t`t
+        %spacer2%
         %spacer2%
         %spacer2%
         %spacer2%
@@ -2675,6 +2686,8 @@ showQuickHelp(waitforKey) {
     ( LTrim
         Code hotstrings`t`t`t`t
         %col2line%
+        chpl`t`tComment header (Perl)`t
+        chsql`t`tComment header (SQL)`t
         for (`t`t'for' block`t`t
         func (`t`t'function' block`t
         if (`t`t'if' block`t`t
@@ -2701,7 +2714,6 @@ showQuickHelp(waitforKey) {
         @month`tMonth name`t`t`t
         @now`t'MM/DD/YYYY at 24:MM:SS'`t
         @time`t'24:MM:SS'`t`t`t
-        %spacer2%
     )
 
     hsDosHelp =
@@ -2754,11 +2766,14 @@ showQuickHelp(waitforKey) {
         sela`t'select all' template`t`t
         selc`t'select count' template`t`t
         selw`t'select where' template`t`t
+        %spacer2%
+        %spacer2%
+        %spacer2%
     )
 
     hsCol1 := hsAliasHelp
-    hsCol2 := hsCodeHelp . "`n" . hsHtmlHelp
-    hsCol3 := hsDateHelp . "`n" . hsAutoCorHelp
+    hsCol2 := hsCodeHelp . "`n" . hsAutoCorHelp
+    hsCol3 := hsDateHelp . "`n" . hsHtmlHelp
     ;hsCol4 := hsJiraHelp . "`n" . hsSqlHelp . "`n" . hsDosHelp
     hsCol4 := hsJiraHelp . "`n" . hsSqlHelp
 
