@@ -10,12 +10,13 @@ please contact Mike Viens. (mike.viens@pearson.com)
 */
 
 #Include %A_ScriptDir%
-#Hotstring EndChars -()[]{}<>!@$%^&*_=+|:'"/\,.?! `n`t;
+#Hotstring EndChars `(`)`[`]`{`}`<`>`~`!`@`#`$`%`^`&`*`_`=`+`\`|`;`:`'`"`,`.`/`? `n`t
 #MaxHotkeysPerInterval 200
 #NoEnv
 #SingleInstance force
 #Warn
 Autotrim, off
+DetectHiddenWindows, on
 ListLines, off
 ;SendMode Input
 SetBatchLines -1
@@ -32,20 +33,25 @@ EOL_NIX := "`n"
 EOL_WIN := "`r`n"
 EOL_REGEX := "(\r\n|\n|\r)"
 LINE_SEP := repeatStr("·", 157)
+MARKER := {
+    (LTrim Join
+        always_on_top: "† ",
+        click_through: "‡ ",
+        transparent: "±"
+    )}
 MENU_SEP := "-"
 HOTSCRIPT_TITLE := "HotScript"
-HOTSCRIPT_DIR := A_ScriptDir . "\" . HOTSCRIPT_TITLE
-HOTSCRIPT_VERSION := "20150615.1"
-SKIP_FIELDS := Array("file", "hkSessionCount", "hsSessionCount")
+HOTSCRIPT_BASENAME := A_ScriptDir . "\" . HOTSCRIPT_TITLE
+HOTSCRIPT_VERSION := "1.20150622.3"
 SPLASH_TITLE := HOTSCRIPT_TITLE . "Splash"
-USER_KEYS := A_ScriptDir . "\" . HOTSCRIPT_TITLE . "Keys.ahk"
-USER_STRINGS := A_ScriptDir . "\" . HOTSCRIPT_TITLE . "Strings.ahk"
+USER_KEYS_FILE := HOTSCRIPT_BASENAME . "Keys.ahk"
+USER_STRINGS_FILE := HOTSCRIPT_BASENAME . "Strings.ahk"
 VIRTUAL_SPACE := " " ; this is not a space, but Alt+0160
 
 configDefault := new OldConfig(HOTSCRIPT_TITLE)
-configDefault.file := A_ScriptDir . "\" . HOTSCRIPT_TITLE . "Default.ini"
+configDefault.file := HOTSCRIPT_BASENAME . "Default.ini"
 configUser := new OldConfig
-configUser.file := A_ScriptDir . "\" . HOTSCRIPT_TITLE . "User.ini"
+configUser.file := HOTSCRIPT_BASENAME . "User.ini"
 hiddenWindows := ""
 lvKeys := ""
 lvStrings := ""
@@ -62,10 +68,10 @@ init()
 #Include *i HotScriptStrings.ahk
 ; Aliases
 ;--------
-;#If, toBool(configUser.enableHsAlias)
+;#if, toBool(configUser.enableHsAlias)
     ;regexHotString("O)(B|b)i(\d+)" . EOL_REGEX, "hsBackInX")
-;#If
-#If, toBool(configUser.enableHsAlias)
+;#if
+#if, toBool(configUser.enableHsAlias)
     :*ch:bbl:: ;; be back later
         addHotString()
         sendText("be back later")
@@ -168,18 +174,56 @@ init()
         addHotString()
         sendText("Please let me know when you are back...")
         return
-#If
+#if
 ; Auto-correct
 ;-------------
-#If, toBool(configUser.enableHsAutoCorrect)
+#if, toBool(configUser.enableHsAutoCorrect)
     :*c:cL:: ;; change "cL" to "c:"
         addHotString()
         SendInput, c{:}
         return
-#If
+    #ifWinNotActive ahk_class CalcFrame
+        ::1/8:: ;; 1/8 as a fraction
+            addHotString()
+            sendText(chr(8539) . A_EndChar)
+            return
+        ::1/4:: ;; 1/4 as a fraction
+            addHotString()
+            sendText(chr(188) . A_EndChar)
+            return
+        ::1/3:: ;; 1/3 as a fraction
+            addHotString()
+            sendText(chr(8531) . A_EndChar)
+            return
+        ::3/8:: ;; 3/8 as a fraction
+            addHotString()
+            sendText(chr(8540) . A_EndChar)
+            return
+        ::1/2:: ;; 1/2 as a fraction
+            addHotString()
+            sendText(chr(189) . A_EndChar)
+            return
+        ::5/8:: ;; 5/8 as a fraction
+            addHotString()
+            sendText(chr(8541) . A_EndChar)
+            return
+        ::2/3:: ;; 2/3 as a fraction
+            addHotString()
+            sendText(chr(8532) . A_EndChar)
+            return
+        ::3/4:: ;; 3/4 as a fraction
+            addHotString()
+            sendText(chr(190) . A_EndChar)
+            return
+        ::7/8:: ;; 7/8 as a fraction
+            addHotString()
+            sendText(chr(8542) . A_EndChar)
+            return
+    #if
+#if
 ;Code
 ;----
-#If, toBool(configUser.enableHsCode)
+#if, toBool(configUser.enableHsCode)
     :*b0:for(:: ;; auto-completion of a 'for' block
     :*b0:for (:: ;; auto-completion of a 'for' block
     :*b0:if(:: ;; auto-completion of an 'if' block
@@ -234,6 +278,10 @@ init()
         addHotString()
         templateJava()
         return
+    :*:@ip:: ;; current IP address
+        addHotString()
+        sendText(A_IPAddress1)
+        return
     :*:@sql:: ;; a basic SQL template
         addHotString()
         templateSql()
@@ -242,10 +290,10 @@ init()
         addHotString()
         templatePerl()
         return
-#If
+#if
 ;Date and Time
 ;-------------
-#If, toBool(configUser.enableHsDates)
+#if, toBool(configUser.enableHsDates)
     :*:dts:: ;; datestamp - the current date as 'YYYYMMDD'
         addHotString()
         sendText(A_YYYY . A_MM . A_DD)
@@ -286,20 +334,24 @@ init()
         addHotString()
         sendText(A_Hour . ":" . A_Min . ":" . A_Sec)
         return
-#If
+#if
 ;DOS
 ;---
-#If, toBool(configUser.enableHsDos)
-    #IfWinActive ahk_class ConsoleWindowClass
+#if, toBool(configUser.enableHsDos)
+    #ifWinActive ahk_class ConsoleWindowClass
         :*b0:cd :: ;; Appends '/d' onto 'cd ' commands to allow changing drive++DOS only
             addHotString()
             Send, /d{Space}
             return
-    #IfWinActive
-#If
+    #ifWinActive
+#if
 ;HTML
 ;----
-#If, toBool(configUser.enableHsHtml)
+#if, toBool(configUser.enableHsHtml)
+    :*b0:<!-:: ;; HTML/XML comment
+        addHotString()
+        sendText("-  -->", "{Left 4}")
+        return
     :?*b0:<a :: ;; auto-completion of the HTML 'a' tag (with 'href' attribute)
         addHotString()
         sendText("href=""""></a>", "{Left 4}")
@@ -586,10 +638,10 @@ init()
         addHotString()
         sendText("<?xml version='1.0' encoding='UTF-8'?>", "{Enter}")
         return
-#If
+#if
 ;Jira
 ;----
-#If, toBool(configUser.enableHsJira)
+#if, toBool(configUser.enableHsJira)
     :*:{bpan:: ;; a pair of {panel} tags with blue background++used by Jira/Confluence
         addHotString()
         pval := configUser.jiraPanels.formatBlue
@@ -665,7 +717,7 @@ init()
         addHotString()
         sendJiraPanel(configUser.jiraPanels.formatYellow)
         return
-#If
+#if
 hsBackInX() {
     global $
     addHotString()
@@ -675,13 +727,13 @@ hsBackInX() {
 ;__________________________________________________
 ;HotKeys
 #Include *i HotScriptKeys.ahk
-#If, toBool(configUser.enableHkMisc)
+#if, toBool(configUser.enableHkMisc)
     #pause:: ;; toggles suspension of this script
         Suspend
         addHotKey()
         toggleSuspend()
         return
-#If
+#if
 
 ;__________________________________________________
 ;wrapper functions
@@ -1069,67 +1121,50 @@ WinGetTitle(winTitle:="", winText:="", excludeTitle:="", excludeText:="") {
 ;__________________________________________________
 ;hotkey functions
 hkActionAlwaysOnTop() {
-    addHotKey()
     toggleAlwaysOnTop()
 }
 
 hkActionCalculator() {
-    addHotKey()
     findOrRunByExe("calc")
 }
 
+hkActionClickThrough() {
+    toggleClickThrough()
+}
+
 hkActionControlPanel() {
-    addHotKey()
     runTarget("Control Panel")
 }
 
 hkActionDosPrompt() {
-    addHotKey()
     runDos()
 }
 
 hkActionEditor() {
-    addHotKey()
     runEditor()
 }
 
 hkActionGoogleSearch() {
-    addHotKey()
     runSelectedText()
 }
 
-hkActionHideWindow() {
-    addHotKey()
-    hideWindow()
-}
-
 hkActionQuickLookup() {
-    addHotKey()
     runQuickLookup()
 }
 
-hkActionRestoreHiddenWindows() {
-    addHotKey()
-    restoreHiddenWindows()
-}
-
 hkActionToggleDesktopIcons() {
-    addHotKey()
     toggleDesktopIcons()
 }
 
 hkActionWindowsExplorer() {
-    addHotKey()
     runTarget("explorer.exe C:\")
 }
 
 hkActionWindowsServices() {
-    addHotKey()
     runServices()
 }
 
 hkActionWindowsSnip() {
-    addHotKey()
     snip := findOnPath("SnippingTool.exe")
     if (snip == "") {
         winVer := RegRead("HKEY_LOCAL_MACHINE", "SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ProductName")
@@ -1145,72 +1180,58 @@ hkActionWindowsSnip() {
 }
 
 hkDosCdParent() {
-    addHotKey()
     SendInput, cd ..{Enter}
 }
 
 hkDosCopy() {
-    addHotKey()
     SendInput, copy{Space}
 }
 
 hkDosDownloads() {
-    addHotKey()
     SendInput, pushd `%USERPROFILE`%\Downloads{Enter}
 }
 
 hkDosExit() {
-    addHotKey()
     SendInput, exit{Enter}
 }
 
 hkDosMove() {
-    addHotKey()
     SendInput, move{Space}
 }
 
 hkDosPopd() {
-    addHotKey()
     SendInput, popd{Enter}
 }
 
 hkDosPushd() {
-    addHotKey()
     SendInput, pushd{Space}
 }
 
 hkDosRoot() {
-    addHotKey()
     SendInput, cd\{Enter}
 }
 
 hkDosType() {
-    addHotKey()
     SendInput, type{Space}
 }
 
 hkEppDeleteToEol() {
-    addHotKey()
     SendInput, ^+{Delete}
 }
 
 hkEppDeleteWord() {
-    addHotKey()
     SendInput, ^{Delete}
 }
 
 hkEppGoToLine() {
-    addHotKey()
     SendInput, !g
 }
 
 hkEppNextFile() {
-    addHotKey()
     SendInput, {F6}
 }
 
 hkEppPrevFile() {
-    addHotKey()
     SendInput, +{F6}
 }
 
@@ -1224,35 +1245,29 @@ hkHotScriptDebugVariable() {
 
 hkHotScriptEditDefaultIni() {
     global configDefault
-    addHotKey()
     runEditor(configDefault.file)
 }
 
 hkHotScriptEditHotScript() {
-    addHotKey()
     runEditor(A_ScriptFullPath)
 }
 
 hkHotScriptEditUserIni() {
     global configUser
-    addHotKey()
     runEditor(configUser.file)
 }
 
 hkHotScriptEditUserKeys() {
-    global USER_KEYS
-    addHotKey()
-    runEditor(USER_KEYS)
+    global USER_KEYS_FILE
+    runEditor(USER_KEYS_FILE)
 }
 
 hkHotScriptEditUserStrings() {
-    global USER_STRINGS
-    addHotKey()
-    runEditor(USER_STRINGS)
+    global USER_STRINGS_FILE
+    runEditor(USER_STRINGS_FILE)
 }
 
 hkHotScriptExit() {
-    addHotKey()
     stop()
 }
 
@@ -1274,103 +1289,266 @@ hkHotScriptReload() {
 }
 
 hkMiscMouseDown() {
-    addHotKey()
     MouseMove(0, 1)
 }
 
 hkMiscMouseLeft() {
-    addHotKey()
     MouseMove(-1, 0)
 }
 
 hkMiscMouseRight() {
-    addHotKey()
     MouseMove(1, 0)
 }
 
 hkMiscMouseUp() {
-    addHotKey()
     MouseMove(0, -1)
 }
 
 hkMiscPasteClipboardAsText() {
-    addHotKey()
     sendText(ClipBoard)
 }
 
 hkMiscPasteEnter() {
     global EOL_WIN
-    addHotKey()
     sendText(EOL_WIN)
 }
 
 hkMiscPasteTab() {
-    addHotKey()
     sendText(A_Tab)
 }
 
 hkMiscPreviewClipboard() {
-    addHotKey()
     showClipboard()
 }
 
 hkMiscZoomWindow() {
-    addHotKey()
     zoomStart()
 }
 
-hkScreenMovementCenterWindow() {
-    addHotKey()
+hkTextDeleteCurrentLine() {
+    if (WinActive("ahk_exe i)EditPadPro\d*\.exe")) {
+        SendInput, ^!y
+    }
+    else {
+        deleteCurrentLine()
+    }
+}
+
+hkTextDuplicateCurrentLine() {
+    global configUser
+    if (WinActive("ahk_exe i)EditPadPro\d*\.exe")) {
+        SendInput, ^+{Up}
+    }
+    else {
+        duplicateCurrentLine()
+    }
+}
+
+hkTextMoveCurrentLineDown() {
+    if (WinActive("ahk_exe i)EditPadPro\d*\.exe")) {
+        Send, ^!+{Down}
+    }
+    else {
+        moveCurrentLineDown()
+    }
+}
+
+hkTextMoveCurrentLineUp() {
+    if (WinActive("ahk_exe i)EditPadPro\d*\.exe")) {
+        Send, ^!+{Up}
+    }
+    else if (WinActive("ahk_class ConsoleWindowClass")) {
+        hkDosCdParent()
+    }
+    else {
+        moveCurrentLineUp()
+    }
+}
+
+hkTransformEncrypt() {
+    cryptSelected()
+}
+
+hkTransformInvertCase() {
+    transformSelected("I")
+}
+
+hkTransformLowerCase() {
+    if (WinActive("ahk_exe i)EditPadPro\d*\.exe")) {
+        Send, ^+l
+    }
+    else {
+        transformSelected("L")
+    }
+}
+
+hkTransformNumberPrepend() {
+    numberSelected()
+}
+
+hkTransformNumberPrependPrompt() {
+    numberSelectedPrompt()
+}
+
+hkTransformNumberStrip() {
+    numberRemoveSelected()
+}
+
+hkTransformOracleUpper() {
+    upperCaseOracle()
+}
+
+hkTransformReverseText() {
+    transformSelected("R")
+}
+
+hkTransformSentenceCase() {
+    transformSelected("S")
+}
+
+hkTransformSortAscending() {
+    sortSelected()
+}
+
+hkTransformSortDescending() {
+    sortSelected("d")
+}
+
+hkTransformTagify() {
+    tagifySelected()
+}
+
+hkTransformTitleCase() {
+    if (WinActive("ahk_class Chrome_WidgetWin_1") || WinActive("ahk_class MozillaWindowClass")) {
+        Send, ^+t
+    }
+    else {
+        transformSelected("T")
+    }
+}
+
+hkTransformUnwrapText() {
+    lineUnwrapSelected()
+}
+
+hkTransformUpperCase() {
+    if (WinActive("ahk_exe i)EditPadPro\d*\.exe")) {
+        Send, ^+u
+    }
+    else {
+        transformSelected("U")
+    }
+}
+
+hkTransformWrapEachInBrackets() {
+    wrapSelectedEach("[", "]")
+}
+
+hkTransformWrapEachInCurlys() {
+    wrapSelectedEach("{", "}")
+}
+
+hkTransformWrapEachInParenthesis() {
+    wrapSelectedEach("(", ")")
+}
+
+hkTransformWrapEachInDoubleQuotes() {
+    wrapSelectedEach("""", """")
+}
+
+hkTransformWrapEachInSingleQuotes() {
+    wrapSelectedEach("'", "'")
+}
+
+hkTransformWrapEachInTags() {
+    wrapSelectedEach("<", ">")
+}
+
+hkTransformWrapInBrackets() {
+    wrapSelected("[", "]")
+}
+
+hkTransformWrapInCurlys() {
+    wrapSelected("{", "}")
+}
+
+hkTransformWrapInParenthesis() {
+    wrapSelected("(", ")")
+}
+
+hkTransformWrapInDoubleQuotes() {
+    wrapSelected("""", """")
+}
+
+hkTransformWrapInSingleQuotes() {
+    wrapSelected("'", "'")
+}
+
+hkTransformWrapInTags() {
+    wrapSelected("<", ">")
+}
+
+hkTransformWrapText() {
+    lineWrapSelected()
+}
+
+hkWindowCenter() {
     centerWindow()
 }
 
-hkScreenMovementDragMouseDown() {
-    addHotKey()
+hkWindowDecreaseTransparency() {
+    setTransparency(false)
+}
+
+hkWindowDragMouseDown() {
     MouseClickDrag("Left", 0, 0, 0, 1, 0)
 }
 
-hkScreenMovementDragMouseLeft() {
-    addHotKey()
+hkWindowDragMouseLeft() {
     MouseClickDrag("Left", 0, 0, -1, 0, 0)
 }
 
-hkScreenMovementDragMouseRight() {
-    addHotKey()
+hkWindowDragMouseRight() {
     MouseClickDrag("Left", 0, 0, 1, 0, 0)
 }
 
-hkScreenMovementDragMouseUp() {
-    addHotKey()
+hkWindowDragMouseUp() {
     MouseClickDrag("Left", 0, 0, 0, -1, 0)
 }
 
-hkScreenMovementWindowLeft() {
-    addHotKey()
+hkWindowHide() {
+    hideWindow()
+}
+
+hkWindowIncreaseTransparency() {
+    setTransparency(true)
+}
+
+hkWindowLeft() {
     moveToMonitor("A", -1)
 }
 
-hkScreenMovementWindowRight() {
-    addHotKey()
-    moveToMonitor("A", 1)
+hkWindowMaximize() {
+    maximize()
 }
 
-hkScreenMovementPageDown() {
-    addHotKey()
+hkWindowMinimize() {
+    minimize()
+}
+
+hkWindowPageDown() {
     SendInput, {PgDn}
 }
 
-hkScreenMovementPageUp() {
-    addHotKey()
+hkWindowPageUp() {
     SendInput, {PgUp}
 }
 
-hkScreenMovementResizeWindow() {
-    addHotKey()
+hkWindowResize() {
     runQuickResolution()
 }
 
-hkScreenMovementResizeWindowAnchor() {
-    addHotKey()
+hkWindowResizeToAnchor() {
     direction := ""
     if (GetKeyState("up", "p") == "D") {
         direction .= "T"
@@ -1387,8 +1565,7 @@ hkScreenMovementResizeWindowAnchor() {
     resizeTo(direction)
 }
 
-hkScreenMovementResizeWindowCompass() {
-    addHotKey()
+hkWindowResizeToCompass() {
     direction := ""
     key := setCase(A_ThisHotKey, "L")
     if (containsIgnoreCase(key, "NumPad1", "NumPadEnd")) {
@@ -1421,214 +1598,18 @@ hkScreenMovementResizeWindowCompass() {
     resizeTo(direction)
 }
 
-hkScreenMovementWindowMaximize() {
-    addHotKey()
-    maximize()
+hkWindowRestoreHidden() {
+    restoreHiddenWindows()
 }
 
-hkScreenMovementWindowMinimize() {
-    addHotKey()
-    minimize()
+hkWindowRight() {
+    moveToMonitor("A", 1)
 }
 
-hkTextDeleteCurrentLine() {
-    addHotKey()
-    if (WinActive("ahk_exe i)EditPadPro\d*\.exe")) {
-        SendInput, ^!y
-    }
-    else {
-        deleteCurrentLine()
-    }
+hkWindowToggleTransparency() {
+    toggleTransparency()
 }
 
-hkTextDuplicateCurrentLine() {
-    global configUser
-    addHotKey()
-    if (WinActive("ahk_exe i)EditPadPro\d*\.exe")) {
-        SendInput, ^+{Up}
-    }
-    else {
-        duplicateCurrentLine()
-    }
-}
-
-hkTextMoveCurrentLineDown() {
-    addHotKey()
-    if (WinActive("ahk_exe i)EditPadPro\d*\.exe")) {
-        Send, ^!+{Down}
-    }
-    else {
-        moveCurrentLineDown()
-    }
-}
-
-hkTextMoveCurrentLineUp() {
-    addHotKey()
-    if (WinActive("ahk_exe i)EditPadPro\d*\.exe")) {
-        Send, ^!+{Up}
-    }
-    else if (WinActive("ahk_class ConsoleWindowClass")) {
-        hkDosCdParent()
-    }
-    else {
-        moveCurrentLineUp()
-    }
-}
-
-hkTransformEncrypt() {
-    addHotKey()
-    cryptSelected()
-}
-
-hkTransformInvertCase() {
-    addHotKey()
-    transformSelected("I")
-}
-
-hkTransformLowerCase() {
-    addHotKey()
-    if (WinActive("ahk_exe i)EditPadPro\d*\.exe")) {
-        Send, ^+l
-    }
-    else {
-        transformSelected("L")
-    }
-}
-
-hkTransformNumberPrepend() {
-    addHotKey()
-    numberSelected()
-}
-
-hkTransformNumberPrependPrompt() {
-    addHotKey()
-    numberSelectedPrompt()
-}
-
-hkTransformNumberStrip() {
-    addHotKey()
-    numberRemoveSelected()
-}
-
-hkTransformOracleUpper() {
-    addHotKey()
-    upperCaseOracle()
-}
-
-hkTransformReverseText() {
-    addHotKey()
-    transformSelected("R")
-}
-
-hkTransformSentenceCase() {
-    addHotKey()
-    transformSelected("S")
-}
-
-hkTransformSortAscending() {
-    addHotKey()
-    sortSelected()
-}
-
-hkTransformSortDescending() {
-    addHotKey()
-    sortSelected("d")
-}
-
-hkTransformTagify() {
-    addHotKey()
-    tagifySelected()
-}
-
-hkTransformTitleCase() {
-    addHotKey()
-    if (WinActive("ahk_class Chrome_WidgetWin_1") || WinActive("ahk_class MozillaWindowClass")) {
-        Send, ^+t
-    }
-    else {
-        transformSelected("T")
-    }
-}
-
-hkTransformUnwrapText() {
-    addHotKey()
-    lineUnwrapSelected()
-}
-
-hkTransformUpperCase() {
-    addHotKey()
-    if (WinActive("ahk_exe i)EditPadPro\d*\.exe")) {
-        Send, ^+u
-    }
-    else {
-        transformSelected("U")
-    }
-}
-
-hkTransformWrapEachInBrackets() {
-    addHotKey()
-    wrapSelectedEach("[", "]")
-}
-
-hkTransformWrapEachInCurlys() {
-    addHotKey()
-    wrapSelectedEach("{", "}")
-}
-
-hkTransformWrapEachInParenthesis() {
-    addHotKey()
-    wrapSelectedEach("(", ")")
-}
-
-hkTransformWrapEachInDoubleQuotes() {
-    addHotKey()
-    wrapSelectedEach("""", """")
-}
-
-hkTransformWrapEachInSingleQuotes() {
-    addHotKey()
-    wrapSelectedEach("'", "'")
-}
-
-hkTransformWrapEachInTags() {
-    addHotKey()
-    wrapSelectedEach("<", ">")
-}
-
-hkTransformWrapInBrackets() {
-    addHotKey()
-    wrapSelected("[", "]")
-}
-
-hkTransformWrapInCurlys() {
-    addHotKey()
-    wrapSelected("{", "}")
-}
-
-hkTransformWrapInParenthesis() {
-    addHotKey()
-    wrapSelected("(", ")")
-}
-
-hkTransformWrapInDoubleQuotes() {
-    addHotKey()
-    wrapSelected("""", """")
-}
-
-hkTransformWrapInSingleQuotes() {
-    addHotKey()
-    wrapSelected("'", "'")
-}
-
-hkTransformWrapInTags() {
-    addHotKey()
-    wrapSelected("<", ">")
-}
-
-hkTransformWrapText() {
-    addHotKey()
-    lineWrapSelected()
-}
 
 ;__________________________________________________
 ;custom functions
@@ -1669,18 +1650,8 @@ ask(title, prompt, width:=250, height:=125, defaultValue:="") {
     return value
 }
 
-between(value, min, max) {
-    result := false
-    if (min > max) {
-        tmp := min
-        min := max
-        max := tmp
-    }
-    if value between %min% and %max%
-    {
-        result := true
-    }
-    return result
+between(value, low, high) {
+    return value >= low && value <= high
 }
 
 binToHex(ByRef bytes, num:=0) {
@@ -1794,7 +1765,7 @@ containsIgnoreCase(str, values*) {
 }
 
 createIcon() {
-    Global HOTSCRIPT_DIR
+    Global HOTSCRIPT_BASENAME
     iconData1 =
     ( LTrim Join
         000001000400101000000000200068040000460000002020000000002000A8100000AE040000
@@ -2660,15 +2631,15 @@ createIcon() {
     )
     iconData := iconData1 . iconData2 . iconData3 . iconData4 . iconData5
     hexToBin(iconBin, iconData)
-    fileIco := FileOpen(HOTSCRIPT_DIR . ".ico", "w")
+    fileIco := FileOpen(HOTSCRIPT_BASENAME . ".ico", "w")
     fileIco.RawWrite(iconBin, StrLen(iconData) / 2)
     fileIco.close()
 }
 
 createUserFiles() {
-    global USER_KEYS
-    global USER_STRINGS
-    file := USER_KEYS
+    global USER_KEYS_FILE
+    global USER_STRINGS_FILE
+    file := USER_KEYS_FILE
     if (FileExist(file) == "") {
         FileAppend,
 (
@@ -2905,7 +2876,7 @@ Each hotkey should use the following format:
 
 ), %file%
     }
-    file := USER_STRINGS
+    file := USER_STRINGS_FILE
     if (FileExist(file) == "") {
         FileAppend,
 (
@@ -3135,15 +3106,13 @@ getDefaultHotKeyDefs(type) {
     if (type == "hkAction") {
         hk["hkActionAlwaysOnTop"] := "#a"
         hk["hkActionCalculator"] := "#c"
+        hk["hkActionClickThrough"] := "^#a"
         hk["hkActionControlPanel"] := "^rctrl"
         hk["hkActionDosPrompt"] := "#d"
         hk["hkActionEditor"] := "#e"
         hk["hkActionGoogleSearch"] := "#g"
-        hk["hkActionHideWindow"] := "#delete"
         hk["hkActionQuickLookup"] := "#q"
-        hk["hkActionRestoreHiddenWindows"] := "#insert"
-        hk["hkActionToggleDesktopIcons-1"] := "#-"
-        hk["hkActionToggleDesktopIcons-2"] := "#numpadsub"
+        hk["hkActionToggleDesktopIcons"] := "!appskey"
         hk["hkActionWindowsExplorer"] := "#x"
         hk["hkActionWindowsServices"] := "#s"
         hk["hkActionWindowsSnip"] := "#printscreen"
@@ -3164,8 +3133,6 @@ getDefaultHotKeyDefs(type) {
         hk["hkEppDeleteToEol"] := "^delete"
         hk["hkEppDeleteWord"] := "^d"
         hk["hkEppGoToLine"] := "^g"
-        hk["hkEppMoveLineDown"] := "!down"
-        hk["hkEppMoveLineUp"] := "!up"
         hk["hkEppNextFile"] := "xbutton2"
         hk["hkEppPrevFile"] := "xbutton1"
     }
@@ -3178,7 +3145,7 @@ getDefaultHotKeyDefs(type) {
         hk["hkHotScriptEditUserKeys"] := "#4"
         hk["hkHotScriptEditUserStrings"] := "#5"
         hk["hkHotScriptExit"] := "#f12"
-        hk["hkHotScriptFullHelp"] := "^#h"
+        ;hk["hkHotScriptFullHelp"] := "^#h"
         hk["hkHotScriptQuickHelp"] := "#h"
         hk["hkHotScriptQuickHelpToggle"] := "!#h"
         hk["hkHotScriptReload"] := "#2"
@@ -3193,44 +3160,6 @@ getDefaultHotKeyDefs(type) {
         hk["hkMiscPasteTab"] := "#tab"
         hk["hkMiscPreviewClipboard"] := "#v"
         hk["hkMiscZoomWindow"] := "#z"
-    }
-    else if (type == "hkScreenMovement") {
-        hk["hkScreenMovementCenterWindow"] := "#home"
-        hk["hkScreenMovementDragMouseDown"] := "^#down"
-        hk["hkScreenMovementDragMouseLeft"] := "^#left"
-        hk["hkScreenMovementDragMouseRight"] := "^#right"
-        hk["hkScreenMovementDragMouseUp"] := "^#up"
-        hk["hkScreenMovementWindowLeft-1"] := "wheelleft"
-        hk["hkScreenMovementWindowLeft-2"] := "#left"
-        hk["hkScreenMovementWindowRight-1"] := "wheelright"
-        hk["hkScreenMovementWindowRight-2"] := "#right"
-        hk["hkScreenMovementPageDown"] := "!wheeldown"
-        hk["hkScreenMovementPageUp"] := "!wheelup"
-        hk["hkScreenMovementResizeWindow"] := "^#r"
-        hk["hkScreenMovementResizeWindowAnchor-1"] := "+#down"
-        hk["hkScreenMovementResizeWindowAnchor-2"] := "+#left"
-        hk["hkScreenMovementResizeWindowAnchor-3"] := "+#right"
-        hk["hkScreenMovementResizeWindowAnchor-4"] := "+#up"
-        hk["hkScreenMovementResizeWindowCompass-1"] := "#numpad1"
-        hk["hkScreenMovementResizeWindowCompass-2"] := "#numpad2"
-        hk["hkScreenMovementResizeWindowCompass-3"] := "#numpad3"
-        hk["hkScreenMovementResizeWindowCompass-4"] := "#numpad4"
-        hk["hkScreenMovementResizeWindowCompass-5"] := "#numpad5"
-        hk["hkScreenMovementResizeWindowCompass-6"] := "#numpad6"
-        hk["hkScreenMovementResizeWindowCompass-7"] := "#numpad7"
-        hk["hkScreenMovementResizeWindowCompass-8"] := "#numpad8"
-        hk["hkScreenMovementResizeWindowCompass-9"] := "#numpad9"
-        hk["hkScreenMovementResizeWindowCompass-10"] := "#numpadend"
-        hk["hkScreenMovementResizeWindowCompass-11"] := "#numpaddown"
-        hk["hkScreenMovementResizeWindowCompass-12"] := "#numpadpgdn"
-        hk["hkScreenMovementResizeWindowCompass-13"] := "#numpadleft"
-        hk["hkScreenMovementResizeWindowCompass-14"] := "#numpadclear"
-        hk["hkScreenMovementResizeWindowCompass-15"] := "#numpadright"
-        hk["hkScreenMovementResizeWindowCompass-16"] := "#numpadhome"
-        hk["hkScreenMovementResizeWindowCompass-17"] := "#numpadup"
-        hk["hkScreenMovementResizeWindowCompass-18"] := "#numpadpgup"
-        hk["hkScreenMovementWindowMaximize"] := "#up"
-        hk["hkScreenMovementWindowMinimize"] := "#down"
     }
     else if (type == "hkText") {
         hk["hkTextDeleteCurrentLine"] := "!delete"
@@ -3276,6 +3205,53 @@ getDefaultHotKeyDefs(type) {
         hk["hkTransformWrapInTags-1"] := "^+,"
         hk["hkTransformWrapInTags-2"] := "^+."
         hk["hkTransformWrapText"] := "^+w"
+    }
+    else if (type == "hkWindow") {
+        hk["hkWindowCenter"] := "#home"
+        hk["hkWindowDecreaseTransparency-1"] := "#-"
+        hk["hkWindowDecreaseTransparency-2"] := "#numpadsub"
+        hk["hkWindowDecreaseTransparency-3"] := "#wheeldown"
+        hk["hkWindowDragMouseDown"] := "^#down"
+        hk["hkWindowDragMouseLeft"] := "^#left"
+        hk["hkWindowDragMouseRight"] := "^#right"
+        hk["hkWindowDragMouseUp"] := "^#up"
+        hk["hkWindowHide"] := "#delete"
+        hk["hkWindowIncreaseTransparency-1"] := "#="
+        hk["hkWindowIncreaseTransparency-2"] := "#numpadadd"
+        hk["hkWindowIncreaseTransparency-3"] := "#wheelup"
+        hk["hkWindowLeft-1"] := "wheelleft"
+        hk["hkWindowLeft-2"] := "#left"
+        hk["hkWindowMaximize"] := "#up"
+        hk["hkWindowMinimize"] := "#down"
+        hk["hkWindowPageDown"] := "!wheeldown"
+        hk["hkWindowPageUp"] := "!wheelup"
+        hk["hkWindowResize"] := "^#r"
+        hk["hkWindowResizeToAnchor-1"] := "+#down"
+        hk["hkWindowResizeToAnchor-2"] := "+#left"
+        hk["hkWindowResizeToAnchor-3"] := "+#right"
+        hk["hkWindowResizeToAnchor-4"] := "+#up"
+        hk["hkWindowResizeToCompass-1"] := "#numpad1"
+        hk["hkWindowResizeToCompass-10"] := "#numpadend"
+        hk["hkWindowResizeToCompass-11"] := "#numpaddown"
+        hk["hkWindowResizeToCompass-12"] := "#numpadpgdn"
+        hk["hkWindowResizeToCompass-13"] := "#numpadleft"
+        hk["hkWindowResizeToCompass-14"] := "#numpadclear"
+        hk["hkWindowResizeToCompass-15"] := "#numpadright"
+        hk["hkWindowResizeToCompass-16"] := "#numpadhome"
+        hk["hkWindowResizeToCompass-17"] := "#numpadup"
+        hk["hkWindowResizeToCompass-18"] := "#numpadpgup"
+        hk["hkWindowResizeToCompass-2"] := "#numpad2"
+        hk["hkWindowResizeToCompass-3"] := "#numpad3"
+        hk["hkWindowResizeToCompass-4"] := "#numpad4"
+        hk["hkWindowResizeToCompass-5"] := "#numpad5"
+        hk["hkWindowResizeToCompass-6"] := "#numpad6"
+        hk["hkWindowResizeToCompass-7"] := "#numpad7"
+        hk["hkWindowResizeToCompass-8"] := "#numpad8"
+        hk["hkWindowResizeToCompass-9"] := "#numpad9"
+        hk["hkWindowRestoreHidden"] := "#insert"
+        hk["hkWindowRight-1"] := "wheelright"
+        hk["hkWindowRight-2"] := "#right"
+        hk["hkWindowToggleTransparency"] := "#t"
     }
     return hk
 }
@@ -3414,7 +3390,7 @@ hkToStr(key) {
 }
 
 init() {
-    global HOTSCRIPT_DIR
+    global HOTSCRIPT_BASENAME
     global HOTSCRIPT_TITLE
     global HOTSCRIPT_VERSION
     global configUser
@@ -3423,7 +3399,7 @@ init() {
     cleanupDeprecated()
 
     updateRegistry()
-    icon := HOTSCRIPT_DIR . ".ico"
+    icon := HOTSCRIPT_BASENAME . ".ico"
     Menu, Tray, Icon, %icon%
     Menu, Tray, Tip, %HOTSCRIPT_TITLE% v%HOTSCRIPT_VERSION%
     GoSub initMonitors
@@ -3495,7 +3471,7 @@ listToArray(list, delim:="") {
 }
 
 loadConfig() {
-    global HOTSCRIPT_DIR
+    global HOTSCRIPT_BASENAME
     global HOTSCRIPT_VERSION
     global configDefault
     global configUser
@@ -3522,9 +3498,9 @@ loadConfig() {
     configDefault.enableHkDos := IniRead(configDefault.file, "config", "enableHkDos", toBool(configDefault.enableHkDos))
     configDefault.enableHkEpp := IniRead(configDefault.file, "config", "enableHkEpp", toBool(configDefault.enableHkEpp))
     configDefault.enableHkMisc := IniRead(configDefault.file, "config", "enableHkMisc", toBool(configDefault.enableHkMisc))
-    configDefault.enableHkScreenMovement := IniRead(configDefault.file, "config", "enableHkScreenMovement", toBool(configDefault.enableHkScreenMovement))
     configDefault.enableHkText := IniRead(configDefault.file, "config", "enableHkText", toBool(configDefault.enableHkText))
     configDefault.enableHkTransform := IniRead(configDefault.file, "config", "enableHkTransform", toBool(configDefault.enableHkTransform))
+    configDefault.enableHkWindow := IniRead(configDefault.file, "config", "enableHkWindow", toBool(configDefault.enableHkWindow))
     configDefault.enableHsAlias := IniRead(configDefault.file, "config", "enableHsAlias", toBool(configDefault.enableHsAlias))
     configDefault.enableHsAutoCorrect := IniRead(configDefault.file, "config", "enableHsAutoCorrect", toBool(configDefault.enableHsAutoCorrect))
     configDefault.enableHsCode := IniRead(configDefault.file, "config", "enableHsCode", toBool(configDefault.enableHsCode))
@@ -3616,9 +3592,9 @@ loadConfig() {
     configUser.enableHkDos := toBool(IniRead(configUser.file, "config", "enableHkDos", configDefault.enableHkDos))
     configUser.enableHkEpp := toBool(IniRead(configUser.file, "config", "enableHkEpp", configDefault.enableHkEpp))
     configUser.enableHkMisc := toBool(IniRead(configUser.file, "config", "enableHkMisc", configDefault.enableHkMisc))
-    configUser.enableHkScreenMovement := toBool(IniRead(configUser.file, "config", "enableHkScreenMovement", configDefault.enableHkScreenMovement))
     configUser.enableHkText := toBool(IniRead(configUser.file, "config", "enableHkText", configDefault.enableHkText))
     configUser.enableHkTransform := toBool(IniRead(configUser.file, "config", "enableHkTransform", configDefault.enableHkTransform))
+    configUser.enableHkWindow := toBool(IniRead(configUser.file, "config", "enableHkWindow", configDefault.enableHkWindow))
     configUser.enableHsAlias := toBool(IniRead(configUser.file, "config", "enableHsAlias", configDefault.enableHsAlias))
     configUser.enableHsAutoCorrect := toBool(IniRead(configUser.file, "config", "enableHsAutoCorrect", configDefault.enableHsAutoCorrect))
     configUser.enableHsCode := toBool(IniRead(configUser.file, "config", "enableHsCode", configDefault.enableHsCode))
@@ -3649,7 +3625,7 @@ loadConfig() {
     ; save after loading to make sure any new values are persisted
     saveConfig(configUser, configDefault)
     registerKeys()
-    if (saveDefault || FileExist(HOTSCRIPT_DIR . ".ico") == "") {
+    if (saveDefault || FileExist(HOTSCRIPT_BASENAME . ".ico") == "") {
         createIcon()
     }
 }
@@ -3671,13 +3647,13 @@ loadHotKeyDefs(config) {
     if (not loadHotKeys(config, "hkMisc")) {
         needToSave := true
     }
-    if (not loadHotKeys(config, "hkScreenMovement")) {
-        needToSave := true
-    }
     if (not loadHotKeys(config, "hkText")) {
         needToSave := true
     }
     if (not loadHotKeys(config, "hkTransform")) {
+        needToSave := true
+    }
+    if (not loadHotKeys(config, "hkWindow")) {
         needToSave := true
     }
     return needToSave
@@ -4142,10 +4118,12 @@ registerHotkey(hkStr, funcName, restrict:="", args*) {
     if (hkStr != "") {
         functions[hkStr] := Func(funcName)
         params[hkStr] := args
+        ; if restricted to a particular app/window, turn on the restriction
         if (restrict != "") {
             Hotkey, IfWinActive, %restrict%
         }
         Hotkey, %hkStr%, handleHotkey
+        ; turn off the restriction
         if (restrict != "") {
             Hotkey, IfWinActive
         }
@@ -4380,7 +4358,7 @@ resizeWindow(width:=0, height:=0, title:="A") {
     height := (height < 1 ? h : height)
     WinMove, %title%,, %x%, %y%, %width%, %height%
     centerWindow()
-    showSplash("Window resized to " . width . "x" . height . "...", 1500)
+    showSplash("Window resized to " . width . "x" . height . "...")
 }
 
 restoreHiddenWindows() {
@@ -4577,9 +4555,9 @@ saveConfig(config, defaultConfig:=-1) {
         IniWrite(config.file, "config", "enableHkDos", boolToStr(config.enableHkDos))
         IniWrite(config.file, "config", "enableHkEpp", boolToStr(config.enableHkEpp))
         IniWrite(config.file, "config", "enableHkMisc", boolToStr(config.enableHkMisc))
-        IniWrite(config.file, "config", "enableHkScreenMovement", boolToStr(config.enableHkScreenMovement))
         IniWrite(config.file, "config", "enableHkText", boolToStr(config.enableHkText))
         IniWrite(config.file, "config", "enableHkTransform", boolToStr(config.enableHkTransform))
+        IniWrite(config.file, "config", "enableHkWindow", boolToStr(config.enableHkWindow))
         IniWrite(config.file, "config", "enableHsAlias", boolToStr(config.enableHsAlias))
         IniWrite(config.file, "config", "enableHsAutoCorrect", boolToStr(config.enableHsAutoCorrect))
         IniWrite(config.file, "config", "enableHsCode", boolToStr(config.enableHsCode))
@@ -4624,11 +4602,11 @@ saveConfig(config, defaultConfig:=-1) {
         if (boolToStr(config.enableHkMisc) != boolToStr(defaultConfig.enableHkMisc)) {
             IniWrite(config.file, "config", "enableHkMisc", boolToStr(config.enableHkMisc))
         }
-        if (boolToStr(config.enableHkScreenMovement) != boolToStr(defaultConfig.enableHkScreenMovement)) {
-            IniWrite(config.file, "config", "enableHkScreenMovement", boolToStr(config.enableHkScreenMovement))
-        }
         if (boolToStr(config.enableHkText) != boolToStr(defaultConfig.enableHkText)) {
             IniWrite(config.file, "config", "enableHkText", boolToStr(config.enableHkText))
+        }
+        if (boolToStr(config.enableHkWindow) != boolToStr(defaultConfig.enableHkWindow)) {
+            IniWrite(config.file, "config", "enableHkWindow", boolToStr(config.enableHkWindow))
         }
         if (boolToStr(config.enableHsAlias) != boolToStr(defaultConfig.enableHsAlias)) {
             IniWrite(config.file, "config", "enableHsAlias", boolToStr(config.enableHsAlias))
@@ -4764,7 +4742,7 @@ selectCurrentLine() {
 }
 
 selfReload() {
-    showSplash("Reloading script...")
+    showSplash("Reloading script...", 500)
     Reload
     Sleep(1000)
     MsgBox, 4,, The script could not be reloaded. Would you like to open it for editing?
@@ -4847,6 +4825,39 @@ setCase(value, case) {
         result := value
     }
     return result
+}
+
+setTransparency(increase:=true, hWnd:="A") {
+    global MARKER
+    MAX := 255
+    MIN := 7
+    hWnd := setCase(Trim(hWnd), "U")
+    if (hWnd == "" || hWnd == "A") {
+        hWnd := WinExist("A")
+    }
+    if (isWindow(hWnd)) {
+        WinGet, curTrans, Transparent, ahk_id %hWnd%
+        if (!curTrans) {
+            curTrans := MAX
+        }
+        newTrans := curTrans + (increase ? 8 : -8)
+        if (newTrans > MAX) {
+            newTrans := MAX
+        }
+        else if (newTrans < MIN) {
+            newTrans := MIN
+        }
+        if (newTrans != curTrans) {
+            WinGetTitle, currentTitle, ahk_id %hWnd%
+            newTitle := RegExReplace(currentTitle, MARKER.transparent . "\(\d{1,3}%\) ")
+            WinSet, Transparent, %newTrans%, ahk_id %hWnd%
+            if (newTrans < MAX) {
+                percent := Round((newTrans / (MAX + 1)) * 100)
+                newTitle := MARKER.transparent . "(" . percent . "%) " + newTitle
+            }
+            WinSetTitle, ahk_id %hWnd%, , %newTitle%
+        }
+    }
 }
 
 showClipboard() {
@@ -5000,6 +5011,7 @@ showQuickHelp(waitforKey) {
         Action hotkeys`t`t`t`t
         %colLine%
         Win-A`t`tToggle always-on-top`t
+        CtrlWin-A`tToggle click-through`t
         Win-C`t`tRun Calculator`t`t
         Win-D`t`tRun DOS`t`t`t
         Win-E`t`tRun editor`t`t
@@ -5007,12 +5019,10 @@ showQuickHelp(waitforKey) {
         Win-Q`t`tQuick lookup`t`t
         Win-S`t`tRun Win Services`t
         Win-X`t`tRun Win Explorer`t
-        Win-Delete`tHide active window`t
         Win-F12`t`tExit this script`t
-        Win-Insert`tShow hidden windows`t
-        Win-Minus`tToggle desktop icons`t
         Win-PrintScreen`tRun Snipping tool`t
-        Ctrl-RCtrl`tRun Control Panel`t
+        LCtrl-RCtrl`tRun Control Panel`t
+        Alt-Apps`tToggle desktop icons`t
     )
     hkActionHelpDisabled := replaceEachLine(hkActionHelpEnabled, spacer)
     hkActionHelp := (configUser.enableHkAction ? hkActionHelpEnabled : hkActionHelpDisabled)
@@ -5022,7 +5032,6 @@ showQuickHelp(waitforKey) {
         %spacer%
         DOS hotkeys`t`t`t`t
         %colLine%
-        Alt-.`tChange to parent directory`t
         Alt-C`t"copy "`t`t`t`t
         Alt-D`tChange (push) to Downloads`t
         Alt-M`t"move "`t`t`t`t
@@ -5030,8 +5039,8 @@ showQuickHelp(waitforKey) {
         Ctrl-P`tPops to last directory`t`t
         Alt-R`tChange to root directory`t
         Alt-T`t"type "`t`t`t`t
+        Alt-Up`tChange to parent directory`t
         Alt-X`tRun 'exit'`t`t`t
-        %spacer%
     )
     hkDosHelpDisabled := replaceEachLine(hkDosHelpEnabled, spacer)
     hkDosHelp := (configUser.enableHkDos ? hkDosHelpEnabled : hkDosHelpDisabled)
@@ -5057,17 +5066,17 @@ showQuickHelp(waitforKey) {
         %HOTSCRIPT_TITLE% hotkeys`t`t`t
         %colLine%
         AltWin-H`tToggle quick help`t
-        CtrlWin-F12`tDebug variable`t`t
+        ;CtrlWin-F12`tDebug variable`t`t
         Win-F12`t`tExit %HOTSCRIPT_TITLE%`t`t
         ;CtrlWin-H`tShow full help`t`t
         Win-H`t`tShow quick help`t`t
-        Win-1`t`tRun AHK help`t`t
+        ;Win-1`t`tRun AHK help`t`t
         Win-2`t`tReload %HOTSCRIPT_TITLE%`t
-        Win-3`t`tEdit %HOTSCRIPT_TITLE%`t`t
+        ;Win-3`t`tEdit %HOTSCRIPT_TITLE%`t`t
         Win-4`t`tEdit user keys`t`t
         Win-5`t`tEdit user strings`t
         Win-6`t`tEdit user INI`t`t
-        Win-7`t`tEdit default INI`t`t
+        ;Win-7`t`tEdit default INI`t`t
         Win-Pause`tPause %HOTSCRIPT_TITLE%`t`t
     )
 
@@ -5087,29 +5096,25 @@ showQuickHelp(waitforKey) {
     hkMiscHelpDisabled := replaceEachLine(hkMiscHelpEnabled, spacer)
     hkMiscHelp := (configUser.enableHkMisc ? hkMiscHelpEnabled : hkMiscHelpDisabled)
 
-    hkScreenMovementHelpEnabled =
+    hkWindowHelpEnabled =
     ( LTrim
-        Screen Movement hotkeys`t`t`t
+        Window hotkeys`t`t`t`t
         %colLine%
-        WheelLeft`tMove to left monitor`t
-        WheelRight`tMove to right monitor`t
-        Win-Down`tMinimize the window`t
-        Win-Home`tCenter current window`t
-        Win-Left`tMove to left monitor`t
-        Win-Right`tMove to right monitor`t
-        Win-Up`t`tMaximize the window`t
         Alt-WheelDown`tPageDown`t`t
         Alt-WheelUp`tPageUp`t`t`t
-    )
-    hkScreenMovementHelpDisabled := replaceEachLine(hkScreenMovementHelpEnabled, spacer)
-    hkScreenMovementHelp := (configUser.enableHkScreenMovement ? hkScreenMovementHelpEnabled : hkScreenMovementHelpDisabled)
-
-    hkWindowResizingHelpEnabled =
-    ( LTrim
-        %spacer%
-        Window Resizing hotkeys`t`t`t
-        %colLine%
+        WheelLeft`tMove to left monitor`t
+        WheelRight`tMove to right monitor`t
+        Win-- | Win-Whl`tDecrease transparency`t
+        Win-+ | Win-Whl`tIncrease transparency`t
+        Win-Delete`tHide active window`t
+        Win-Down`tMinimize the window`t
+        Win-Insert`tShow hidden windows`t
+        Win-Home`tCenter current window`t
+        Win-Left`tMove to left monitor`t
         CtrlWin-R`tResize to ...`t`t
+        Win-Right`tMove to right monitor`t
+        Win-T`t`tToggle transparency`t
+        Win-Up`t`tMaximize the window`t
         ShiftWin-ARROW`tResize to edge (50`%)`t
         ShiftWin-DnLt`tResize to corner (25`%)`t
         ShiftWin-DnRt`tResize to corner (25`%)`t
@@ -5119,11 +5124,9 @@ showQuickHelp(waitforKey) {
         %A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%KEY is: NumPad # (1-9)`t`t
         %spacer%
         %spacer%
-        %spacer%
-        %spacer%
     )
-    hkWindowResizingHelpDisabled := replaceEachLine(hkWindowResizingHelpEnabled, spacer)
-    hkWindowResizingHelp := (configUser.enableHkScreenMovement ? hkWindowResizingHelpEnabled : hkWindowResizingHelpDisabled)
+    hkWindowHelpDisabled := replaceEachLine(hkWindowHelpEnabled, spacer)
+    hkWindowHelp := (configUser.enableHkWindow ? hkWindowHelpEnabled : hkWindowHelpDisabled)
 
     hkTextHelpEnabled =
     ( LTrim
@@ -5171,11 +5174,11 @@ showQuickHelp(waitforKey) {
     hkTransformHelp := (configUser.enableHkTransform ? hkTransformHelpEnabled : hkTransformHelpDisabled)
 
     hkCol1 := hkActionHelp . EOL_NIX . hkMiscHelp
-    hkCol2 := hkScreenMovementHelp . EOL_NIX . hkWindowResizingHelp
+    hkCol2 := hkWindowHelp
     hkCol3 := hkTransformHelp
     hkCol4 := hkHotScriptHelp . EOL_NIX . hkDosHelp
-;    hkCol5 := hkEppHelp
 ;   TODO - this needs to be added back, once it is fully stable/accurate   . EOL_NIX . hkTextHelp
+;    hkCol5 := hkEppHelp
 
     hkArr1 := listToArray(hkCol1)
     hkArr2 := listToArray(hkCol2)
@@ -5213,8 +5216,7 @@ showQuickHelp(waitforKey) {
         ty.`tThank you.`t`t`t
         yw`tYou're welcome`t`t`t
         wyb`tLet me know when you are back`t
-        %spacer%
-        %spacer%
+        common fractions (1/2, n/3, n/4, n/8)`t
     )
     hsAliasHelpDisabled := replaceEachLine(hsAliasHelpEnabled, spacer)
     hsAliasHelp := (configUser.enableHsAlias ? hsAliasHelpEnabled : hsAliasHelpDisabled)
@@ -5225,7 +5227,6 @@ showQuickHelp(waitforKey) {
         Auto-correct hotstrings`t`t`t
         %colLine%
         cL`tc:`t`t`t`t
-        %spacer%
     )
     hsAutoCorrectHelpDisabled := replaceEachLine(hsAutoCorrectHelpEnabled, spacer)
     hsAutoCorrectHelp := (configUser.enableHsAutoCorrect ? hsAutoCorrectHelpEnabled : hsAutoCorrectHelpDisabled)
@@ -5248,9 +5249,12 @@ showQuickHelp(waitforKey) {
         sysout`t`tSystem.out.println("");`t
         while (`t`t'while' block`t`t
         @html`t`tHTML template`t`t
+        @ip`t`tCurrent IP address`t
         @java`t`tJava template`t`t
         @perl`t`tPerl template`t`t
         @sql`t`tSQL template`t`t
+        %spacer%
+        %spacer%
     )
     hsCodeHelpDisabled := replaceEachLine(hsCodeHelpEnabled, spacer)
     hsCodeHelp := (configUser.enableHsCode ? hsCodeHelpEnabled : hsCodeHelpDisabled)
@@ -5283,19 +5287,28 @@ showQuickHelp(waitforKey) {
     hsDosHelpDisabled := replaceEachLine(hsDosHelpEnabled, spacer)
     hsDosHelp := (configUser.enableHsDos ? hsDosHelpEnabled : hsDosHelpDisabled)
 
+;    hsHtmlHelpEnabled =
+;    ( LTrim
+;        %spacer%
+;        HTML/XML hotstrings`t`t`t
+;        %colLine%
+;        a/b/big/block/body/br/but/cap/code`t
+;        del/div/em/field/foot/form/h[1-6]`t
+;        head/header/hgroup/hr/html/i/iframe`t
+;        img/input/label/legend/li/link/ol`t
+;        optg/opti/p/pre/q/script/section`t
+;        select/small/source/span/strong`t`t
+;        style/sub/sum/sup/table/tbody/td`t
+;        texta/tfoot/th/title/tr/u/ul/xml`t
+;    )
     hsHtmlHelpEnabled =
     ( LTrim
         %spacer%
         HTML/XML hotstrings`t`t`t
         %colLine%
-        a/b/big/block/body/br/but/cap/code`t
-        del/div/em/field/foot/form/h[1-6]`t
-        head/header/hgroup/hr/html/i/iframe`t
-        img/input/label/legend/li/link/ol`t
-        optg/opti/p/pre/q/script/section`t
-        select/small/source/span/strong`t`t
-        style/sub/sum/sup/table/tbody/td`t
-        texta/tfoot/th/title/tr/u/ul/xml`t
+        <tag`tMost tags auto-complete.`t
+        `t(Some create child tags)`t
+        <xml`tAuto-completes XML header`t
     )
     hsHtmlHelpDisabled := replaceEachLine(hsHtmlHelpEnabled, spacer)
     hsHtmlHelp := (configUser.enableHsHtml ? hsHtmlHelpEnabled : hsHtmlHelpDisabled)
@@ -5327,9 +5340,11 @@ showQuickHelp(waitforKey) {
     hsJiraHelp := (configUser.enableHsJira ? hsJiraHelpEnabled : hsJiraHelpDisabled)
 
     hsCol1 := hsAliasHelp
-    hsCol2 := hsCodeHelp . EOL_NIX . hsAutoCorrectHelp
-    hsCol3 := hsDatesHelp . EOL_NIX . hsHtmlHelp
+    hsCol2 := hsCodeHelp
+    hsCol3 := hsDatesHelp . EOL_NIX . hsAutoCorrectHelp . EOL_NIX . hsHtmlHelp
     hsCol4 := hsJiraHelp . EOL_NIX
+
+    ; TODO - add hsDosHelp
 
     hsArr1 := listToArray(hsCol1)
     hsArr2 := listToArray(hsCol2)
@@ -5353,7 +5368,7 @@ showQuickHelp(waitforKey) {
     return
 }
 
-showSplash(msg,timeout:=500) {
+showSplash(msg,timeout:=1500) {
     global SPLASH_TITLE
     SplashImage("", "b1 cwff9999 fs12", msg, "", SPLASH_TITLE)
     centerWindow(SPLASH_TITLE)
@@ -5534,7 +5549,7 @@ my $doDebug = 0;
 init();
 
 # ----------------------------------------------------------------------
-# Functions 
+# Functions
 # ----------------------------------------------------------------------
 sub debug {
     if ($doDebug) {
@@ -5679,21 +5694,66 @@ toComma(value) {
     return value
 }
 
-toggleAlwaysOnTop() {
-    marker := "† "
-    hWnd := WinExist("A")
+toggleAlwaysOnTop(hWnd:="A") {
+    global MARKER
+    hWnd := setCase(Trim(hWnd), "U")
+    if (hWnd == "" || hWnd == "A") {
+        hWnd := WinExist("A")
+    }
     WinGet, ExStyle, ExStyle, ahk_id %hWnd%
-    state := (ExStyle & 0x8 ? "off" : "on")
-    WinSet, AlwaysOnTop, %state%, ahk_id %hWnd%
-    WinGetTitle, currentTitle, A
-    if (state == "on") {
-        title := (startsWith(currentTitle, marker) ? "" : marker) . currentTitle
+    currentModeAoT := (ExStyle & 0x8 ? "on" : "off")
+    currentModeCT := (ExStyle & 0x20 ? "on" : "off")
+    newState := (currentModeAoT == "off" ? "on" : currentModeCT)
+
+    ; remove any existing markers
+    WinGetTitle, newTitle, ahk_id %hWnd%
+    newTitle := StringReplace(newTitle, MARKER.always_on_top)
+    newTitle := StringReplace(newTitle, MARKER.click_through)
+
+    ; force click-through to be turned off
+    WinSet, ExStyle, -0x20, ahk_id %hWnd%
+    
+    WinSet, AlwaysOnTop, %newState%, ahk_id %hWnd%
+    if (newState == "on") {
+        newTitle := MARKER.always_on_top . newTitle
     }
     else {
-        title := (startsWith(currentTitle, marker) ? SubStr(currentTitle, StrLen(marker) + 1) : currentTitle)
+        WinSet, Transparent, 255, ahk_id %hWnd%
     }
-    WinSetTitle, A, , %title%
-    showSplash("'Always-on-top' mode is " . state . "...")
+    WinSetTitle, ahk_id %hWnd%, , %newTitle%
+    showSplash("'Always-on-top' mode is " . newState . "...")
+}
+
+toggleClickThrough(hWnd:="A") {
+    global MARKER
+    hWnd := setCase(Trim(hWnd), "U")
+    if (hWnd == "" || hWnd == "A") {
+        hWnd := WinExist("A")
+    }
+    WinGet, ExStyle, ExStyle, ahk_id %hWnd%
+    currentModeAoT := (ExStyle & 0x8 ? "on" : "off")
+    currentModeCT := (ExStyle & 0x20 ? "on" : "off")
+    newState := (currentModeCT == "off" ? "on" : "off")
+
+    ; remove any existing markers
+    WinGetTitle, newTitle, ahk_id %hWnd%
+    newTitle := StringReplace(newTitle, MARKER.always_on_top)
+    newTitle := StringReplace(newTitle, MARKER.click_through)
+
+    if (newState == "on") {
+        WinSet, Transparent, 127, ahk_id %hWnd%
+        WinSet, ExStyle, +0x20, ahk_id %hWnd%
+        WinSet, AlwaysOnTop, on, ahk_id %hWnd%
+        ; 50% transparent
+        newTitle := MARKER.click_through . newTitle
+    }
+    else {
+        WinSet, ExStyle, -0x28, ahk_id %hWnd%
+        WinSet, AlwaysOnTop, off, ahk_id %hWnd%
+        WinSet, Transparent, 255, ahk_id %hWnd%
+    }
+    WinSetTitle, ahk_id %hWnd%, , %newTitle%
+    showSplash("'Click-through' mode is " . newState . "...")
 }
 
 toggleDesktopIcons() {
@@ -5713,6 +5773,27 @@ toggleSuspend() {
     global HOTSCRIPT_TITLE
     msg := HOTSCRIPT_TITLE . " is " . (A_IsSuspended ? "suspended" : "enabled") . "..."
     showSplash(msg)
+}
+
+toggleTransparency(hWnd:="A") {
+    global MARKER
+    hWnd := setCase(Trim(hWnd), "U")
+    if (hWnd == "" || hWnd == "A") {
+        hWnd := WinExist("A")
+    }
+    if (isWindow(hWnd)) {
+        WinGet, curTrans, Transparent, ahk_id %hWnd%
+        WinGetTitle, currentTitle, ahk_id %hWnd%
+        if (curTrans) {
+            WinSet, Transparent, off, ahk_id %hWnd%
+            newTitle := RegExReplace(currentTitle, MARKER.transparent . "\(\d{1,3}%\) ")
+        }
+        else {
+            WinSet, Transparent, 127, ahk_id %hWnd%
+            newTitle := MARKER.transparent . "(50%) " + currentTitle
+        }
+        WinSetTitle, ahk_id %hWnd%, , %newTitle%
+    }
 }
 
 toString(array, depth:=6, indent:="") {
@@ -6040,6 +6121,8 @@ lvHelp:
         ;message(A_GuiEvent . " event for " . A_GuiControl)
     }
     return
+
+
 ;--------------------------------------------------
 ;classes
 ;--------------------------------------------------
@@ -6353,9 +6436,9 @@ class OldConfig {
         this.enableHkDos := true
         this.enableHkEpp := true
         this.enableHkMisc := true
-        this.enableHkScreenMovement := true
         this.enableHkText := true
         this.enableHkTransform := true
+        this.enableHkWindow := true
         this.enableHsAlias := true
         this.enableHsAutoCorrect := true
         this.enableHsCode := true
