@@ -41,7 +41,7 @@ Full help screen
 COMMENT_HEADER_LINE := " " . repeatStr("-", 70)
 LINE_SEP := repeatStr("·", 165)
 MENU_SEP := "-"
-MY_VERSION := "20131210.beta1"
+MY_VERSION := "20131211.1"
 MY_TITLE := "Mike's HotScript"
 QUICK_SPLASH_TITLE := "QuickSplash"
 USER_KEYS := A_ScriptDir . "\HotScriptKeys.ahk"
@@ -916,7 +916,7 @@ init()
         addHotKey()
         runTarget("Control Panel")
         return
-    pause:: ;; toggles suspension of this script
+    #pause:: ;; toggles suspension of this script
         Suspend
         addHotKey()
         toggleSuspend()
@@ -2549,7 +2549,7 @@ showQuickHelp(waitforKey) {
         %spacer2%
         Miscellaneous hotkeys`t`t`t
         %col2Line%
-        Pause`t`tPause this script`t`
+        Win-Pause`tPause this script`t`
         Ctrl-RCtrl`tRun Control Panel`t
         CtrlAlt-V`tPaste as text`t`t
     )
@@ -2721,7 +2721,7 @@ showQuickHelp(waitforKey) {
         %col2line%
         a/b/big/block/body/br/but/cap/code`t
         del/div/em/field/foot/form/h[1-6]`t
-        head/heaer/hgroup/hr/html/i/iframe`t
+        head/header/hgroup/hr/html/i/iframe`t
         img/input/label/legend/li/link/ol`t
         optg/opti/p/pre/q/script/section`t
         select/small/source/span/strong`t
