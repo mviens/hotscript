@@ -41,7 +41,7 @@ Full help screen
 COMMENT_HEADER_LINE := " " . repeatStr("-", 70)
 LINE_SEP := repeatStr("·", 165)
 MENU_SEP := "-"
-MY_VERSION := "20131211.2"
+MY_VERSION := "20131211.beta1"
 MY_TITLE := "Mike's HotScript"
 QUICK_SPLASH_TITLE := "QuickSplash"
 USER_KEYS := A_ScriptDir . "\HotScriptKeys.ahk"
@@ -1811,14 +1811,6 @@ numberSelectedPrompt() {
     }
 }
 
-pasteTemplate(template, tokens:="", keys:="") {
-    for name, value in tokens {
-        token := "{" . name . "}"
-        StringReplace, template, template, %token%, %value%, All
-    }
-    sendText(template, keys)
-}
-
 pasteText(text:="")
 {
     if (text != "") {
@@ -1827,10 +1819,9 @@ pasteText(text:="")
         Sleep 20
         Clipboard := text
         Send, ^v
-        Sleep 250 ; wait or the clipboard is replaced with previous before it gets a chance to paste it, resulting in pasting the original clipboard
+        Sleep 200 ; wait or the clipboard is replaced with previous before it gets a chance to paste it, resulting in pasting the original clipboard
         Clipboard := prevClipboard
         prevClipboard :=
-        Sleep 20
     }
     else {
         Send, {Del}
@@ -2730,7 +2721,7 @@ showQuickHelp(waitforKey) {
         %col2line%
         a/b/big/block/body/br/but/cap/code`t
         del/div/em/field/foot/form/h[1-6]`t
-        head/header/hgroup/hr/html/i/iframe`t
+        head/heaer/hgroup/hr/html/i/iframe`t
         img/input/label/legend/li/link/ol`t
         optg/opti/p/pre/q/script/section`t
         select/small/source/span/strong`t
@@ -3168,4 +3159,8 @@ zoomWindowChange:
         zoomWindowDimension := 0
     }
     GoSub, zoomRepaint
+    return
+
+#f8::
+    pasteText(toComma(getSelectedText()))
     return
