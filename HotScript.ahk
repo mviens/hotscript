@@ -315,7 +315,7 @@ init()
     #ifWinActive ahk_class ConsoleWindowClass
         :*b0:cd :: ;; Appends '/d' onto 'cd ' commands to allow changing drive++DOS only
             addHotString()
-            Send, /d{Space}
+            SendInput, /d{Space}
             return
     #ifWinActive
 #if
@@ -1153,12 +1153,31 @@ hkActionWindowsSnip() {
     }
 }
 
+hkCustomDeleteToEol() {
+    if (hs.config.user.enableHkEpp && WinActive("ahk_exe i)EditPadPro\d*\.exe")) {
+        debug("EPP: Delete EOL...")
+        hkEppDeleteToEol()
+    }
+    else if (hs.config.user.enableHkDos && WinActive("ahk_class ConsoleWindowClass")) {
+        debug("DOS: Delete EOL...")
+        hkDosDeleteToEol()
+    }
+    else {
+        debug("Other: Sending Ctrl-Delete...")
+        SendInput, ^{Delete}
+    }
+}
+
 hkDosCdParent() {
-    SendInput, cd ..{Enter}
+    SendInput, cd..{Enter}
 }
 
 hkDosCopy() {
     SendInput, copy{Space}
+}
+
+hkDosDeleteToEol() {
+    SendInput, {Delete 300}
 }
 
 hkDosDownloads() {
@@ -1171,6 +1190,18 @@ hkDosExit() {
 
 hkDosMove() {
     SendInput, move{Space}
+}
+
+hkDosPageDown() {
+    SendInput, {WheelDown 10}
+}
+
+hkDosPageUp() {
+    SendInput, {WheelUp 10}
+}
+
+hkDosPaste() {
+    SendInput, {RAW}%ClipBoard%
 }
 
 hkDosPopd() {
@@ -1317,7 +1348,7 @@ hkTextDuplicateCurrentLine() {
 
 hkTextMoveCurrentLineDown() {
     if (WinActive("ahk_exe i)EditPadPro\d*\.exe")) {
-        Send, ^!+{Down}
+        SendInput, ^!+{Down}
     }
     else {
         moveCurrentLineDown()
@@ -1326,7 +1357,7 @@ hkTextMoveCurrentLineDown() {
 
 hkTextMoveCurrentLineUp() {
     if (WinActive("ahk_exe i)EditPadPro\d*\.exe")) {
-        Send, ^!+{Up}
+        SendInput, ^!+{Up}
     }
     else if (WinActive("ahk_class ConsoleWindowClass")) {
         hkDosCdParent()
@@ -1346,7 +1377,7 @@ hkTransformInvertCase() {
 
 hkTransformLowerCase() {
     if (WinActive("ahk_exe i)EditPadPro\d*\.exe")) {
-        Send, ^+l
+        SendInput, ^+l
     }
     else {
         transformSelected("L")
@@ -1391,7 +1422,7 @@ hkTransformTagify() {
 
 hkTransformTitleCase() {
     if (WinActive("ahk_class Chrome_WidgetWin_1") || WinActive("ahk_class MozillaWindowClass")) {
-        Send, ^+t
+        SendInput, ^+t
     }
     else {
         transformSelected("T")
@@ -1404,7 +1435,7 @@ hkTransformUnwrapText() {
 
 hkTransformUpperCase() {
     if (WinActive("ahk_exe i)EditPadPro\d*\.exe")) {
-        Send, ^+u
+        SendInput, ^+u
     }
     else {
         transformSelected("U")
@@ -3075,6 +3106,9 @@ getDefaultHotKeyDefs(type) {
         hk["hkActionWindowsServices"] := "#s"
         hk["hkActionWindowsSnip"] := "#printscreen"
     }
+    else if (type == "hkCustom") {
+        hk["hkCustomDeleteToEol"] := "^delete"
+    }
     else if (type == "hkDos") {
         hk["hkDosCdParent-1"] := "!."
         hk["hkDosCdParent-2"] := "!up"
@@ -3082,13 +3116,20 @@ getDefaultHotKeyDefs(type) {
         hk["hkDosDownloads"] := "!d"
         hk["hkDosExit"] := "!x"
         hk["hkDosMove"] := "!m"
+        hk["hkDosPageDown-1"] := "+pgdn"
+        hk["hkDosPageDown-2"] := "^pgdn"
+        hk["hkDosPageDown-3"] := "!pgdn"
+        hk["hkDosPageUp-1"] := "+pgup"
+        hk["hkDosPageUp-2"] := "^pgup"
+        hk["hkDosPageUp-3"] := "!pgup"
+        hk["hkDosPaste-1"] := "^v"
+        hk["hkDosPaste-2"] := "+insert"
         hk["hkDosPopd"] := "^p"
         hk["hkDosPushd"] := "!p"
         hk["hkDosRoot"] := "!r"
         hk["hkDosType"] := "!t"
     }
     else if (type == "hkEpp") {
-        hk["hkEppDeleteToEol"] := "^delete"
         hk["hkEppDeleteWord"] := "^d"
         hk["hkEppGoToLine"] := "^g"
         hk["hkEppNextFile"] := "xbutton2"
@@ -3106,7 +3147,8 @@ getDefaultHotKeyDefs(type) {
         hk["hkHotScriptEditUserVariables"] := "#8"
         hk["hkHotScriptExit"] := "#f12"
         hk["hkHotScriptQuickHelp"] := "#h"
-        hk["hkHotScriptQuickHelpToggle"] := "!#h"
+        hk["hkHotScriptQuickHelpToggle-1"] := "^#h"
+        hk["hkHotScriptQuickHelpToggle-2"] := "!#h"
         hk["hkHotScriptReload"] := "#2"
     }
     else if (type == "hkMisc") {
@@ -3386,7 +3428,7 @@ init() {
 }
 
 initInternalVars() {
-    hs.VERSION := "1.20150813.1"
+    hs.VERSION := "1.20150818.1"
     hs.TITLE := "HotScript"
     hs.BASENAME := A_ScriptDir . "\" . hs.TITLE
 
@@ -3508,6 +3550,7 @@ loadConfig() {
     ; load from default config first
     hs.config.default.editor := IniRead(hs.config.default.file, "config", "editor", hs.config.default.editor)
     hs.config.default.enableHkAction := IniRead(hs.config.default.file, "config", "enableHkAction", toBool(hs.config.default.enableHkAction))
+    hs.config.default.enableHkCustom := IniRead(hs.config.default.file, "config", "enableHkCustom", toBool(hs.config.default.enableHkCustom))
     hs.config.default.enableHkDos := IniRead(hs.config.default.file, "config", "enableHkDos", toBool(hs.config.default.enableHkDos))
     hs.config.default.enableHkEpp := IniRead(hs.config.default.file, "config", "enableHkEpp", toBool(hs.config.default.enableHkEpp))
     hs.config.default.enableHkMisc := IniRead(hs.config.default.file, "config", "enableHkMisc", toBool(hs.config.default.enableHkMisc))
@@ -3602,6 +3645,7 @@ loadConfig() {
     ; now load from the user config, using the values from default if necessary
     hs.config.user.editor := IniRead(hs.config.user.file, "config", "editor", hs.config.default.editor)
     hs.config.user.enableHkAction := toBool(IniRead(hs.config.user.file, "config", "enableHkAction", hs.config.default.enableHkAction))
+    hs.config.user.enableHkCustom := toBool(IniRead(hs.config.user.file, "config", "enableHkCustom", hs.config.default.enableHkCustom))
     hs.config.user.enableHkDos := toBool(IniRead(hs.config.user.file, "config", "enableHkDos", hs.config.default.enableHkDos))
     hs.config.user.enableHkEpp := toBool(IniRead(hs.config.user.file, "config", "enableHkEpp", hs.config.default.enableHkEpp))
     hs.config.user.enableHkMisc := toBool(IniRead(hs.config.user.file, "config", "enableHkMisc", hs.config.default.enableHkMisc))
@@ -3646,6 +3690,9 @@ loadConfig() {
 loadHotKeyDefs(config) {
     needToSave := false
     if (not loadHotKeys(config, "hkAction")) {
+        needToSave := true
+    }
+    if (not loadHotKeys(config, "hkCustom")) {
         needToSave := true
     }
     if (not loadHotKeys(config, "hkDos")) {
@@ -3930,20 +3977,22 @@ numberSelectedPrompt() {
     }
 }
 
-pasteTemplate(template, tokens:="", keys:="") {
+pasteTemplate(template, tokens:="", keys:="", delay:=250) {
     for name, value in tokens {
         token := "{" . name . "}"
         template := StringReplace(template, token, value, "All")
     }
-    sendText(template, keys)
+    sendText(template, keys, delay)
 }
 
 pasteText(text:="", delay:=250)
 {
     if (text != "") {
-;        if (WinActive("ahk_class ConsoleWindowClass")) {
-        if (WinActive("ahk_exe cmd.exe")) {
-            SendRaw % text
+        ; this has been giving some trouble "ConsoleWindowClass" worked for a long time, then stopped working on my home system then my laptop.
+        ; after switching to cmd.exe checking, then this stopped working on Paul's Win2012 system.
+        ; so, now we are going to try BOTH...
+        if (WinActive("ahk_class ConsoleWindowClass") || WinActive("ahk_exe cmd.exe")) {
+            SendInput, {RAW}%text%
         }
         else {
             prevClipboard := ClipboardAll
@@ -4418,6 +4467,7 @@ saveConfig(config, defaultConfig:=-1) {
         ; save it, since nothing to compare against
         IniWrite(config.file, "config", "editor", config.editor)
         IniWrite(config.file, "config", "enableHkAction", boolToStr(config.enableHkAction))
+        IniWrite(config.file, "config", "enableHkCustom", boolToStr(config.enableHkCustom))
         IniWrite(config.file, "config", "enableHkDos", boolToStr(config.enableHkDos))
         IniWrite(config.file, "config", "enableHkEpp", boolToStr(config.enableHkEpp))
         IniWrite(config.file, "config", "enableHkMisc", boolToStr(config.enableHkMisc))
@@ -4458,6 +4508,9 @@ saveConfig(config, defaultConfig:=-1) {
         }
         if (boolToStr(config.enableHkAction) != boolToStr(defaultConfig.enableHkAction)) {
             IniWrite(config.file, "config", "enableHkAction", boolToStr(config.enableHkAction))
+        }
+        if (boolToStr(config.enableHkCustom) != boolToStr(defaultConfig.enableHkCustom)) {
+            IniWrite(config.file, "config", "enableHkCustom", boolToStr(config.enableHkCustom))
         }
         if (boolToStr(config.enableHkDos) != boolToStr(defaultConfig.enableHkDos)) {
             IniWrite(config.file, "config", "enableHkDos", boolToStr(config.enableHkDos))
@@ -4765,8 +4818,6 @@ showDebugVar(value:="") {
     ListVars
     WinWaitActive ahk_class AutoHotkey
     ControlSetText Edit1, %msg%
-    WinWaitClose
-
 }
 
 showQuickHelp(waitforKey) {
@@ -4803,19 +4854,23 @@ showQuickHelp(waitforKey) {
     hkActionHelp := (hs.config.user.enableHkAction ? hkActionHelpEnabled : hkActionHelpDisabled)
 
     hkDosHelpEnabled =
-    ( LTrim
+    ( LTrim Comments
         %spacer%
-        DOS hotkeys`t`t`t`t
+        DOS hotkeys
         %colLine%
-        Alt-C`t"copy "`t`t`t`t
-        Alt-D`tChange (push) to Downloads`t
-        Alt-M`t"move "`t`t`t`t
-        Alt-P`t"pushd "`t`t`t
-        Ctrl-P`tPops to last directory`t`t
-        Alt-R`tChange to root directory`t
-        Alt-T`t"type "`t`t`t`t
-        Alt-Up`tChange to parent directory`t
-        Alt-X`tRun 'exit'`t`t`t
+        Alt-C`t`t"copy "
+        Alt-D`t`tPUSHD to Downloads
+        Ctrl-Delete`tDelete to EOL
+        Alt-M`t`t"move "
+        Alt-P`t`t"pushd "
+        Ctrl-P`t`tPOP to last dir
+        Ctrl-PgDn`tScroll down 30 lines
+        Ctrl-PgUp`tScroll up 30 lines
+        Alt-R`t`tCD to root dir
+        Alt-T`t`t"type "
+        Alt-Up / Alt-.`tCD to parent dir
+        Ctrl-V`t`tPaste clipboard
+        Alt-X`t`tRun 'exit'
     )
     hkDosHelpDisabled := replaceEachLine(hkDosHelpEnabled, spacer)
     hkDosHelp := (hs.config.user.enableHkDos ? hkDosHelpEnabled : hkDosHelpDisabled)
@@ -4838,22 +4893,22 @@ showQuickHelp(waitforKey) {
 
     title := hs.TITLE
     hkHotScriptHelp =
-    ( LTrim Comment
+    ( LTrim Comments
         %title% hotkeys`t`t`t
         %colLine%
-        AltWin-H`tToggle quick help`t
-        ;CtrlWin-F12`tDebug variable`t`t
+        CtrlWin-H`tToggle quick help`t
+        CtrlWin-F12`tDebug variable`t`t
         Win-F12`t`tExit %title%`t`t
         Win-H`t`tShow quick help`t`t
-        ;Win-1`t`tRun AHK help`t`t
+        Win-1`t`tRun AHK help`t`t
         Win-2`t`tReload %title%`t
-        ;Win-3`t`tEdit %title%`t`t
+        Win-3`t`tEdit %title%`t`t
         Win-4`t`tEdit user keys`t`t
         Win-5`t`tEdit user strings`t
         Win-6`t`tEdit user INI`t`t
         Win-7`t`tEdit user functions`t
         Win-8`t`tEdit user variables`t
-        ;Win-9`t`tEdit default INI`t`t
+        Win-9`t`tEdit default INI`t`t
         Win-Pause`tPause %title%`t`t
     )
 
@@ -4869,6 +4924,13 @@ showQuickHelp(waitforKey) {
         Win-Z`t`tShow zoom window`t
         AltWin-ARROW`tMove mouse 1px`t`t
         CtrlWin-ARROW`tDrag mouse 1px`t`t
+        %spacer%
+        %spacer%
+        %spacer%
+        %spacer%
+        %spacer%
+        %spacer%
+        %spacer%
     )
     hkMiscHelpDisabled := replaceEachLine(hkMiscHelpEnabled, spacer)
     hkMiscHelp := (hs.config.user.enableHkMisc ? hkMiscHelpEnabled : hkMiscHelpDisabled)
@@ -4893,12 +4955,18 @@ showQuickHelp(waitforKey) {
         Win-T`t`tToggle transparency`t
         Win-Up`t`tMaximize the window`t
         ShiftWin-ARROW`tResize to edge (50`%)`t
-        ShiftWin-DnLt`tResize to corner (25`%)`t
-        ShiftWin-DnRt`tResize to corner (25`%)`t
-        ShiftWin-UpLt`tResize to corner (25`%)`t
-        ShiftWin-UpRt`tResize to corner (25`%)`t
+        ShiftWin-DnLt`tResize to SW (25`%)`t
+        ShiftWin-DnRt`tResize to SE (25`%)`t
+        ShiftWin-UpLt`tResize to NE (25`%)`t
+        ShiftWin-UpRt`tResize to NW (25`%)`t
         Win-KEY`t`tResize to grid (11`%)`t
         %A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%KEY is: NumPad # (1-9)`t`t
+        %spacer%
+        %spacer%
+        %spacer%
+        %spacer%
+        %spacer%
+        %spacer%
         %spacer%
         %spacer%
     )
@@ -4945,6 +5013,12 @@ showQuickHelp(waitforKey) {
         CtrlShift-KEY`tWrap in SYMBOLS`t`t
         WinShift-KEY`tWrap each in SYMBOLS`t
         %A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%KEY is: ( ) { } " < >`t`t
+        %spacer%
+        %spacer%
+        %spacer%
+        %spacer%
+        %spacer%
+        %spacer%
         %spacer%
     )
     hkTransformHelpDisabled := replaceEachLine(hkTransformHelpEnabled, spacer)
@@ -5012,24 +5086,24 @@ showQuickHelp(waitforKey) {
     ( LTrim
         Code hotstrings`t`t`t`t
         %colLine%
-        chh`t`tComment header: HTML`t
-        chj`t`tComment header: Java/JS`t
-        chp`t`tComment header: Perl`t
-        chs`t`tComment header: SQL`t
-        elif`t`t'else/if' block`t`t
-        for (`t`t'for' block`t`t
-        func (`t`t'function' block`t
-        if (`t`t'if' block`t`t
-        ifel`t`t'if/else' block`t`t
-        sf.`t`tString.format("", )`t
-        switch (`t'switch' block`t`t
-        sysout`t`tSystem.out.println("");`t
-        while (`t`t'while' block`t`t
-        @html`t`tHTML template`t`t
-        @ip`t`tCurrent IP address`t
-        @java`t`tJava template`t`t
-        @perl`t`tPerl template`t`t
-        @sql`t`tSQL template`t`t
+        chh`tComment header: HTML`t`t
+        chj`tComment header: Java/JS`t`t
+        chp`tComment header: Perl`t`t
+        chs`tComment header: SQL`t`t
+        elif`t'else/if' block`t`t`t
+        for(`t'for' block`t`t`t
+        func(`t'function' block`t`t
+        if(`t'if' block`t`t`t
+        ifel`t'if/else' block`t`t`t
+        sf.`tString.format("", )`t`t
+        switch(`t'switch' block`t`t`t
+        sysout`tSystem.out.println("");`t`t
+        while(`t'while' block`t`t`t
+        @html`tHTML template`t`t`t
+        @ip`tCurrent IP address`t`t
+        @java`tJava template`t`t`t
+        @perl`tPerl template`t`t`t
+        @sql`tSQL template`t`t`t
         %spacer%
         %spacer%
     )
@@ -6179,6 +6253,7 @@ class OldConfig {
     __New(rootName:="") {
         this.editor := "notepad.exe"
         this.enableHkAction := true
+        this.enableHkCustom := true
         this.enableHkDos := true
         this.enableHkEpp := true
         this.enableHkMisc := true
