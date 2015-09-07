@@ -32,119 +32,14 @@ StringCaseSense On
 ;__________________________________________________
 ;Initialization
 global hs := {}
-init()
-
-;__________________________________________________
-;Includes
 #Include *i HotScriptVariables.ahk
 #Include *i HotScriptFunctions.ahk
+init()
 
 ;__________________________________________________
 ;HotStrings
 #Include *i HotScriptStrings.ahk
 
-; Aliases
-;--------
-#if, toBool(hs.config.user.enableHsAlias)
-    :*ch:bbl:: ;; be back later
-        addHotString()
-        sendText("be back later")
-        return
-    :*c:bbs:: ;; be back soon
-        addHotString()
-        sendText("be back soon")
-        return
-    :*c:brb:: ;; be right back
-        addHotString()
-        sendText("be right back")
-        return
-    :*c:brt:: ;; be right there
-        addHotString()
-        sendText("be right there")
-        return
-    :*c:chh:: ;; Comment header for HTML
-       addHotString()
-       sendText("<!--", "{Enter}")
-       sendText(hs.const.COMMENT_HEADER_LINE, "{Enter}")
-       sendText("    ", "{Enter}")
-       sendText(hs.const.COMMENT_HEADER_LINE, "{Enter}")
-       sendText("-->", "{Enter}{Up 3}{End}")
-       return
-    :*c:chj:: ;; Comment header for Java or JavaScript
-       addHotString()
-       sendText("/**", "{Enter}")
-       sendText(" * ", "{Enter}")
-       sendText(" */", "{Enter}{Up 2}{End}")
-       return
-    :*c:chp:: ;; Comment header for Perl
-       addHotString()
-       sendText("#" . hs.const.COMMENT_HEADER_LINE, "{Enter}")
-       sendText("#  ", "{Enter}")
-       sendText("#" . hs.const.COMMENT_HEADER_LINE, "{Enter}{Up 2}{End}")
-       return
-    :*c:chs:: ;; Comment header for SQL
-       addHotString()
-       sendText("--" . hs.const.COMMENT_HEADER_LINE, "{Enter}")
-       sendText("--  ", "{Enter}")
-       sendText("--" . hs.const.COMMENT_HEADER_LINE, "{Enter}{Up 2}{End}")
-       return
-    :*c:g2g:: ;; Good to go.
-        addHotString()
-        sendText("Good to go.")
-        return
-    :*c:gtg:: ;; Got to go.
-        addHotString()
-        sendText("Got to go.")
-        return
-    :*c:idk:: ;; I don't know.
-        addHotString()
-        sendText("I don't know.")
-        return
-    :*c:lmc:: ;; Let me check on that, please wait...
-        addHotString()
-        sendText("Let me check on that, please wait...")
-        return
-    :c:nm:: ;; never mind...
-        addHotString()
-        sendText("never mind...")
-        return
-    :*c:nmif:: ;; Never mind, I found it.
-        addHotString()
-        sendText("Never mind, I found it.")
-        return
-    :c:np:: ;; no problem
-        addHotString()
-        sendText("no problem")
-        return
-    :*c:nw:: ;; no worries
-        addHotString()
-        sendText("no worries")
-        return
-    :*c:okt:: ;; OK, thanks...
-        addHotString()
-        sendText("OK, thanks...")
-        return
-    :*c:thok:: ;; That's OK...
-        addHotString()
-        sendText("That's OK...")
-        return
-    :*c:thx:: ;; thanks
-        addHotString()
-        sendText("thanks")
-        return
-    :c:ty:: ;; Thank you.
-        addHotString()
-        sendText("Thank you.")
-        return
-    :*c:yw:: ;; You're welcome.
-        addHotString()
-        sendText("You're welcome.")
-        return
-    :*c:wyb:: ;; Please let me know when you are back...
-        addHotString()
-        sendText("Please let me know when you are back...")
-        return
-#if
 ; Auto-correct
 ;-------------
 #if, toBool(hs.config.user.enableHsAutoCorrect)
@@ -194,6 +89,32 @@ init()
 ;Code
 ;----
 #if, toBool(hs.config.user.enableHsCode)
+    :*c:chh:: ;; Comment header for HTML
+       addHotString()
+       sendText("<!--", "{Enter}")
+       sendText(hs.const.COMMENT_HEADER_LINE, "{Enter}")
+       sendText("    ", "{Enter}")
+       sendText(hs.const.COMMENT_HEADER_LINE, "{Enter}")
+       sendText("-->", "{Enter}{Up 3}{End}")
+       return
+    :*c:chj:: ;; Comment header for Java or JavaScript
+       addHotString()
+       sendText("/**", "{Enter}")
+       sendText(" * ", "{Enter}")
+       sendText(" */", "{Enter}{Up 2}{End}")
+       return
+    :*c:chp:: ;; Comment header for Perl
+       addHotString()
+       sendText("#" . hs.const.COMMENT_HEADER_LINE, "{Enter}")
+       sendText("#  ", "{Enter}")
+       sendText("#" . hs.const.COMMENT_HEADER_LINE, "{Enter}{Up 2}{End}")
+       return
+    :*c:chs:: ;; Comment header for SQL
+       addHotString()
+       sendText("--" . hs.const.COMMENT_HEADER_LINE, "{Enter}")
+       sendText("--  ", "{Enter}")
+       sendText("--" . hs.const.COMMENT_HEADER_LINE, "{Enter}{Up 2}{End}")
+       return
     :*b0:for(:: ;; auto-completion of a 'for' block
     :*b0:for (:: ;; auto-completion of a 'for' block
     :*b0:if(:: ;; auto-completion of an 'if' block
@@ -240,25 +161,9 @@ init()
         addHotString()
         sendText("System.out.println("""");", "{Left 3}")
         return
-    :*:@html:: ;; a basic HTML template
-        addHotString()
-        templateHtml()
-        return
-    :*:@java:: ;; a basic Java class template
-        addHotString()
-        templateJava()
-        return
     :*:@ip:: ;; current IP address
         addHotString()
         sendText(A_IPAddress1)
-        return
-    :*:@sql:: ;; a basic SQL template
-        addHotString()
-        templateSql()
-        return
-    :*:@perl:: ;; a basic Perl template
-        addHotString()
-        templatePerl()
         return
 #if
 ;Date and Time
@@ -614,7 +519,6 @@ init()
 #if, toBool(hs.config.user.enableHsJira)
     :*:{bpan:: ;; a pair of {panel} tags with blue background++used by Jira/Confluence
         addHotString()
-        pval := hs.config.user.jiraPanels.formatBlue
         sendJiraPanel(hs.config.user.jiraPanels.formatBlue)
         return
     :*:{code:: ;; a pair of generic {code} tags++used by Jira/Confluence
@@ -1662,7 +1566,7 @@ binToHex(ByRef bytes, num:=0) {
     origFormat := A_FormatInteger
     SetFormat Integer, Hex
     addr := &bytes
-    Loop %num%
+    Loop, % num
     {
         b := *addr
         StringTrimLeft b, b, 2
@@ -1683,6 +1587,70 @@ centerWindow(title:="A") {
     WinGetPos, winX, winY, winW, winH, %title%
     coord := getCenter(winW, winH)
     WinMove, %title%,, coord.x, coord.y
+}
+
+checkVersions() {
+    if (hs.config.user.enableVersionCheck) {
+        ahkAvailable := urlToVar(hs.vars.url.ahk.version)
+        if (ahkAvailable == "") {
+            message("Unable to obtain AutoHotKey version information from:`n" . hs.vars.url.ahk.version)
+        }
+        else if (ahkAvailable > A_AhkVersion) {
+            msg =
+                (LTrim
+                    The version of AutoHotKey in use is out-dated.
+                    
+                    %A_Tab%Current`t: %A_AhkVersion%
+                    %A_Tab%Latest`t: %ahkAvailable%
+                    
+                    Would you like to download the new version and install it?
+                )
+            MsgBox, 36, % hs.TITLE . ": New AHK version available", % msg, 30
+            IfMsgBox, Yes
+            {
+                ver := RegexReplace(ahkAvailable, "\.", "")
+                exe := StrReplace(hs.vars.url.ahk.install, "{version}", ver)
+                dlFile := hs.vars.url.ahk.download . exe
+                fullPath := A_ScriptDir . "\" . exe
+                UrlDownloadToFile, % dlFile, % fullPath
+                if (ErrorLevel == 0) {
+                    run(fullPath)
+                }
+                else {
+                    message("Failed to download AutoHotKey installer from:`n" . dlFile . "`n`nError: " . ErrorLevel)
+                }
+            }
+        }
+        hsAvailable := urlToVar(hs.vars.url[hs.TITLE].version)
+        if (hsAvailable == "") {
+            message("Unable to obtain " . hs.TITLE . " version information from:`n`n" . hs.vars.url[hs.TITLE].version)
+        }
+        else if (hsAvailable > hs.VERSION) {
+            msg := "
+                (LTrim
+                    The version of " . hs.TITLE . " in use is out-dated.
+                    
+                    " . A_Tab . "Current`t: " . hs.VERSION . "
+                    " . A_Tab . "Latest`t: " . hsAvailable . "
+                    
+                    Would you like to download the new version and install it?
+                )"
+            MsgBox, 36, % hs.TITLE . ": New " . hs.TITLE . " version available", % msg, 30
+            IfMsgBox, Yes
+            {
+                ver := RegexReplace(ahkAvailable, "\.", "")
+                dlFile := hs.vars.url[hs.TITLE].download
+                fullPath := A_ScriptDir . "\" . hs.TITLE . ".ahk"
+                UrlDownloadToFile, % dlFile, % fullPath
+                if (ErrorLevel == 0) {
+                    selfReload()
+                }
+                else {
+                    message("Failed to download " . hs.TITLE . " from:`n`n" . dlFile . "`n`nError: " . ErrorLevel)
+                }
+            }
+        }
+    }
 }
 
 cleanup20131211_2() {
@@ -2804,6 +2772,7 @@ Media_Play_Pause
 Media_Prev
 Media_Stop
 N
+NumLock
 Numpad0
 Numpad1
 Numpad2
@@ -2899,6 +2868,8 @@ Each hotkey should use the following format:
 
     B0 `(B followed by a zero`): Automatic backspacing is not done to erase the abbreviation you type.
 
+    C: Case-sensitive
+
     C1: Do not conform to typed case.
     Use this option to make auto-replace HotStrings case insensitive and prevent them from conforming to the case of the characters you actually type.
     Case-conforming HotStrings `(which are the default`) produce their replacement text in all caps if you type the abbreviation in all caps.
@@ -2907,6 +2878,19 @@ Each hotkey should use the following format:
 
     O: Omit the ending character of auto-replace HotStrings when the replacement is produced.
     This is useful when you want a hotstring to be kept unambiguous by still requiring an ending character, but don't actually want the ending character to be shown on the screen.
+
+    R: Send the replacement text raw; that is, exactly as it appears rather than translating {Enter} to an ENTER keystroke, ^c to Control-C, etc.
+    This option is put into effect automatically for hotstrings that have a continuation section. Use R0 to turn this option back off.
+
+    SI or SP or SE: Sets the method by which auto-replace hotstrings send their keystrokes. These options are mutually exclusive: only one can be in effect at a time.
+    The following describes each option:
+
+    - SI stands for SendInput, which typically has superior speed and reliability than the other modes.
+    - SP stands for SendPlay, which may allow hotstrings to work in a broader variety of games.
+    - SE stands for SendEvent, which is the default in versions older than 1.0.43.
+
+    Z: This rarely-used option resets the hotstring recognizer after each triggering of the hotstring. In other words, the script will begin waiting for an entirely new
+    hotstring, eliminating from consideration anything you previously typed. This can prevent unwanted triggerings of hotstrings.
 
     You can use the built-in variable A_EndChar to reference the ending character that was typed.
 `*`/
@@ -2930,10 +2914,8 @@ Each hotstring should use the following format:
 ; Variables defined here can be used referenced by HotScriptFunctions.ahk, HotScriptKeys.ahk or HotScriptStrings.ahk.
 ; All variables should be declared with "global" to make them easily accessible by other HotScript scripts and functions.
 
-`/`*
-global AUTHOR := "My Name"
-global SOURCE_DIR := "C:\dev\projects"
-`*`/
+global MY_EMAIL := "firstlast@mail.com"
+global MY_ADDRESS := "123 Main Street"
 
 ), %file%
     }
@@ -3008,7 +2990,7 @@ findOnPath(filename) {
         SplitPath(filename, findName)
         paths := EnvGet("Path")
         StringSplit, pathArray, paths, `;
-        Loop, %pathArray0%
+        Loop, % pathArray0
         {
             file := StringReplace(pathArray%A_Index% . "\", "\\", "\", "All") . findName
             if (FileExist(file) != "") {
@@ -3072,7 +3054,7 @@ getActiveMonitor(hWnd:="A") {
         workBottom    := NumGet(monInfo, 32, "Int")
         isPrimary     := NumGet(monInfo, 36, "Int") & 1
         SysGet, monitorCount, MonitorCount
-        Loop, %monitorCount%
+        Loop, % monitorCount
         {
             SysGet, curMon, Monitor, %A_Index%
             if (monitorLeft == curMonLeft && monitorTop == curMonTop && monitorRight == curMonRight && monitorBottom == curMonBottom) {
@@ -3349,7 +3331,7 @@ getSize(value) {
         }
     }
     else {
-        size := is(value, "Number") ? value : StrLen(value)
+        size := is(value, "number") ? value : StrLen(value)
     }
     return size
 }
@@ -3377,6 +3359,27 @@ getVar(name) {
     return tmp
 }
 
+getVarType(obj) {
+    if (isFunc(obj)) {
+        result := "Function"
+    }
+    else if (isLabel(obj)) {
+        result := "Label"
+    }
+    else if (isObject(obj)) {
+        result := "Object"
+    }
+    else {
+        if (is(obj, "number")) {
+            result := "Number"
+        }
+        else {
+            result := "String"
+        }
+    }
+    return result
+}
+
 hexToBin(ByRef bytes, hex, num:=0)
 {
     needed := Ceil(StrLen(hex) / 2)
@@ -3391,7 +3394,7 @@ hexToBin(ByRef bytes, hex, num:=0)
     }
     StringLeft bytes, bytes, num
     addr := &bytes
-    Loop %num%
+    Loop, % num
     {
        StringLeft ch, hex, 2
        StringTrimLeft hex, hex, 2
@@ -3431,10 +3434,29 @@ hkToStr(key) {
 /*
 ; Hotstring(trigger, replace, mode, clear, cond)
 ;   trigger    - string or regex to trigger the action
-;   replace    - string to replace trigger, OR label to go to OR function to call
+;   replace    - string to replace trigger, OR label to go to, OR function to call, OR object containing function name and optional parameters
 ;   mode 1/2/3 - insensitive/sensitive/regex (default = 1)
 ;   clear      - true if the trigger should be erased (default = true)
 ;   cond       - function name that should return true/false is the action should be executed
+TODO
+    - known BUG when using \t as an end_char (it does not backspace enough characters, at least in EPP, but does work in notepad)
+    - seems to only be an issue when the editor is inserting multiple spaces instead of a TAB - how can this be fixed in this function?
+    - using a built-in HotString, the hook happens BEFORE the tab character is sent to the editor, so it knows what to do
+    - but using this function, it occurs AFTER the character is sent to editor, and this function does not know spaces were used instead of TAB,
+    - which is why it does not backspace enough to delete all of the spaces inserted by the editor
+TODO
+    - make "label" be "replace" which can be text/label/function/object
+    - when object, it (may) contain all necessary parameters
+        - mode
+        - clearTrigger
+        - cond
+        - function
+        - parameters
+TODO
+    - how to handle block / template replacement
+        - maybe function call?
+    - how to handle multi-text with keys after each (cannot use template because the cursor needs to move after each "text")
+    - how to capture/set A_EndChar
 */
 hotString(trigger, label, mode:=1, clearTrigger:=1, cond:= "") {
     global $
@@ -3463,7 +3485,6 @@ hotString(trigger, label, mode:=1, clearTrigger:=1, cond:= "") {
             Add: "+",
             Sub: "-"
         )}
-
     if (!keysBound) {
         ;Binds the keys to watch for triggers
         for k, v in ["symbols", "num", "alpha"]
@@ -3553,7 +3574,6 @@ hotString(trigger, label, mode:=1, clearTrigger:=1, cond:= "") {
                 else {
                     returnValue := (local$.count > 0 ? local$ : local$.value(0))
                 }
-
                 if (v.cond != "" && IsFunc(v.cond)) {
                     ;if hotstring has a condition function
                     conditionalFunc := Func(v.cond)
@@ -3576,18 +3596,19 @@ hotString(trigger, label, mode:=1, clearTrigger:=1, cond:= "") {
                     StringRight, lastChar, triggerStr, 1
                     SendInput % "{BS " . StrLen(triggerStr) . "}"
                 }
-                if (IsLabel(v.label)) {
-                    $ := returnValue
-                    gosub, % v.label
-                }
-                else if (IsFunc(v.label)) {
+                if (IsFunc(v.label)) {
                     callbackFunc := Func(v.label)
+                    ; TODO - add support for sending parameters to the function 
                     if (callbackFunc.minParams >= 1) {
                         callbackFunc.(returnValue)
                     }
                     else {
                         callbackFunc.()
                     }
+                }
+                else if (IsLabel(v.label)) {
+                    $ := returnValue
+                    gosub, % v.label
                 }
                 else {
                     toSend := v.label
@@ -3597,7 +3618,7 @@ hotString(trigger, label, mode:=1, clearTrigger:=1, cond:= "") {
                     }
                     Loop, % local$.count()
                     {
-                        StringReplace, toSend, toSend, % "$" . A_Index, % local$.value(A_index), All
+                        StringReplace, toSend, toSend, % "$" . A_Index, % local$.value(A_Index), All
                     }
                     toSend := RegExReplace(toSend, "([!#\+\^\{\}])", "{$1}") ;Escape modifiers
                     SendInput, %toSend%
@@ -3648,46 +3669,80 @@ init() {
     menuVersion := hs.TITLE . " v" . hs.VERSION . " (AHK v" . A_AhkVersion . ")"
     Menu, Tray, Icon, %icon%
     Menu, Tray, Tip, %menuVersion%
+    initHotStrings()
+    checkVersions()
     if (FileExist(hs.config.user.editor) == "") {
         if (findOnPath(hs.config.user.editor) = "") {
             msg := "The configured editor cannot be found: " . hs.config.user.editor . "`n`nTo change this, edit the " . hs.config.user.file . " file and add the 'editor' value in the [config] section."
             MsgBox, 48,, %msg%
         }
     }
-    initHotStrings()
 }
 
 initHotStrings() {
     if (toBool(hs.config.user.enableHsAlias)) {
-        hotString("(B|b)i(\d+)" . hs.const.EOL_REGEX, "hsBackInX", 3)
+        hotString("\bbbl", "be back later", 3)
+        hotString("\bbbs", "be back soon", 3)
+        hotString("\b(B|b)i(\d+)" . hs.const.END_CHARS_REGEX, "hsBackInX", 3)
+        hotString("\bbrb", "be right back", 3)
+        hotString("\bbrt", "be right there", 3)
+        hotString("\bg2g", "Good to go!", 3)
+        hotString("\bgtg", "Got to go...", 3)
+        hotString("\bidk", "I don't know.", 3)
+        hotString("\blmc", "Let me check on that...", 3)
+        hotString("\bnm" . hs.const.END_CHARS_REGEX, "never mind...", 3)
+        hotString("\bnmif", "Never mind, I found it.", 3)
+        hotString("\bnp" . hs.const.END_CHARS_REGEX, "no problem$1", 3)
+        hotString("\bnw", "no worries", 3)
+        hotString("\bokt", "OK, thanks...", 3)
+        hotString("\bthok", "That's OK...", 3)
+        hotString("\bthx", "thanks", 3)
+        hotString("\bty" . hs.const.END_CHARS_REGEX, "Thank you$1", 3)
+        hotString("\byw" . hs.const.END_CHARS_REGEX, "You're welcome$1", 3)
+        hotString("\bwyb", "Please let me know when you are back...", 3)
+        hotString("@@", MY_EMAIL, 1)
+        hotString("@addr", MY_ADDRESS, 1)
+    }
+    if (toBool(hs.config.user.enableHsAutoCorrect)) {
+    }
+    if (toBool(hs.config.user.enableHsCode)) {
+        hotString("@html", "templateHtml", 2)
+        hotString("@java", "templateJava", 2)
+        hotString("@perl", "templatePerl", 2)
+        hotString("@sql", "templateSql", 2)
+    }
+    if (toBool(hs.config.user.enableHsDates)) {
+        
     }
 }
 
 initInternalVars() {
-    hs.VERSION := "1.20150821.2"
+    hs.VERSION := "1.20150907.1"
     hs.TITLE := "HotScript"
     hs.BASENAME := A_ScriptDir . "\" . hs.TITLE
 
-    marker := {
+    markers := {
         (LTrim Join
-            always_on_top: "† ",
-            click_through: "‡ ",
-            transparent: "±"
+            always_on_top: chr(5826) . chr(160),
+            click_through: chr(5822) . chr(160),
+            pinned: chr(4968) . chr(160),
+            transparent: chr(8801) . chr(160)
         )}
-
+    
     ; const
     hs.const := {
         (LTrim Join Comments
             COMMENT_HEADER_LINE: " " . repeatStr("-", 70),
-            END_CHARS_REGEX: "[``~!@#$%^&*()\-_=+[\]{}\\|;:'" . chr(34) . ",.<>/?\s]",
+            ; TAB is known to not work correctly as an ending character for some editors, because it does not backspace enough characters
+            END_CHARS_REGEX: "([``~!@#$%^&*()\-_=+[\]{}\\|;:'" . chr(34) . ",.<>/?\s\r\n])",
             EOL_MAC: "`r",
             EOL_NIX: "`n",
             EOL_WIN: "`r`n",
             EOL_REGEX: "(\r\n|\n|\r)",
             LINE_SEP: repeatStr("·", 157),
-            MARKER: marker,
+            MARKER: markers,
             MENU_SEP: "-",
-            VIRTUAL_SPACE: " "   ; this is not a space, but Alt+0160
+            VIRTUAL_SPACE: chr(160)
         )}
     ; file
     hs.file := {
@@ -3700,11 +3755,24 @@ initInternalVars() {
             USER_VARIABLES: hs.BASENAME . "Variables.ahk"
         )}
     ; vars
+    urls := {}
+    urls.ahk := {
+        (LTrim Join
+            download: "http://ahkscript.org/download/1.1/",
+            install: "AutoHotkey{version}_Install.exe",
+            version: "http://ahkscript.org/download/1.1/version.txt"
+        )}
+    urls[hs.TITLE] := {
+        (LTrim Join
+            download: "https://github.com/mviens/hotscript/raw/release/HotScript.ahk",
+            version: "https://github.com/mviens/hotscript/raw/release/version.txt"
+        )}
     hs.vars := {
         (LTrim Join Comments
             hiddenWindows: "",   ; this should persist, because if windows were hidden and the script was reloaded, they would be lost
             monitors: {},
-            uniqueId: "_" . A_YEAR . "_" . A_COMPUTERNAME
+            uniqueId: "_" . A_Year . "_" . A_ComputerName,
+            url: urls
         )}
     ; config
     hs.config := {
@@ -3800,6 +3868,7 @@ loadConfig() {
     hs.config.default.enableHsDos := IniRead(hs.config.default.file, "config", "enableHsDos", toBool(hs.config.default.enableHsDos))
     hs.config.default.enableHsHtml := IniRead(hs.config.default.file, "config", "enableHsHtml", toBool(hs.config.default.enableHsHtml))
     hs.config.default.enableHsJira := IniRead(hs.config.default.file, "config", "enableHsJira", toBool(hs.config.default.enableHsJira))
+    hs.config.default.enableVersionCheck := IniRead(hs.config.default.file, "config", "enableVersionCheck", toBool(hs.config.default.enableVersionCheck))
     hs.config.default.hkTotalCount := 0
     hs.config.default.hsTotalCount := 0
     hs.config.default.inputBoxFieldFont := IniRead(hs.config.default.file, "config", "inputBoxFieldFont", hs.config.default.inputBoxFieldFont)
@@ -3895,6 +3964,7 @@ loadConfig() {
     hs.config.user.enableHsDos := toBool(IniRead(hs.config.user.file, "config", "enableHsDos", hs.config.default.enableHsDos))
     hs.config.user.enableHsHtml := toBool(IniRead(hs.config.user.file, "config", "enableHsHtml", hs.config.default.enableHsHtml))
     hs.config.user.enableHsJira := toBool(IniRead(hs.config.user.file, "config", "enableHsJira", hs.config.default.enableHsJira))
+    hs.config.user.enableVersionCheck := toBool(IniRead(hs.config.user.file, "config", "enableVersionCheck", hs.config.default.enable))
     hs.config.user.hkTotalCount := IniRead(hs.config.user.file, "config", "hkTotalCount" . hs.vars.uniqueId, hs.config.default.hkTotalCount)
     hs.config.user.hsTotalCount := IniRead(hs.config.user.file, "config", "hsTotalCount" . hs.vars.uniqueId, hs.config.default.hsTotalCount)
     hs.config.user.inputBoxFieldFont := IniRead(hs.config.user.file, "config", "inputBoxFieldFont", hs.config.default.inputBoxFieldFont)
@@ -3961,7 +4031,7 @@ loadHotKeys(config, section) {
     keyArr := {}
     isDefault := containsIgnoreCase(config.file, "default")
     found := false
-    Loop Parse, keys, % hs.const.EOL_NIX
+    Loop, Parse, keys, % hs.const.EOL_NIX
     {
         pos := InStr(A_LoopField, "=")
         key := SubStr(A_LoopField, 1, (pos - 1))
@@ -3985,7 +4055,7 @@ loadQuickLookupSites(config) {
     file := config.file
     allSites := ""
     sites := IniRead(file, "quickLookup")
-    Loop Parse, sites, % hs.const.EOL_NIX
+    Loop, Parse, sites, % hs.const.EOL_NIX
     {
         value := Trim(SubStr(A_LoopField, (InStr(A_LoopField, "=") + 1)))
         if (value != "") {
@@ -4089,7 +4159,7 @@ moveToMonitor(hWnd:="", direction:=1, keepRelativeSize:=true) {
         return true
     }
 
-    Loop, %monCount%
+    Loop, % monCount
     {
         SysGet, Monitor%A_Index%, MonitorWorkArea, %A_Index%
         Monitor%A_Index%Width := Monitor%A_Index%Right - Monitor%A_Index%Left
@@ -4106,7 +4176,7 @@ moveToMonitor(hWnd:="", direction:=1, keepRelativeSize:=true) {
     WinCenterX := WinX + WinW / 2
     WinCenterY := WinY + WinH / 2
     curMonitor := 0
-    Loop, %monCount%
+    Loop, % monCount
     {
         if ((WinCenterX >= Monitor%A_Index%Left) && (WinCenterX < Monitor%A_Index%Right) && (WinCenterY >= Monitor%A_Index%Top) && (WinCenterY < Monitor%A_Index%Bottom)) {
             curMonitor := A_Index
@@ -4236,7 +4306,27 @@ pasteText(text:="", delay:=250) {
         ; after switching to cmd.exe checking, then this stopped working on Paul's Win2012 system.
         ; so, now we are going to try BOTH!
         if (WinActive("ahk_class ConsoleWindowClass") || WinActive("ahk_exe cmd.exe")) {
-            SendInput, {RAW}%text%
+            static MAX_LEN := 4000
+            len := StrLen(text)
+            if (len < MAX_LEN) {
+                SendInput, {RAW}%text%
+            }
+            else {
+                msg =
+                    (LTrim
+                        Pasting a large amount of text (> 4K) into a DOS window is unreliable.
+                        Text may be scrambled or missing or it *may* work without an issue.
+                        
+                        Size of the text to be pasted is: %len% bytes
+                        
+                        Do you want to continue, knowing these risks?
+                    )
+                MsgBox, 52, % hs.TITLE . ": Warning", % msg
+                IfMsgBox, Yes
+                {
+                    SendInput, {RAW}%text%
+                }
+            }
         }
         else {
             prevClipboard := ClipboardAll
@@ -4261,7 +4351,7 @@ refreshMonitors() {
     SysGet, monPrimary, MonitorPrimary
     hs.vars.monitors.count := monCount
     hs.vars.monitors.primary := monPrimary
-    Loop % hs.vars.monitors.count
+    Loop, % hs.vars.monitors.count
     {
         SysGet, monName, MonitorName, %A_Index%
         SysGet, mon, Monitor, %A_Index%
@@ -4334,7 +4424,7 @@ registerKeys() {
 
 repeatStr(value, count) {
     result := ""
-    Loop, %count%
+    Loop, % count
     {
         result .= value
     }
@@ -4542,7 +4632,7 @@ reverse(str) {
     result := ""
     eol := getEol(str)
     str := StringReplace(str, eol, Chr(29), "All")
-    Loop, parse, str
+    Loop, Parse, str
     {
         result := A_LoopField . result
     }
@@ -4599,23 +4689,13 @@ runEditor(file:="") {
     }
 }
 
-runHotkey(label) {
-    if (IsLabel(label)) {
-        Gui, 98: Cancel
-        GoSub %label%
-    }
-    else {
-        message("Unable to find label for: [" . label . "]")
-    }
-}
-
 runQuickLookup() {
     text := getSelectedTextOrPrompt("Quick Lookup")
     text := Trim(text, (" `t" . hs.const.EOL_WIN))
     if (text != "") {
         text := urlEncode(text)
         menuDef := hs.config.user.quickLookupSites
-        Loop Parse, menuDef, % hs.const.EOL_NIX
+        Loop, Parse, menuDef, % hs.const.EOL_NIX
         {
             if (Mod(A_Index, 2) == 1) {
                 qtext := (A_LoopField == hs.const.MENU_SEP ? "" : A_LoopField)
@@ -4629,7 +4709,7 @@ runQuickLookup() {
     return
 
     doQuickLookup:
-        Loop Parse, menuDef, % hs.const.EOL_NIX
+        Loop, Parse, menuDef, % hs.const.EOL_NIX
         {
             if (A_ThisMenuItemPos * 2 == A_Index) {
                 if (A_LoopField != "Cancel") {
@@ -4725,6 +4805,7 @@ saveConfig(config, defaultConfig:=-1) {
         IniWrite(config.file, "config", "enableHsDos", boolToStr(config.enableHsDos))
         IniWrite(config.file, "config", "enableHsHtml", boolToStr(config.enableHsHtml))
         IniWrite(config.file, "config", "enableHsJira", boolToStr(config.enableHsJira))
+        IniWrite(config.file, "config", "enableVersionCheck", boolToStr(config.enableVersionCheck))
         IniWrite(config.file, "config", "inputBoxFieldFont", config.inputBoxFieldFont)
         IniWrite(config.file, "config", "inputBoxOptions", config.inputBoxOptions)
         IniWrite(config.file, "jira", "panelFormat", config.jiraPanels.format)
@@ -4791,6 +4872,9 @@ saveConfig(config, defaultConfig:=-1) {
         }
         if (boolToStr(config.enableHsJira) != boolToStr(defaultConfig.enableHsJira)) {
             IniWrite(config.file, "config", "enableHsJira", boolToStr(config.enableHsJira))
+        }
+        if (boolToStr(config.enableVersionCheck) != boolToStr(defaultConfig.enableVersionCheck)) {
+            IniWrite(config.file, "config", "enableVersionCheck", boolToStr(config.enableVersionCheck))
         }
         if (config.inputBoxFieldFont != defaultConfig.inputBoxFieldFont) {
             IniWrite(config.file, "config", "inputBoxFieldFont", config.inputBoxFieldFont)
@@ -4879,7 +4963,7 @@ saveQuickLookupSites(config) {
     keyCount := 1
     key := ""
     IniDelete(config.file, "quickLookup")
-    Loop Parse, sites, % hs.const.EOL_NIX
+    Loop, Parse, sites, % hs.const.EOL_NIX
     {
         value := Trim(A_LoopField)
         if (value != "") {
@@ -5201,10 +5285,10 @@ showQuickHelp(waitforKey) {
         ShiftWin-ARROW`tResize to edge (50`%)`t
         ShiftWin-DnLt`tResize to SW (25`%)`t
         ShiftWin-DnRt`tResize to SE (25`%)`t
-        ShiftWin-UpLt`tResize to NE (25`%)`t
-        ShiftWin-UpRt`tResize to NW (25`%)`t
+        ShiftWin-UpLt`tResize to NW (25`%)`t
+        ShiftWin-UpRt`tResize to NE (25`%)`t
         Win-KEY`t`tResize to grid (11`%)`t
-        %A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%KEY is: NumPad # (1-9)`t`t
+        %A_Space%%A_Space%%A_Space%%A_Space%KEY is: NumPad # (1-9)`t`t
         %spacer%
         %spacer%
         %spacer%
@@ -5251,13 +5335,13 @@ showQuickHelp(waitforKey) {
         CtrlAlt-W`tUnwrap wrapped text`t
         CtrlShift-W`tWrap text at width`t
         AltShift-KEY`tTagify text`t`t
-        %A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%KEY is: < >`t`t`t`t
+        %A_Space%%A_Space%%A_Space%%A_Space%KEY is: < >`t`t`t`t
         CtrlAlt-KEY`tWrap in SYMBOLS`t`t
         WinAlt-KEY`tWrap each in SYMBOLS`t
-        %A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%KEY is: [ ] '`t`t`t
+        %A_Space%%A_Space%%A_Space%%A_Space%KEY is: [ ] '`t`t`t
         CtrlShift-KEY`tWrap in SYMBOLS`t`t
         WinShift-KEY`tWrap each in SYMBOLS`t
-        %A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%KEY is: ( ) { } " < >`t`t
+        %A_Space%%A_Space%%A_Space%%A_Space%KEY is: ( ) { } " < >`t`t
         %spacer%
         %spacer%
         %spacer%
@@ -5312,7 +5396,8 @@ showQuickHelp(waitforKey) {
         ty.`tThank you.`t`t`t
         yw`tYou're welcome`t`t`t
         wyb`tLet me know when you are back`t
-        common fractions (1/2, n/3, n/4, n/8)`t
+        @@`temail address`t`t`t
+        @addr`taddress`t`t`t`t
     )
     hsAliasHelpDisabled := replaceEachLine(hsAliasHelpEnabled, spacer)
     hsAliasHelp := (hs.config.user.enableHsAlias ? hsAliasHelpEnabled : hsAliasHelpDisabled)
@@ -5323,6 +5408,7 @@ showQuickHelp(waitforKey) {
         Auto-correct hotstrings`t`t`t
         %colLine%
         cL`tc:`t`t`t`t
+        common fractions (1/2, n/3, n/4, n/8)`t
     )
     hsAutoCorrectHelpDisabled := replaceEachLine(hsAutoCorrectHelpEnabled, spacer)
     hsAutoCorrectHelp := (hs.config.user.enableHsAutoCorrect ? hsAutoCorrectHelpEnabled : hsAutoCorrectHelpDisabled)
@@ -5349,6 +5435,7 @@ showQuickHelp(waitforKey) {
         @java`tJava template`t`t`t
         @perl`tPerl template`t`t`t
         @sql`tSQL template`t`t`t
+        %spacer%
         %spacer%
         %spacer%
     )
@@ -5743,7 +5830,7 @@ templateSql() {
             -- This is a simple SQL template. (generated by HotScript)
             -- ----------------------------------------------------------------------
             SELECT *
-            FROM%A_SPACE%
+            FROM%A_Space%
             WHERE
 
         )
@@ -5986,6 +6073,13 @@ urlEncode(text) {
     text := StringReplace(text, hs.const.EOL_MAC, A_Space, "All")
     text := StringReplace(text, hs.const.EOL_NIX, A_Space, "All")
     return text
+}
+
+urlToVar(url) {
+	http := ComObjCreate("WinHttp.WinHttpRequest.5.1")
+	http.Open("GET", url)
+	http.Send()
+	return http.ResponseText
 }
 
 wrapSelected(start, end) {
@@ -6497,6 +6591,7 @@ class OldConfig {
         this.enableHsDos := true
         this.enableHsHtml := true
         this.enableHsJira := true
+        this.enableVersionCheck := true
         this.file := ""
         this.hkSessionCount := 0
         this.hsSessionCount := 0
