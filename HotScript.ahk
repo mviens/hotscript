@@ -1093,11 +1093,11 @@ hkDosMove() {
 }
 
 hkDosPageDown() {
-    SendInput, {WheelDown 10}
+    scrollWindow("pgdn")
 }
 
 hkDosPageUp() {
-    SendInput, {WheelUp 10}
+    scrollWindow("pgup")
 }
 
 hkDosPaste() {
@@ -1114,6 +1114,14 @@ hkDosPushd() {
 
 hkDosRoot() {
     SendInput, cd\{Enter}
+}
+
+hkDosScrollTop() {
+    scrollWindow("top")
+}
+
+hkDosScrollBottom() {
+    scrollWindow("bottom")
 }
 
 hkDosType() {
@@ -1512,10 +1520,13 @@ hkWindowRight() {
     moveToMonitor("A", 1)
 }
 
+hkWindowToggleMinimized() {
+    toggleMinimized()
+}
+
 hkWindowToggleTransparency() {
     toggleTransparency()
 }
-
 
 ;__________________________________________________
 ;custom functions
@@ -3129,6 +3140,8 @@ getDefaultHotKeyDefs(type) {
         hk["hkDosPopd"] := "^p"
         hk["hkDosPushd"] := "!p"
         hk["hkDosRoot"] := "!r"
+        hk["hkDosScrollTop"] := "^home"
+        hk["hkDosScrollBottom"] := "^end"
         hk["hkDosType"] := "!t"
     }
     else if (type == "hkEpp") {
@@ -3255,6 +3268,7 @@ getDefaultHotKeyDefs(type) {
         hk["hkWindowRestoreHidden"] := "#insert"
         hk["hkWindowRight-1"] := "wheelright"
         hk["hkWindowRight-2"] := "#right"
+        hk["hkWindowToggleMinimized"] := "#m"
         hk["hkWindowToggleTransparency"] := "#t"
     }
     return hk
@@ -3717,7 +3731,7 @@ initHotStrings() {
 }
 
 initInternalVars() {
-    hs.VERSION := "1.20150907.1"
+    hs.VERSION := "1.20150909.3"
     hs.TITLE := "HotScript"
     hs.BASENAME := A_ScriptDir . "\" . hs.TITLE
 
@@ -4976,6 +4990,25 @@ saveQuickLookupSites(config) {
     }
 }
 
+scrollWindow(direction, title:="A") {
+    direction := StringLower(direction)
+    ; see https://msdn.microsoft.com/en-us/library/windows/desktop/bb787577(v=vs.85).aspx
+    if (direction == "bottom") {
+        scroll := 7
+    }
+    else if (direction == "pgup") {
+        scroll := 2
+    }
+    else if (direction == "pgdn") {
+        scroll := 3
+    }
+    else if (direction == "top") {
+        scroll := 6
+    }
+    control := ControlGetFocus("A")
+    SendMessage, 0x115, %scroll%, 0, %control%, A
+}
+
 selectCurrentLine() {
     SendInput, {Home}+{Down}
     selText := getSelectedText()
@@ -5189,11 +5222,13 @@ showQuickHelp(waitforKey) {
         Alt-C`t`t"copy "
         Alt-D`t`tPUSHD to Downloads
         Ctrl-Delete`tDelete to EOL
+        Ctrl-End`tScroll to bottom
+        Ctrl-Home`tScroll to top
         Alt-M`t`t"move "
         Alt-P`t`t"pushd "
         Ctrl-P`t`tPOP to last dir
-        Ctrl-PgDn`tScroll down 30 lines
-        Ctrl-PgUp`tScroll up 30 lines
+        Ctrl-PgDn`tScroll down 1 page
+        Ctrl-PgUp`tScroll up 1 page
         Alt-R`t`tCD to root dir
         Alt-T`t`t"type "
         Alt-Up / Alt-.`tCD to parent dir
@@ -5222,6 +5257,7 @@ showQuickHelp(waitforKey) {
     title := hs.TITLE
     hkHotScriptHelp =
     ( LTrim Comments
+        %spacer%
         %title% hotkeys`t`t`t
         %colLine%
         CtrlWin-H`tToggle quick help`t
@@ -5242,7 +5278,6 @@ showQuickHelp(waitforKey) {
 
     hkMiscHelpEnabled =
     ( LTrim
-        %spacer%
         Miscellaneous hotkeys`t`t`t
         %colLine%
         CtrlAlt-V`tPaste as text`t`t
@@ -5252,13 +5287,6 @@ showQuickHelp(waitforKey) {
         Win-Z`t`tShow zoom window`t
         AltWin-ARROW`tMove mouse 1px`t`t
         CtrlWin-ARROW`tDrag mouse 1px`t`t
-        %spacer%
-        %spacer%
-        %spacer%
-        %spacer%
-        %spacer%
-        %spacer%
-        %spacer%
     )
     hkMiscHelpDisabled := replaceEachLine(hkMiscHelpEnabled, spacer)
     hkMiscHelp := (hs.config.user.enableHkMisc ? hkMiscHelpEnabled : hkMiscHelpDisabled)
@@ -5278,6 +5306,7 @@ showQuickHelp(waitforKey) {
         Win-Insert`tShow hidden windows`t
         Win-Home`tCenter current window`t
         Win-Left`tMove to left monitor`t
+        Win-M`t`tToggle minimized`t
         CtrlWin-R`tResize to ...`t`t
         Win-Right`tMove to right monitor`t
         Win-T`t`tToggle transparency`t
@@ -5353,10 +5382,10 @@ showQuickHelp(waitforKey) {
     hkTransformHelpDisabled := replaceEachLine(hkTransformHelpEnabled, spacer)
     hkTransformHelp := (hs.config.user.enableHkTransform ? hkTransformHelpEnabled : hkTransformHelpDisabled)
 
-    hkCol1 := hkActionHelp . hs.const.EOL_NIX . hkMiscHelp
+    hkCol1 := hkActionHelp . hs.const.EOL_NIX . hkHotScriptHelp
     hkCol2 := hkWindowHelp
     hkCol3 := hkTransformHelp
-    hkCol4 := hkHotScriptHelp . hs.const.EOL_NIX . hkDosHelp
+    hkCol4 := hkMiscHelp . hs.const.EOL_NIX . hkDosHelp
 ;   TODO - this needs to be added back, once it is fully stable/accurate   . hs.const.EOL_NIX . hkTextHelp
 ;    hkCol5 := hkEppHelp
 
@@ -5929,6 +5958,21 @@ toggleDesktopIcons() {
     else {
         WinShow, ahk_id %hWnd%
     }
+}
+
+toggleMinimized() {
+    static allMinimized := false
+    static lastWindow
+    if (allMinimized) {
+        WinMinimizeAllUndo
+        Sleep(50)
+        WinActivate, ahk_id %lastWindow%
+    }
+    else {
+        lastWindow := WinExist("A")
+        WinMinimizeAll
+    }
+    allMinimized := !allMinimized
 }
 
 toggleSuspend() {
