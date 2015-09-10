@@ -3736,7 +3736,7 @@ initHotStrings() {
 }
 
 initInternalVars() {
-    hs.VERSION := "1.20150910.1"
+    hs.VERSION := "1.20150910.2"
     hs.TITLE := "HotScript"
     hs.BASENAME := A_ScriptDir . "\" . hs.TITLE
 
@@ -4303,15 +4303,6 @@ numberSelectedPrompt() {
 }
 
 pasteTemplate(template, tokens:="", keys:="", delay:=250) {
-    /*
-    ; this has the negative side effect of double "enter" when pasting into SqlPlus
-    ; For now, this is disabled - which means the editor must correctly handle using the correct EOL
-    eol := getEol(template)
-    if (eol == hs.const.EOL_NIX) {
-        ; because templates are often from a continuation section, convert EOLs to Windows (CRLF)
-        template := StringReplace(template, hs.const.EOL_NIX, hs.const.EOL_WIN, "All")
-    }
-    */
     for name, value in tokens {
         token := "{" . name . "}"
         template := StringReplace(template, token, value, "All")
@@ -4324,6 +4315,11 @@ pasteText(text:="", delay:=250) {
         prevClipboard := ClipboardAll
         Clipboard := ""
         Sleep(20)
+        eol := getEol(text)
+        if (eol == hs.const.EOL_NIX) {
+            ; because templates are often from a continuation section, convert EOLs to Windows (CRLF)
+            text := StringReplace(text, hs.const.EOL_NIX, hs.const.EOL_WIN, "All")
+        }
         Clipboard := text
         ; this has been giving some trouble... "ConsoleWindowClass" worked for a long time, then stopped working on my home system and then on my laptop.
         ; after switching to cmd.exe checking, then this stopped working on Paul's Win2012 system.
