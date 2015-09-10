@@ -3580,6 +3580,7 @@ hotString(trigger, label, mode:=1, clearTrigger:=1, cond:= "") {
                 }
             }
             if (RegExMatch(typed, matchRegex, local$)) {
+                ; TODO - this may be the wrong place for adding the hotstring counter because of the conditional - should be moved after?
                 addHotString()
                 matched := true
                 if (v.mode == 2) {
@@ -3625,17 +3626,18 @@ hotString(trigger, label, mode:=1, clearTrigger:=1, cond:= "") {
                     gosub, % v.label
                 }
                 else {
-                    toSend := v.label
+                    str := v.label
                     ;working out the back-references
                     if (local$.count() == 0) {
-                        StringReplace, toSend, toSend, % "$0", % local$.value(0), All
+                        StringReplace, str, str, % "$0", % local$.value(0), All
                     }
                     Loop, % local$.count()
                     {
-                        StringReplace, toSend, toSend, % "$" . A_Index, % local$.value(A_Index), All
+                        StringReplace, str, str, % "$" . A_Index, % local$.value(A_Index), All
                     }
-                    toSend := RegExReplace(toSend, "([!#\+\^\{\}])", "{$1}") ;Escape modifiers
-                    SendInput, %toSend%
+                    ; TODO - what does this next line do?
+                    str := RegExReplace(str, "([!#\+\^\{\}])", "{$1}") ;Escape modifiers
+                    pasteText(str)
                 }
             }
         }
@@ -3643,6 +3645,9 @@ hotString(trigger, label, mode:=1, clearTrigger:=1, cond:= "") {
             typed := ""
         }
         else if (StrLen(typed) > 350) {
+            /*
+                TODO - why is this here???
+            */
             StringTrimLeft, typed, typed, 200
         }
     }
@@ -3731,7 +3736,7 @@ initHotStrings() {
 }
 
 initInternalVars() {
-    hs.VERSION := "1.20150909.4"
+    hs.VERSION := "1.20150910.1"
     hs.TITLE := "HotScript"
     hs.BASENAME := A_ScriptDir . "\" . hs.TITLE
 
@@ -4316,43 +4321,24 @@ pasteTemplate(template, tokens:="", keys:="", delay:=250) {
 
 pasteText(text:="", delay:=250) {
     if (text != "") {
-        ; this has been giving some trouble... "ConsoleWindowClass" worked for a long time, then stopped working on my home system then my laptop.
+        prevClipboard := ClipboardAll
+        Clipboard := ""
+        Sleep(20)
+        Clipboard := text
+        ; this has been giving some trouble... "ConsoleWindowClass" worked for a long time, then stopped working on my home system and then on my laptop.
         ; after switching to cmd.exe checking, then this stopped working on Paul's Win2012 system.
         ; so, now we are going to try BOTH!
         if (WinActive("ahk_class ConsoleWindowClass") || WinActive("ahk_exe cmd.exe")) {
-            static MAX_LEN := 4000
-            len := StrLen(text)
-            if (len < MAX_LEN) {
-                SendInput, {RAW}%text%
-            }
-            else {
-                msg =
-                    (LTrim
-                        Pasting a large amount of text (> 4K) into a DOS window is unreliable.
-                        Text may be scrambled or missing or it *may* work without an issue.
-                        
-                        Size of the text to be pasted is: %len% bytes
-                        
-                        Do you want to continue, knowing these risks?
-                    )
-                MsgBox, 52, % hs.TITLE . ": Warning", % msg
-                IfMsgBox, Yes
-                {
-                    SendInput, {RAW}%text%
-                }
-            }
+            tmpCtrl := ControlGetFocus("A")
+            SendMessage, 0x0111, 0xfff1, 0, %tmpCtrl%, A            
         }
         else {
-            prevClipboard := ClipboardAll
-            Clipboard := ""
-            Sleep(20)
-            Clipboard := text
             SendInput, ^v
-            Sleep(delay) ; wait or the clipboard is replaced with previous before it gets a chance to paste it, resulting in pasting the original clipboard
-            Clipboard := prevClipboard
-            prevClipboard := ""
-            Sleep(20)
         }
+        Sleep(delay) ; wait or the clipboard is replaced with previous before it gets a chance to paste it, resulting in pasting the original clipboard
+        Clipboard := prevClipboard
+        prevClipboard := ""
+        Sleep(20)
     }
     else {
         SendInput, {Del}
@@ -5965,7 +5951,7 @@ toggleMinimized() {
     static lastWindow
     if (allMinimized) {
         WinMinimizeAllUndo
-        Sleep(50)
+        Sleep(100)
         WinActivate, ahk_id %lastWindow%
     }
     else {
