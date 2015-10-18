@@ -20,7 +20,6 @@ please contact Mike Viens. (mikeviens@gmail.com)
 #Warn UseUnsetGlobal, OutputDebug
 #Warn UseUnsetLocal, OutputDebug
 Autotrim, off
-DetectHiddenWindows, on
 ListLines, off
 ;SendMode Input
 SetBatchLines -1
@@ -598,6 +597,8 @@ init()
 #Include *i HotScriptKeys.ahk
 
 ; TODO - why is this not configurable and part of external definitions?
+;      - because any hotkey/hotstring subroutine whose very first line is Suspend (except Suspend On)
+;        will be exempt from suspension, so it can act as a toggle.
 #if, toBool(hs.config.user.enableHkMisc)
     #pause:: ;; toggles suspension of this script
         Suspend
@@ -650,6 +651,14 @@ EnvGet(envVarName) {
     v := ""
     EnvGet, v, %envVarName%
     return v
+}
+
+FileAppend(text, file, encoding:="") {
+    FileAppend, %text%, %file%, %encoding%
+}
+
+FileCreateShortCut(target, lnkFile, workDir:="", args:="", desc:="", iconFile:="", shortcut:="", iconNum:="", runState:="") {
+    FileCreateShortcut, %target%, %lnkFile%, %workDir%, %args%, %desc%, %iconFile%, %shortcut%, %iconNum%, %runState%
 }
 
 FileDelete(FilePattern:="") {
@@ -757,6 +766,7 @@ Input(options:="", endKeys:="", matchList:="") {
 InputBox(title:="", prompt:="", hide:="", width:="", height:="", x:="", y:="", font:="", timeout:="", default:="") {
     v := ""
     InputBox, v, %title%, %prompt%, %hide%, %width%, %height%, %x%, %y%, , %timeout%, %default%
+    v := (ErrorLevel == 1 ? "" : v)
     return v
 }
 
@@ -1188,6 +1198,10 @@ hkHotScriptExit() {
     stop()
 }
 
+hkHotScriptHome() {
+    Run(hs.vars.url[hs.TITLE].home)
+}
+
 hkHotScriptQuickHelp() {
     showQuickHelp(true)
 }
@@ -1604,21 +1618,31 @@ checkVersions() {
     if (hs.config.user.enableVersionCheck) {
         ahkAvailable := urlToVar(hs.vars.url.ahk.version)
         if (ahkAvailable == "") {
-            message("Unable to obtain AutoHotKey version information from:`n" . hs.vars.url.ahk.version)
+            debug("Unable to obtain AutoHotKey version information from:`n`n" . hs.vars.url.ahk.version)
+            return
         }
         else if (ahkAvailable > A_AhkVersion) {
-            msg =
-                (LTrim
-                    The version of AutoHotKey in use is out-dated.
-                    
-                    %A_Tab%Current`t: %A_AhkVersion%
-                    %A_Tab%Latest`t: %ahkAvailable%
-                    
-                    Would you like to download the new version and install it?
-                )
-            MsgBox, 36, % hs.TITLE . ": New AHK version available", % msg, 30
-            IfMsgBox, Yes
-            {
+            doUpdate := false
+            if (hs.config.user.enableAutoUpdate) {
+                doUpdate := true
+            }
+            else {
+                msg =
+                    ( LTrim
+                        The version of AutoHotKey in use is out-dated.
+
+                        %A_Tab%Current`t: %A_AhkVersion%
+                        %A_Tab%Latest`t: %ahkAvailable%
+
+                        Would you like to download the new version and install it?
+                    )
+                MsgBox, 36, % hs.TITLE . ": New AHK version available", % msg, 30
+                IfMsgBox, Yes
+                {
+                    doUpdate := true
+                }
+            }
+            if (doUpdate) {
                 ver := RegexReplace(ahkAvailable, "\.", "")
                 exe := StrReplace(hs.vars.url.ahk.install, "{version}", ver)
                 dlFile := hs.vars.url.ahk.download . exe
@@ -1632,23 +1656,40 @@ checkVersions() {
                 }
             }
         }
+        else {
+            path := A_ScriptDir . "\AutoHotkey*_Install.exe"
+            Loop, Files, % path
+            {
+                FileDelete(A_LoopFileLongPath)
+            }
+        }
         hsAvailable := urlToVar(hs.vars.url[hs.TITLE].version)
         if (hsAvailable == "") {
-            message("Unable to obtain " . hs.TITLE . " version information from:`n`n" . hs.vars.url[hs.TITLE].version)
+            debug("Unable to obtain " . hs.TITLE . " version information from:`n`n" . hs.vars.url[hs.TITLE].version)
+            return
         }
         else if (hsAvailable > hs.VERSION) {
-            msg := "
-                (LTrim
-                    The version of " . hs.TITLE . " in use is out-dated.
-                    
-                    " . A_Tab . "Current`t: " . hs.VERSION . "
-                    " . A_Tab . "Latest`t: " . hsAvailable . "
-                    
-                    Would you like to download the new version and install it?
-                )"
-            MsgBox, 36, % hs.TITLE . ": New " . hs.TITLE . " version available", % msg, 30
-            IfMsgBox, Yes
-            {
+            doUpdate := false
+            if (hs.config.user.enableAutoUpdate) {
+                doUpdate := true
+            }
+            else {
+                msg := "
+                    (LTrim
+                        The version of " . hs.TITLE . " in use is out-dated.
+
+                        " . A_Tab . "Current`t: " . hs.VERSION . "
+                        " . A_Tab . "Latest`t: " . hsAvailable . "
+
+                        Would you like to download the new version and install it?
+                    )"
+                MsgBox, 36, % hs.TITLE . ": New " . hs.TITLE . " version available", % msg, 30
+                IfMsgBox, Yes
+                {
+                    doUpdate := true
+                }
+            }
+            if (doUpdate) {
                 ver := RegexReplace(ahkAvailable, "\.", "")
                 dlFile := hs.vars.url[hs.TITLE].download
                 fullPath := A_ScriptDir . "\" . hs.TITLE . ".ahk"
@@ -2610,10 +2651,28 @@ createIcon() {
     fileIco.close()
 }
 
+createStartupLink() {
+    lnkFile := A_Startup . "\" . hs.TITLE . ".lnk"
+    if (hs.config.user.enableAutoStart) {
+        target := hs.BASENAME . ".ahk"
+        workDir := A_ScriptDir
+        args := ""
+        desc := "Changing the way you use Windows through better efficiencies!"
+        iconFile := hs.BASENAME . ".ico"
+        shortcut := ""
+        iconNum := 1
+        runState := 1
+        FileCreateShortcut(target, lnkFile, workDir, args, desc, iconFile, shortcut, iconNum, runState)
+    }
+    else {
+        FileDelete(lnkFile)
+    }
+}
+
 createUserFiles() {
     file := hs.file.USER_FUNCTIONS
     if (FileExist(file) == "") {
-        FileAppend,
+        contents =
 (
 ; All user-defined functions should be declared below.
 ; Functions defined here can be used referenced by HotScriptKeys.ahk or HotScriptStrings.ahk.
@@ -2625,11 +2684,12 @@ simpleFunction(someVar) {
 }
 `*`/
 
-), %file%
+)
+        FileAppend(contents, file)
     }
     file := hs.file.USER_KEYS
     if (FileExist(file) == "") {
-        FileAppend,
+        contents =
 (
 ; All user-defined hotkeys should be declared below.
 ; Functions defined in HotScript are available for use here.
@@ -2863,11 +2923,12 @@ Each hotkey should use the following format:
     return
 `*`/
 
-), %file%
+)
+        FileAppend(contents, file)
     }
     file := hs.file.USER_STRINGS
     if (FileExist(file) == "") {
-        FileAppend,
+        contents =
 (
 ; All user-defined HotStrings should be declared below.
 ; Functions defined in HotScript are available for use here.
@@ -2915,20 +2976,23 @@ Each hotstring should use the following format:
     return
 `*`/
 
-), %file%
+)
+        FileAppend(contents, file)
     }
     file := hs.file.USER_VARIABLES
     if (FileExist(file) == "") {
-        FileAppend,
+        contents =
 (
 ; All user-defined variables should be declared below.
 ; Variables defined here can be used referenced by HotScriptFunctions.ahk, HotScriptKeys.ahk or HotScriptStrings.ahk.
 ; All variables should be declared with "global" to make them easily accessible by other HotScript scripts and functions.
 
-global MY_EMAIL := "firstlast@mail.com"
 global MY_ADDRESS := "123 Main Street"
+global MY_EMAIL := "firstlast@mail.com"
+global MY_PHONE := "789-456-0123"
 
-), %file%
+)
+        FileAppend(contents, file)
     }
 }
 
@@ -2955,7 +3019,7 @@ cryptSelected() {
 }
 
 debug(str) {
-    msg := hs.TITLE . " v" . hs.VERSION . " - " . A_MM . "/" . A_DD . "/" . A_YYYY . " at " . A_Hour . ":" . A_Min . ":" . A_Sec . " :: "
+    msg := hs.TITLE . " :: "
     OutputDebug % msg . str
 }
 
@@ -3155,12 +3219,13 @@ getDefaultHotKeyDefs(type) {
         hk["hkHotScriptDebugVariable"] := "^#f12"
         hk["hkHotScriptEditDefaultIni"] := "#9"
         hk["hkHotScriptEditHotScript"] := "#3"
-        hk["hkHotScriptEditUserIni"] := "#6"
+        hk["hkHotScriptEditUserIni"] := "#8"
         hk["hkHotScriptEditUserFunctions"] := "#7"
         hk["hkHotScriptEditUserKeys"] := "#4"
         hk["hkHotScriptEditUserStrings"] := "#5"
-        hk["hkHotScriptEditUserVariables"] := "#8"
+        hk["hkHotScriptEditUserVariables"] := "#6"
         hk["hkHotScriptExit"] := "#f12"
+        hk["hkHotScriptHome"] := "#0"
         hk["hkHotScriptQuickHelp"] := "#h"
         hk["hkHotScriptQuickHelpToggle-1"] := "^#h"
         hk["hkHotScriptQuickHelpToggle-2"] := "!#h"
@@ -3609,11 +3674,21 @@ hotString(trigger, label, mode:=1, clearTrigger:=1, cond:= "") {
                     ;delete the trigger
                     triggerStr := (v.mode == 3 && local$.count > 0 ? local$.value(0) : returnValue)
                     StringRight, lastChar, triggerStr, 1
-                    SendInput % "{BS " . StrLen(triggerStr) . "}"
+                    if (lastChar == A_Tab) {
+                        tmpTrigger := SubStr(triggerStr, 1, StrLen(triggerStr) - 1)
+                        len := StrLen(tmpTrigger)
+                        SendInput, +{Left %len%}
+                        while (!startsWith(getSelectedText(), tmpTrigger)) {
+                            SendInput, +{Left}
+                        }
+                    }
+                    else {
+                        SendInput % "{BS " . StrLen(triggerStr) . "}"
+                    }
                 }
                 if (IsFunc(v.label)) {
                     callbackFunc := Func(v.label)
-                    ; TODO - add support for sending parameters to the function 
+                    ; TODO - add support for sending parameters to the function
                     if (callbackFunc.minParams >= 1) {
                         callbackFunc.(returnValue)
                     }
@@ -3683,11 +3758,20 @@ init() {
     createUserFiles()
     loadConfig()
     cleanupDeprecated()
+    createStartupLink()
     updateRegistry()
     icon := hs.BASENAME . ".ico"
-    menuVersion := hs.TITLE . " v" . hs.VERSION . " (AHK v" . A_AhkVersion . ")"
-    Menu, Tray, Icon, %icon%
-    Menu, Tray, Tip, %menuVersion%
+    tip := hs.TITLE . " v" . hs.VERSION . " (AHK v" . A_AhkVersion . ") - enabled"
+    Menu, Tray, Icon, %icon%,, 1
+    Menu, Tray, Tip, % tip
+    Menu, Tray, NoStandard
+    Menu, Tray, Add, Pause, customTrayMenu
+    Menu, Tray, Add, Reload, customTrayMenu
+    Menu, Tray, Add, Window Spy, customTrayMenu
+    Menu, Tray, Add
+    Menu, Tray, Add, Home Page, customTrayMenu
+    Menu, Tray, Add
+    Menu, Tray, Add, Exit, customTrayMenu
     initHotStrings()
     checkVersions()
     if (FileExist(hs.config.user.editor) == "") {
@@ -3696,6 +3780,27 @@ init() {
             MsgBox, 48,, %msg%
         }
     }
+    return
+
+    customTrayMenu:
+        if (A_ThisMenuItem == "Pause" || A_ThisMenuItem == "Resume") {
+            Suspend
+            toggleSuspend()
+        }
+        else if (A_ThisMenuItem == "Reload") {
+            selfReload()
+        }
+        else if (A_ThisMenuItem == "Window Spy") {
+            ahkDir := RegRead("HKEY_LOCAL_MACHINE", "SOFTWARE\AutoHotkey", "InstallDir")
+            runTarget(ahkDir . "\AU3_Spy.exe")
+        }
+        else if (A_ThisMenuItem == "Home Page") {
+            hkHotScriptHome()
+        }
+        else if (A_ThisMenuItem == "Exit") {
+            stop()
+        }
+        return
 }
 
 initHotStrings() {
@@ -3719,24 +3824,30 @@ initHotStrings() {
         hotString("\bty" . hs.const.END_CHARS_REGEX, "Thank you$1", 3)
         hotString("\byw" . hs.const.END_CHARS_REGEX, "You're welcome$1", 3)
         hotString("\bwyb", "Please let me know when you are back...", 3)
-        hotString("@@", MY_EMAIL, 1)
-        hotString("@addr", MY_ADDRESS, 1)
+        if (MY_EMAIL != "") {
+	    hotString("@@", MY_EMAIL, 1)
+        }
+	if (MY_PHONE != "") {
+            hotString("@#", MY_PHONE, 1)
+	}
+        if (MY_ADDRESS != "") {
+	    hotString("@addr", MY_ADDRESS, 1)
+        }
     }
-    if (toBool(hs.config.user.enableHsAutoCorrect)) {
-    }
+;    if (toBool(hs.config.user.enableHsAutoCorrect)) {
+;    }
     if (toBool(hs.config.user.enableHsCode)) {
         hotString("@html", "templateHtml", 2)
         hotString("@java", "templateJava", 2)
         hotString("@perl", "templatePerl", 2)
         hotString("@sql", "templateSql", 2)
     }
-    if (toBool(hs.config.user.enableHsDates)) {
-        
-    }
+;    if (toBool(hs.config.user.enableHsDates)) {
+;    }
 }
 
 initInternalVars() {
-    hs.VERSION := "1.20150910.2"
+    hs.VERSION := "1.20151018.1"
     hs.TITLE := "HotScript"
     hs.BASENAME := A_ScriptDir . "\" . hs.TITLE
 
@@ -3747,13 +3858,12 @@ initInternalVars() {
             pinned: chr(4968) . chr(160),
             transparent: chr(8801) . chr(160)
         )}
-    
+
     ; const
     hs.const := {
         (LTrim Join Comments
             COMMENT_HEADER_LINE: " " . repeatStr("-", 70),
-            ; TAB is known to not work correctly as an ending character for some editors, because it does not backspace enough characters
-            END_CHARS_REGEX: "([``~!@#$%^&*()\-_=+[\]{}\\|;:'" . chr(34) . ",.<>/?\s\r\n])",
+            END_CHARS_REGEX: "([``~!@#$%^&*()\-_=+[\]{}\\|;:'" . chr(34) . ",.<>/?\s\t\r\n])",
             EOL_MAC: "`r",
             EOL_NIX: "`n",
             EOL_WIN: "`r`n",
@@ -3783,9 +3893,10 @@ initInternalVars() {
         )}
     urls[hs.TITLE] := {
         (LTrim Join
-            download: "https://github.com/mviens/hotscript/raw/release/HotScript.ahk",
+            home: "https://github.com/mviens/hotscript",
             version: "https://github.com/mviens/hotscript/raw/release/version.txt"
         )}
+    urls[hs.TITLE].download := urls[hs.TITLE].home . "/raw/release/HotScript.ahk",
     hs.vars := {
         (LTrim Join Comments
             hiddenWindows: "",   ; this should persist, because if windows were hidden and the script was reloaded, they would be lost
@@ -3810,6 +3921,18 @@ is(value, type) {
         result := true
     }
     return result
+}
+
+isDirectory(text) {
+    return (InStr(FileExist(text), "D") > 0)
+}
+
+isFile(text) {
+    return ((FileExist(text) != "") && !isDirectory(text))
+}
+
+isUNC(text) {
+    return RegexMatch(text, "\\\\[\\~`!@#$%^&\(\)\-_=+\[\]\{\};',.\d\w ]+")
 }
 
 isUrl(text) {
@@ -3888,6 +4011,8 @@ loadConfig() {
     hs.config.default.enableHsHtml := IniRead(hs.config.default.file, "config", "enableHsHtml", toBool(hs.config.default.enableHsHtml))
     hs.config.default.enableHsJira := IniRead(hs.config.default.file, "config", "enableHsJira", toBool(hs.config.default.enableHsJira))
     hs.config.default.enableVersionCheck := IniRead(hs.config.default.file, "config", "enableVersionCheck", toBool(hs.config.default.enableVersionCheck))
+    hs.config.default.enableAutoStart := IniRead(hs.config.default.file, "config", "enableAutoStart", toBool(hs.config.default.enableAutoStart))
+    hs.config.default.enableAutoUpdate := IniRead(hs.config.default.file, "config", "enableAutoUpdate", toBool(hs.config.default.enableAutoUpdate))
     hs.config.default.hkTotalCount := 0
     hs.config.default.hsTotalCount := 0
     hs.config.default.inputBoxFieldFont := IniRead(hs.config.default.file, "config", "inputBoxFieldFont", hs.config.default.inputBoxFieldFont)
@@ -3918,7 +4043,7 @@ loadConfig() {
     sites := loadQuickLookupSites(hs.config.default)
     if (sites == "") {
         sites =
-        (LTrim
+        ( LTrim
             &Jira
             http://jira.powerschool.com/browse/@selection@
             &Confluence
@@ -3984,6 +4109,8 @@ loadConfig() {
     hs.config.user.enableHsHtml := toBool(IniRead(hs.config.user.file, "config", "enableHsHtml", hs.config.default.enableHsHtml))
     hs.config.user.enableHsJira := toBool(IniRead(hs.config.user.file, "config", "enableHsJira", hs.config.default.enableHsJira))
     hs.config.user.enableVersionCheck := toBool(IniRead(hs.config.user.file, "config", "enableVersionCheck", hs.config.default.enableVersionCheck))
+    hs.config.user.enableAutoStart := toBool(IniRead(hs.config.user.file, "config", "enableAutoStart", hs.config.default.enableAutoStart))
+    hs.config.user.enableAutoUpdate := toBool(IniRead(hs.config.user.file, "config", "enableAutoUpdate", hs.config.default.enableAutoUpdate))
     hs.config.user.hkTotalCount := IniRead(hs.config.user.file, "config", "hkTotalCount" . hs.vars.uniqueId, hs.config.default.hkTotalCount)
     hs.config.user.hsTotalCount := IniRead(hs.config.user.file, "config", "hsTotalCount" . hs.vars.uniqueId, hs.config.default.hsTotalCount)
     hs.config.user.inputBoxFieldFont := IniRead(hs.config.user.file, "config", "inputBoxFieldFont", hs.config.default.inputBoxFieldFont)
@@ -4321,12 +4448,14 @@ pasteText(text:="", delay:=250) {
             text := StringReplace(text, hs.const.EOL_NIX, hs.const.EOL_WIN, "All")
         }
         Clipboard := text
+        Sleep(100)
         ; this has been giving some trouble... "ConsoleWindowClass" worked for a long time, then stopped working on my home system and then on my laptop.
         ; after switching to cmd.exe checking, then this stopped working on Paul's Win2012 system.
         ; so, now we are going to try BOTH!
         if (WinActive("ahk_class ConsoleWindowClass") || WinActive("ahk_exe cmd.exe")) {
             tmpCtrl := ControlGetFocus("A")
-            SendMessage, 0x0111, 0xfff1, 0, %tmpCtrl%, A            
+            SendMessage, 0x0111, 0xfff1, 0, %tmpCtrl%, A
+            Sleep(50)
         }
         else {
             SendInput, ^v
@@ -4747,15 +4876,15 @@ runSelectedText() {
             }
             Run(selText)
         }
-;        else if () {
-            ; if InStr(FileExist("C:\My Folder"), "D")
-            ; TODO - if directory or UNC, open with Explorer
-            ;      - could be just \utils so search all drives for it
-            ; TODO - if file, run it or open it
-;        }
         else {
-            searchText := urlEncode(selText)
-            Run("http://www.google.com/search?q=" . searchText)
+            tmpPath := RegexReplace(selText, "/", "\")
+            if (isFile(tmpPath) || isDirectory(tmpPath) || isUNC(tmpPath)) {
+                Run(tmpPath)
+            }
+            else {
+                searchText := urlEncode(selText)
+                Run("http://www.google.com/search?q=" . searchText)
+            }
         }
     }
 }
@@ -4774,7 +4903,7 @@ runTarget(target, workDir:="") {
     pid := Run(target, workDir)
     if (pid != "") {
         WinWait, ahk_pid %pid%
-        Sleep(50)
+        Sleep(100)
         WinActivate, ahk_pid %pid%
     }
 }
@@ -4802,6 +4931,8 @@ saveConfig(config, defaultConfig:=-1) {
         IniWrite(config.file, "config", "enableHsHtml", boolToStr(config.enableHsHtml))
         IniWrite(config.file, "config", "enableHsJira", boolToStr(config.enableHsJira))
         IniWrite(config.file, "config", "enableVersionCheck", boolToStr(config.enableVersionCheck))
+        IniWrite(config.file, "config", "enableAutoStart", boolToStr(config.enableAutoStart))
+        IniWrite(config.file, "config", "enableAutoUpdate", boolToStr(config.enableAutoUpdate))
         IniWrite(config.file, "config", "inputBoxFieldFont", config.inputBoxFieldFont)
         IniWrite(config.file, "config", "inputBoxOptions", config.inputBoxOptions)
         IniWrite(config.file, "jira", "panelFormat", config.jiraPanels.format)
@@ -4871,6 +5002,12 @@ saveConfig(config, defaultConfig:=-1) {
         }
         if (boolToStr(config.enableVersionCheck) != boolToStr(defaultConfig.enableVersionCheck)) {
             IniWrite(config.file, "config", "enableVersionCheck", boolToStr(config.enableVersionCheck))
+        }
+        if (boolToStr(config.enableAutoStart) != boolToStr(defaultConfig.enableAutoStart)) {
+            IniWrite(config.file, "config", "enableAutoStart", boolToStr(config.enableAutoStart))
+        }
+        if (boolToStr(config.enableAutoUpdate) != boolToStr(defaultConfig.enableAutoUpdate)) {
+            IniWrite(config.file, "config", "enableAutoUpdate", boolToStr(config.enableAutoUpdate))
         }
         if (config.inputBoxFieldFont != defaultConfig.inputBoxFieldFont) {
             IniWrite(config.file, "config", "inputBoxFieldFont", config.inputBoxFieldFont)
@@ -5251,10 +5388,11 @@ showQuickHelp(waitforKey) {
         Win-3`t`tEdit %title%`t`t
         Win-4`t`tEdit user keys`t`t
         Win-5`t`tEdit user strings`t
-        Win-6`t`tEdit user INI`t`t
+        Win-6`t`tEdit user variables`t
         Win-7`t`tEdit user functions`t
-        Win-8`t`tEdit user variables`t
+        Win-8`t`tEdit user INI`t`t
         Win-9`t`tEdit default INI`t`t
+        Win-0`t`t%title% home page`t`t
         Win-Pause`tPause %title%`t`t
     )
 
@@ -5552,7 +5690,20 @@ showQuickHelp(waitforKey) {
 
     quickHelp := hkResult . hs.const.LINE_SEP . hs.const.EOL_NIX . Trim(hsResult, (" `t" . hs.const.EOL_WIN))
     splashTitle := hs.TITLE . "Splash"
-    Progress("B1 C00 CT000000 CWFFFFDD FM11 FS8 W1125 WM1200 ZH0", quickHelp,, splashTitle, "Courier New")
+    /*
+    yellow := "FFFFDD"
+    blue := "DDDDFF"
+    green := "D9F4DC"
+    red := "F4D9D9"
+    cyan := "CFFFFD"
+    */
+    green := "D9F4DC"
+    cyan := "D2EAEC"
+    blue := "D7DEEF"
+    purple := "E4D6EF"
+    red := "FFE2E3"
+    yellow := "FFFEE3"
+    Progress("B1 C00 CT000000 CW" . yellow . "h FM11 FS8 W1125 WM1200 ZH0", quickHelp,, splashTitle, "Courier New")
     isShowing := true
     centerWindow(splashTitle)
     if (waitForKey) {
@@ -5836,7 +5987,7 @@ templateSql() {
     if (template == "") {
         templateKeys := "{Up 2}{End}"
         template =
-        (LTrim
+        ( LTrim
             -- ----------------------------------------------------------------------
             -- This is a simple SQL template. (generated by HotScript)
             -- ----------------------------------------------------------------------
@@ -5958,7 +6109,17 @@ toggleMinimized() {
 }
 
 toggleSuspend() {
-    msg := hs.TITLE . " is " . (A_IsSuspended ? "suspended" : "enabled") . "..."
+    if (A_IsSuspended) {
+        state := "suspended"
+        Menu, Tray, Rename, &Pause, &Resume
+    }
+    else {
+        state := "enabled"
+        Menu, Tray, Rename, &Resume, &Pause
+    }
+    tip := SubStr(A_IconTip, 1, InStr(A_IconTip, "-") + 1) . state
+    Menu, Tray, Tip, % tip
+    msg := hs.TITLE . " is " . state . "..."
     showSplash(msg)
 }
 
@@ -6102,10 +6263,14 @@ urlEncode(text) {
 }
 
 urlToVar(url) {
-	http := ComObjCreate("WinHttp.WinHttpRequest.5.1")
-	http.Open("GET", url)
-	http.Send()
-	return http.ResponseText
+    result := ""
+    try {
+        http := ComObjCreate("WinHttp.WinHttpRequest.5.1")
+        http.Open("GET", url)
+        http.Send()
+        result := http.ResponseText
+    }
+    return result
 }
 
 wrapSelected(start, end) {
@@ -6216,10 +6381,10 @@ zoomStart() {
 
     zoomChange:
         zcKey := StringLower(A_ThisHotKey)
-        if (zcKey == "wheelup" || zcKey == "!up") {
+        if (endsWith(zcKey, "wheelup") || zcKey == "!up") {
             direction := -1
         }
-        else if (zcKey == "wheeldown" || zcKey == "!down") {
+        else if (endsWith(zcKey, "wheeldown") || zcKey == "!down") {
             direction := 1
         }
         if (direction) {
@@ -6618,6 +6783,8 @@ class OldConfig {
         this.enableHsHtml := true
         this.enableHsJira := true
         this.enableVersionCheck := true
+        this.enableAutoStart := true
+        this.enableAutoUpdate := false
         this.file := ""
         this.hkSessionCount := 0
         this.hsSessionCount := 0
