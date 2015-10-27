@@ -160,10 +160,6 @@ init()
         addHotString()
         sendText("System.out.println("""");", "{Left 3}")
         return
-    :*:@ip:: ;; current IP address
-        addHotString()
-        sendText(A_IPAddress1)
-        return
 #if
 ;Date and Time
 ;-------------
@@ -720,12 +716,6 @@ FileSelectFolder(startingFolder:="", options:="", prompt:="") {
 FormatTime(YYYYMMDDHH24MISS:="", format:="") {
     v := ""
     FormatTime, v, %YYYYMMDDHH24MISS%, %format%
-    return v
-}
-
-GetKeyState(whichKey, mode:="") {
-    v := ""
-    GetKeyState, v, %whichKey%, %mode%
     return v
 }
 
@@ -1478,16 +1468,16 @@ hkWindowResize() {
 
 hkWindowResizeToAnchor() {
     direction := ""
-    if (GetKeyState("up", "p") == "D") {
+    if (GetKeyState("up", "p")) {
         direction .= "T"
     }
-    else if (GetKeyState("down", "p") == "D") {
+    else if (GetKeyState("down", "p")) {
         direction .= "B"
     }
-    if (GetKeyState("left", "p") == "D") {
+    if (GetKeyState("left", "p")) {
         direction .= "L"
     }
-    else if (GetKeyState("right", "p") == "D") {
+    else if (GetKeyState("right", "p")) {
         direction .= "R"
     }
     resizeTo(direction)
@@ -2678,11 +2668,11 @@ createUserFiles() {
 ; Functions defined here can be used referenced by HotScriptKeys.ahk or HotScriptStrings.ahk.
 ; Any functions defined within HotScript itself can be called by functions created here.
 
-`/`*
-simpleFunction(someVar) {
+/*
+simpleFunction`(someVar`) {
     ; do something here...
 }
-`*`/
+*/
 
 )
         FileAppend(contents, file)
@@ -2694,19 +2684,19 @@ simpleFunction(someVar) {
 ; All user-defined hotkeys should be declared below.
 ; Functions defined in HotScript are available for use here.
 
-`/`*
-    `#  - Win
-    `!  - Alt
-    `^  - Control
-    `+  - Shift
-    `<  - left key
-    `>  - right key
-    `*  - wild card `(fire even if extra modifier keys are pressed`)
-    `~  - do not block native key function
+/*
+    #  - Win
+    !  - Alt
+    ^  - Control
+    +  - Shift
+    <  - left key
+    >  - right key
+    *  - wild card `(fire even if extra modifier keys are pressed`)
+    ~  - do not block native key function
     UP - fire upon key release instead of key press
-`*`/
+*/
 
-`/`*
+/*
 Key Names and Symbols
 ---------------------
 '
@@ -2912,16 +2902,16 @@ XButton1
 XButton2
 Y
 Z
-`*`/
+*/
 
-`/`*
+/*
 Each hotkey should use the following format:
 
-`^`!`+`m`:`: ;; a simple test key defined in an external file
+^!+m:: ;; a simple test key defined in an external file
     addHotKey`(`)
     showSplash`("This hotkey was defined by an external script!"`)
     return
-`*`/
+*/
 
 )
         FileAppend(contents, file)
@@ -2933,10 +2923,12 @@ Each hotkey should use the following format:
 ; All user-defined HotStrings should be declared below.
 ; Functions defined in HotScript are available for use here.
 
-`/`*
-    `* `(asterisk`): An ending character `(e.g. space, period, or enter`) is not required to trigger the hotstring.
+/*
+    HotStrings configured through AutoHotKey
+    ----------------------------------------
+    * `(asterisk`): An ending character `(e.g. space, period, or enter`) is not required to trigger the hotstring.
 
-    `? `(question mark`): The hotstring will be triggered even when it is inside another word`; that is, when the character typed immediately before it is alphanumeric.
+    ? `(question mark`): The hotstring will be triggered even when it is inside another word; that is, when the character typed immediately before it is alphanumeric.
 
     B0 `(B followed by a zero`): Automatic backspacing is not done to erase the abbreviation you type.
 
@@ -2965,16 +2957,55 @@ Each hotkey should use the following format:
     hotstring, eliminating from consideration anything you previously typed. This can prevent unwanted triggerings of hotstrings.
 
     You can use the built-in variable A_EndChar to reference the ending character that was typed.
-`*`/
+*/
 
-`/`*
+/*
 Each hotstring should use the following format:
 
-`:`*`:hw.`:`: ;; Hello World.
+:*:hw.:: ;; Hello World.
     addHotString`(`)
     sendText`("Hello World."`)
     return
-`*`/
+*/
+
+/*
+    Dynamic HotStrings configured through Hotscript
+    -----------------------------------------------
+    hotString`(trigger, replace, mode, clearTrigger, cond`)
+        trigger   - string or regex to trigger the action
+        replace   - string to replace trigger, OR function to call, OR label to go to
+                        - passing a blank value will delete any existing hotstring for the specified trigger
+                        - this can be useful to allow a hotstring to trigger until some conditional has been met
+        mode      - the operating mode of the trigger
+                        - 1 = case insensitive `(default`)
+                        - 2 = case sensitive
+                        - 3 = regex
+        clear     - true if the trigger should be erased `(default = true`)
+        condition - function name that should return true/false is the action should be executed
+
+    Only the first two parameters are required.
+        - The "mode" defaults to case-insentive (1), if not specified.
+        - The "clear" defaults to true, if not specified.
+        - The "condition" is optional.
+
+    Unlike using the method defined by AutoHotKey `(above`), there is no need to manually call addHotString`(`).
+
+    hotString`("hw", "Hello World."`)
+    hotString`("hw", ""`)
+        - the hotstring for "hw" is now deleted
+    hotString`("@math", "myMath"`)
+        - if "myMath" exists as a function, it is called
+        - if "myMath" exists as a label, it is called
+        - otherwise the text "myMath" will be used
+    hotString`("gett", "ing much more efficient, with HotScript!", 1, false`)
+    hotString`("myTest", "Conditional testing worked!", 1, true, "myTestFunc"`)
+        - if myTestFunc exists, it is called
+            - if it returns true, the hotstring will be triggered
+            - if it returns false, the hotstring will be ignored
+        - if myTestFunc does not exist, the hotstring will be triggered
+    hotString`("aBc", "This is case-sensitive!", 2`)
+    hotString`("\w{3}\d{3}", "Three letters and three numbers...", 3`)
+*/
 
 )
         FileAppend(contents, file)
@@ -2989,7 +3020,9 @@ Each hotstring should use the following format:
 
 global MY_ADDRESS := "123 Main Street"
 global MY_EMAIL := "firstlast@mail.com"
+global MY_NAME := "First Last"
 global MY_PHONE := "789-456-0123"
+global MY_SIGNATURE := "Sincerely,``n" . MY_NAME
 
 )
         FileAppend(contents, file)
@@ -3357,19 +3390,6 @@ getEol(text) {
     return eol
 }
 
-getHotKeySections(config) {
-    file := config.file
-    sections := {}
-    value := IniRead(file)
-    Loop, Parse, value, % hs.const.EOL_NIX
-    {
-        if (RegExMatch(A_LoopField, "^hk.+", key)) {
-            sections.insert(key)
-        }
-    }
-    return sections
-}
-
 getListSize(list, delim:="") {
     delim := (delim == "" ? hs.const.EOL_WIN : delim)
     tmpCount := 0
@@ -3511,33 +3531,31 @@ hkToStr(key) {
 }
 
 /*
-; Hotstring(trigger, replace, mode, clear, cond)
+; Hotstring(trigger, replace, mode, clear, condition)
 ;   trigger    - string or regex to trigger the action
 ;   replace    - string to replace trigger, OR label to go to, OR function to call, OR object containing function name and optional parameters
 ;   mode 1/2/3 - insensitive/sensitive/regex (default = 1)
 ;   clear      - true if the trigger should be erased (default = true)
-;   cond       - function name that should return true/false is the action should be executed
+;   condition  - function name that should return true/false is the action should be executed
 TODO
-    - known BUG when using \t as an end_char (it does not backspace enough characters, at least in EPP, but does work in notepad)
-    - seems to only be an issue when the editor is inserting multiple spaces instead of a TAB - how can this be fixed in this function?
-    - using a built-in HotString, the hook happens BEFORE the tab character is sent to the editor, so it knows what to do
-    - but using this function, it occurs AFTER the character is sent to editor, and this function does not know spaces were used instead of TAB,
-    - which is why it does not backspace enough to delete all of the spaces inserted by the editor
-TODO
-    - make "label" be "replace" which can be text/label/function/object
+    - make "replace" support being text/label/function/object
     - when object, it (may) contain all necessary parameters
         - mode
         - clearTrigger
-        - cond
+        - condition
         - function
         - parameters
+        - keys (after replacing the text)
 TODO
     - how to handle block / template replacement
         - maybe function call?
     - how to handle multi-text with keys after each (cannot use template because the cursor needs to move after each "text")
+        - add keys as a final parameter?
     - how to capture/set A_EndChar
+        - hs.EndChar
+        - could be added to "replace", if it is an object
 */
-hotString(trigger, label, mode:=1, clearTrigger:=1, cond:= "") {
+hotString(trigger, replace, mode:=1, clearTrigger:=1, condition:= "") {
     global $
     static keysBound := false
     static hotkeyPrefix := "~$"
@@ -3618,7 +3636,7 @@ hotString(trigger, label, mode:=1, clearTrigger:=1, cond:= "") {
         }
         else if (Hotkey == "BS") {
             ;trim typed var if Backspace was pressed
-            StringTrimRight, typed, typed, 1
+            typed := StringTrimRight(typed, 1)
             return
         }
         else if (RegExMatch(Hotkey, "Numpad(.+?)", numKey)) {
@@ -3645,8 +3663,6 @@ hotString(trigger, label, mode:=1, clearTrigger:=1, cond:= "") {
                 }
             }
             if (RegExMatch(typed, matchRegex, local$)) {
-                ; TODO - this may be the wrong place for adding the hotstring counter because of the conditional - should be moved after?
-                addHotString()
                 matched := true
                 if (v.mode == 2) {
                     returnValue := (local$ == "" ? local$.value(0) : local$)
@@ -3654,9 +3670,9 @@ hotString(trigger, label, mode:=1, clearTrigger:=1, cond:= "") {
                 else {
                     returnValue := (local$.count > 0 ? local$ : local$.value(0))
                 }
-                if (v.cond != "" && IsFunc(v.cond)) {
+                if (v.condition != "" && IsFunc(v.condition)) {
                     ;if hotstring has a condition function
-                    conditionalFunc := Func(v.cond)
+                    conditionalFunc := Func(v.condition)
                     if (conditionalFunc.minParams >= 1) {
                         ;if the function has at least 1 parameters
                         conditionalValue := conditionalFunc.(returnValue)
@@ -3664,18 +3680,18 @@ hotString(trigger, label, mode:=1, clearTrigger:=1, cond:= "") {
                     else {
                         conditionalValue := conditionalFunc.()
                     }
-                    if (!conditionalValue) {
-                        ;if the function returns a non-true value
+                    if (!toBool(conditionalValue)) {
                         matched := false
+                        typed := ""
                         continue
                     }
                 }
+                addHotString()
                 if (v.clearTrigger) {
-                    ;delete the trigger
                     triggerStr := (v.mode == 3 && local$.count > 0 ? local$.value(0) : returnValue)
                     StringRight, lastChar, triggerStr, 1
                     if (lastChar == A_Tab) {
-                        tmpTrigger := SubStr(triggerStr, 1, StrLen(triggerStr) - 1)
+                        tmpTrigger := StringTrimRight(triggerStr, 1)
                         len := StrLen(tmpTrigger)
                         SendInput, +{Left %len%}
                         while (!startsWith(getSelectedText(), tmpTrigger)) {
@@ -3686,8 +3702,8 @@ hotString(trigger, label, mode:=1, clearTrigger:=1, cond:= "") {
                         SendInput % "{BS " . StrLen(triggerStr) . "}"
                     }
                 }
-                if (IsFunc(v.label)) {
-                    callbackFunc := Func(v.label)
+                if (IsFunc(v.replace)) {
+                    callbackFunc := Func(v.replace)
                     ; TODO - add support for sending parameters to the function
                     if (callbackFunc.minParams >= 1) {
                         callbackFunc.(returnValue)
@@ -3696,12 +3712,12 @@ hotString(trigger, label, mode:=1, clearTrigger:=1, cond:= "") {
                         callbackFunc.()
                     }
                 }
-                else if (IsLabel(v.label)) {
+                else if (IsLabel(v.replace)) {
                     $ := returnValue
-                    gosub, % v.label
+                    gosub, % v.replace
                 }
                 else {
-                    str := v.label
+                    str := v.replace
                     ;working out the back-references
                     if (local$.count() == 0) {
                         StringReplace, str, str, % "$0", % local$.value(0), All
@@ -3710,8 +3726,6 @@ hotString(trigger, label, mode:=1, clearTrigger:=1, cond:= "") {
                     {
                         StringReplace, str, str, % "$" . A_Index, % local$.value(A_Index), All
                     }
-                    ; TODO - what does this next line do?
-                    str := RegExReplace(str, "([!#\+\^\{\}])", "{$1}") ;Escape modifiers
                     pasteText(str)
                 }
             }
@@ -3720,26 +3734,21 @@ hotString(trigger, label, mode:=1, clearTrigger:=1, cond:= "") {
             typed := ""
         }
         else if (StrLen(typed) > 350) {
-            /*
-                TODO - why is this here???
-            */
-            StringTrimLeft, typed, typed, 200
+            typed := StringTrimLeft(typed, 200)
         }
     }
     else {
-        if (hotstrings.HasKey(trigger) && label == "") {
-            ;removing a hotstring
+        if (hotstrings.HasKey(trigger) && replace == "") {
             hotstrings.remove(trigger)
         }
         else {
-            ;add to hotstrings object
             hotstrings[trigger] := {
                 (LTrim Join
                     trigger: trigger,
-                    label: label,
+                    replace: replace,
                     mode: mode,
                     clearTrigger: clearTrigger,
-                    cond: cond
+                    condition: condition
                 )}
         }
     }
@@ -3747,8 +3756,23 @@ hotString(trigger, label, mode:=1, clearTrigger:=1, cond:= "") {
 
     __hotstring:
         ;this label is triggered every time a key is pressed
-        Hotstring("", "", "CALLBACK")
+        hotString("", "", "CALLBACK")
         return
+}
+
+hsDivPercent($) {
+    sendText(Round(($.value(1) / $.value(2)) * 100) . "%")
+}
+
+hsPercentOf($) {
+    result := ($.value(1) / 100) * $.value(2)
+    while (endsWith(result, "0")) {
+        result := StringTrimRight(result, 1)
+    }
+    if (endsWith(result, ".")) {
+        result := StringTrimRight(result, 1)
+    }
+    sendText(result)
 }
 
 init() {
@@ -3807,13 +3831,14 @@ initHotStrings() {
     if (toBool(hs.config.user.enableHsAlias)) {
         hotString("\bbbl", "be back later", 3)
         hotString("\bbbs", "be back soon", 3)
-        hotString("\b(B|b)i(\d+)" . hs.const.END_CHARS_REGEX, "hsBackInX", 3)
+        hotString("\bbi(\d+)" . hs.const.END_CHARS_REGEX, "hsBackInX", 3)
         hotString("\bbrb", "be right back", 3)
         hotString("\bbrt", "be right there", 3)
         hotString("\bg2g", "Good to go!", 3)
         hotString("\bgtg", "Got to go...", 3)
         hotString("\bidk", "I don't know.", 3)
         hotString("\blmc", "Let me check on that...", 3)
+        hotString("\blmk", "Let me know ", 3)
         hotString("\bnm" . hs.const.END_CHARS_REGEX, "never mind...", 3)
         hotString("\bnmif", "Never mind, I found it.", 3)
         hotString("\bnp" . hs.const.END_CHARS_REGEX, "no problem$1", 3)
@@ -3822,16 +3847,26 @@ initHotStrings() {
         hotString("\bthok", "That's OK...", 3)
         hotString("\bthx", "thanks", 3)
         hotString("\bty" . hs.const.END_CHARS_REGEX, "Thank you$1", 3)
+        hotString("\bvg" . hs.const.END_CHARS_REGEX, "very good$1", 3)
         hotString("\byw" . hs.const.END_CHARS_REGEX, "You're welcome$1", 3)
         hotString("\bwyb", "Please let me know when you are back...", 3)
+        hotString("(\d+)\/(\d+)%", "hsDivPercent", 3)
+        hotString("(\d+)%(\d+)" . hs.const.END_CHARS_REGEX, "hsPercentOf", 3)
+        hotString("@ip", A_IPAddress1)
         if (MY_EMAIL != "") {
-	    hotString("@@", MY_EMAIL, 1)
+            hotString("@@", MY_EMAIL)
         }
-	if (MY_PHONE != "") {
-            hotString("@#", MY_PHONE, 1)
-	}
+        if (MY_PHONE != "") {
+            hotString("@#", MY_PHONE)
+        }
         if (MY_ADDRESS != "") {
-	    hotString("@addr", MY_ADDRESS, 1)
+            hotString("@addr", MY_ADDRESS)
+        }
+        if (MY_NAME != "") {
+            hotString("@me", MY_NAME)
+        }
+        if (MY_SIGNATURE != "") {
+            hotString("@sig", MY_SIGNATURE)
         }
     }
 ;    if (toBool(hs.config.user.enableHsAutoCorrect)) {
@@ -3847,7 +3882,8 @@ initHotStrings() {
 }
 
 initInternalVars() {
-    hs.VERSION := "1.20151018.1"
+    global $ := ""
+    hs.VERSION := "1.20151027.1"
     hs.TITLE := "HotScript"
     hs.BASENAME := A_ScriptDir . "\" . hs.TITLE
 
@@ -3899,7 +3935,7 @@ initInternalVars() {
     urls[hs.TITLE].download := urls[hs.TITLE].home . "/raw/release/HotScript.ahk",
     hs.vars := {
         (LTrim Join Comments
-            hiddenWindows: "",   ; this should persist, because if windows were hidden and the script was reloaded, they would be lost
+            hiddenWindows: "",   ; TODO - this should persist, because if windows were hidden and the script was reloaded, they would be lost
             monitors: {},
             uniqueId: "_" . A_Year . "_" . A_ComputerName,
             url: urls
@@ -4536,6 +4572,9 @@ registerKeys() {
                     }
                     else if (section == "hkEpp") {
                         restrict := "ahk_exe i)EditPadPro\d*\.exe"
+                    }
+                    else if (section == "hkMisc" ) {
+                        ; TODO - something will eventually go here
                     }
                     else {
                         restrict := ""
@@ -5535,18 +5574,25 @@ showQuickHelp(waitforKey) {
         gtg`tGot to go.`t`t`t
         idk`tI don't know.`t`t`t
         lmc`tLet me check on that...`t`t
+        lmk`tLet me know `t`t`t
         nm.`tnever mind...`t`t`t
         nmif`tNever mind, I found it.`t`t
-        np`tno problem`t`t`t
+        np.`tno problem`t`t`t
         nw`tno worries`t`t`t
         okt`tOK, thanks...`t`t`t
         thok`tThat's OK...`t`t`t
         thx`tthanks`t`t`t`t
         ty.`tThank you.`t`t`t
-        yw`tYou're welcome`t`t`t
+        vg.`tvery good`t`t`t
+        yw.`tYou're welcome`t`t`t
         wyb`tLet me know when you are back`t
         @@`temail address`t`t`t
         @addr`taddress`t`t`t`t
+        @#`tphone number`t`t`t`t
+        @me`tyour name`t`t`t`t
+        @sig`tyour signature`t`t`t`t
+        #/#`%`tdivide as percent`t`t
+        #`%#`tpercent of number`t`t
     )
     hsAliasHelpDisabled := replaceEachLine(hsAliasHelpEnabled, spacer)
     hsAliasHelp := (hs.config.user.enableHsAlias ? hsAliasHelpEnabled : hsAliasHelpDisabled)
@@ -6111,11 +6157,11 @@ toggleMinimized() {
 toggleSuspend() {
     if (A_IsSuspended) {
         state := "suspended"
-        Menu, Tray, Rename, &Pause, &Resume
+        Menu, Tray, Rename, Pause, Resume
     }
     else {
         state := "enabled"
-        Menu, Tray, Rename, &Resume, &Pause
+        Menu, Tray, Rename, Resume, Pause
     }
     tip := SubStr(A_IconTip, 1, InStr(A_IconTip, "-") + 1) . state
     Menu, Tray, Tip, % tip
