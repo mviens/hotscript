@@ -1,3 +1,9 @@
+Differences in 1.20151030.2
+===========================
+HotStrings
+    - CHANGE: Fixed issue with the "bi##" HotString not displaying the ##.
+
+
 Differences in 1.20151030.1
 ===========================
 HotKeys
@@ -43,6 +49,7 @@ Miscellaneous
     - CHANGE: Minor change within hotString() to call addHotString() only if any conditional function returns true
     - CHANGE: Minor renaming of variables and optimization within hotString()
     - CHANGE: Added a "." to the end of some of the aliases on the help screen to signify that an ending character is needed
+
 
 Differences in 1.20151018.1
 ===========================
