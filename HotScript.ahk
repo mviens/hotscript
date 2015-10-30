@@ -1017,6 +1017,10 @@ hkActionDosPrompt() {
     runDos()
 }
 
+hkActionDosPromptInExplorer() {
+    runDos(getExplorerPath())
+}
+
 hkActionEditor() {
     runEditor()
 }
@@ -1034,7 +1038,13 @@ hkActionToggleDesktopIcons() {
 }
 
 hkActionWindowsExplorer() {
-    runTarget("explorer.exe C:\")
+    exeStr := "ahk_exe explorer.exe"
+    if (WinExist(exeStr) && !WinActive(exeStr)) {
+        WinActivate
+    }
+    else {
+        runTarget("explore " . EnvGet("SystemDrive") . "\")
+    }
 }
 
 hkActionWindowsServices() {
@@ -1044,12 +1054,7 @@ hkActionWindowsServices() {
 hkActionWindowsSnip() {
     snip := findOnPath("SnippingTool.exe")
     if (snip == "") {
-        winVer := RegRead("HKEY_LOCAL_MACHINE", "SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ProductName")
-        msg := ""
-        if (contains(winVer, "2008")) {
-            msg := "`n`nFor Windows 2008, you need to install 'themes' to get the SnippingTool.`n`nPlease see:`n`thttp://www.win2008r2workstation.com/themes/"
-        }
-        MsgBox, 48, File not found, Unable to locate SnippingTool on the PATH.%msg%
+        MsgBox, 48, File not found, Unable to locate SnippingTool on the PATH.
     }
     else {
         Run(snip)
@@ -1202,6 +1207,30 @@ hkHotScriptQuickHelpToggle() {
 
 hkHotScriptReload() {
     selfReload()
+}
+
+hkMiscCreateFile() {
+    if (WinActive("ahk_group ExplorerGroup")) {
+        createNewInExplorer("file")
+    }
+    else if (WinActive("ahk_group DesktopGroup")) {
+        createNewOnDesktop("file")
+    }
+    else {
+        SendInput, %A_ThisHotKey%
+    }
+}
+
+hkMiscCreateFolder() {
+    if (WinActive("ahk_group ExplorerGroup")) {
+        createNewInExplorer("folder")
+    }
+    else if (WinActive("ahk_group DesktopGroup")) {
+        createNewOnDesktop("folder")
+    }
+    else {
+        SendInput, %A_ThisHotKey%
+    }
 }
 
 hkMiscMouseDown() {
@@ -1639,7 +1668,7 @@ checkVersions() {
                 fullPath := A_ScriptDir . "\" . exe
                 UrlDownloadToFile, % dlFile, % fullPath
                 if (ErrorLevel == 0) {
-                    run(fullPath)
+                    Run(fullPath)
                 }
                 else {
                     message("Failed to download AutoHotKey installer from:`n" . dlFile . "`n`nError: " . ErrorLevel)
@@ -2641,6 +2670,41 @@ createIcon() {
     fileIco.close()
 }
 
+createNewInExplorer(type:="file") {
+    folder := getExplorerPath()
+    if (folder != "") {
+        type := StringLower(type)
+        name := getUniqueNewName(folder, type)
+        fullName := folder . name
+        if (type == "folder") {
+            FileCreateDir, %fullName%
+        }
+        else {
+            FileAppend("", fullName)
+        }
+        ControlFocus, DirectUIHWND3, A
+        selectInExplorer(name)
+        Sleep(50)
+        SendInput, {F2}
+    }
+}
+
+createNewOnDesktop(type:="file") {
+    folder := A_Desktop
+    type := StringLower(type)
+    name := getUniqueNewName(folder, type)
+    fullName := folder . name
+    if (type == "folder") {
+        FileCreateDir, %fullName%
+    }
+    else {
+        FileAppend("", fullName)
+    }
+    selectOnDesktop(name)
+    Sleep(50)
+    SendInput, {F2}
+}
+
 createStartupLink() {
     lnkFile := A_Startup . "\" . hs.TITLE . ".lnk"
     if (hs.config.user.enableAutoStart) {
@@ -3208,6 +3272,7 @@ getDefaultHotKeyDefs(type) {
         hk["hkActionClickThrough"] := "^#a"
         hk["hkActionControlPanel"] := "^rctrl"
         hk["hkActionDosPrompt"] := "#d"
+        hk["hkActionDosPromptInExplorer"] := "!#d"
         hk["hkActionEditor"] := "#e"
         hk["hkActionGoogleSearch"] := "#g"
         hk["hkActionQuickLookup"] := "#q"
@@ -3265,6 +3330,8 @@ getDefaultHotKeyDefs(type) {
         hk["hkHotScriptReload"] := "#2"
     }
     else if (type == "hkMisc") {
+        hk["hkMiscCreateFile"] := "^!f"
+        hk["hkMiscCreateFolder"] := "^!d"
         hk["hkMiscMouseDown"] := "!#down"
         hk["hkMiscMouseLeft"] := "!#left"
         hk["hkMiscMouseRight"] := "!#right"
@@ -3390,6 +3457,24 @@ getEol(text) {
     return eol
 }
 
+getExplorerPath() {
+    xPath := ""
+    if (WinActive("ahk_group ExplorerGroup")) {
+        hwnd := WinExist("A")
+        url := ""
+        for item in ComObjCreate("Shell.Application").Windows {
+            if (url == "" && item.hwnd == hwnd) {
+                url := item.LocationURL
+            }
+        }
+        if (url != "") {
+            VarSetCapacity(xPath, pathSize := 2084, 0)
+            DllCall("shlwapi\PathCreateFromUrl" . (A_IsUnicode ? "W" : "A"), Str, url, Str, xPath, UIntP, pathSize, UInt, 0)
+        }
+    }
+    return xPath
+}
+
 getListSize(list, delim:="") {
     delim := (delim == "" ? hs.const.EOL_WIN : delim)
     tmpCount := 0
@@ -3433,6 +3518,24 @@ getSize(value) {
         size := is(value, "number") ? value : StrLen(value)
     }
     return size
+}
+
+getUniqueNewName(ByRef path, type:="file") {
+    if (!endsWith(path, "\")) {
+        path .= "\"
+    }
+    type := StringLower(type)
+    if (type != "folder") {
+        type := "file"
+    }
+    name :=  "New " . type
+    result := name
+    i := 2
+    while (FileExist(path . result)) {
+        result := Format("{1} ({2})", name, i)
+        i++
+    }
+    return result
 }
 
 getVar(name) {
@@ -3777,6 +3880,10 @@ hsPercentOf($) {
 
 init() {
     initInternalVars()
+    GroupAdd, DesktopGroup, ahk_class Progman
+    GroupAdd, DesktopGroup, ahk_class WorkerW
+    GroupAdd, ExplorerGroup, ahk_class CabinetWClass
+    GroupAdd, ExplorerGroup, ahk_class ExploreWClass
     refreshMonitors()
     SetTimer("refreshMonitors", 30000)
     createUserFiles()
@@ -3883,7 +3990,7 @@ initHotStrings() {
 
 initInternalVars() {
     global $ := ""
-    hs.VERSION := "1.20151027.1"
+    hs.VERSION := "1.20151030.1"
     hs.TITLE := "HotScript"
     hs.BASENAME := A_ScriptDir . "\" . hs.TITLE
 
@@ -4573,9 +4680,6 @@ registerKeys() {
                     else if (section == "hkEpp") {
                         restrict := "ahk_exe i)EditPadPro\d*\.exe"
                     }
-                    else if (section == "hkMisc" ) {
-                        ; TODO - something will eventually go here
-                    }
                     else {
                         restrict := ""
                     }
@@ -4814,20 +4918,19 @@ runAhkHelp() {
     }
 }
 
-runDos() {
-    ; using ahk_class stopped working, but not sure why as it still works on Win2012
-    ;isExist := WinExist("ahk_class ConsoleWindowClass")
-    isExist := WinExist("ahk_exe cmd.exe")
-    ;isActive := WinActive("ahk_class ConsoleWindowClass")
-    isActive := WinActive("ahk_exe cmd.exe")
-    if (isExist && not isActive) {
-        ; activate it only if it exists but does not have focus
+runDos(path:="") {
+    exeStr := "ahk_exe cmd.exe"
+    if (path == "" && WinExist(exeStr) && !WinActive(exeStr)) {
         WinActivate
     }
     else {
-        ; create it if not already running or was already focused and user wants another instance
-        workDir := EnvGet("SystemDrive") . "\"
-        runTarget(COMSPEC, workDir)
+        if (!FileExist(path)) {
+            path := ""
+        }
+        if (path == "") {
+            path := EnvGet("SystemDrive") . "\"
+        }
+        runTarget(COMSPEC, path)
     }
 }
 
@@ -4929,7 +5032,6 @@ runSelectedText() {
 }
 
 runServices() {
-    title := "Services"
     if (WinExist("Services")) {
         WinActivate
     }
@@ -4942,7 +5044,7 @@ runTarget(target, workDir:="") {
     pid := Run(target, workDir)
     if (pid != "") {
         WinWait, ahk_pid %pid%
-        Sleep(100)
+        Sleep(250)
         WinActivate, ahk_pid %pid%
     }
 }
@@ -5177,6 +5279,41 @@ selectCurrentLine() {
     return selText
 }
 
+selectInExplorer(list) {
+    if (WinActive("ahk_group ExplorerGroup")) {
+        hwnd := WinExist("A")
+        for win in ComObjCreate("Shell.Application").Windows {
+            if (win.hwnd != hwnd) {
+                continue
+            }
+            win.Refresh()
+            doc := win.Document
+            items := doc.Folder.Items
+            for item in items {
+                doc.SelectItem(item, contains(item.Name, list))
+            }
+        }
+    }
+}
+
+selectOnDesktop(list) {
+    if (WinActive("ahk_group DesktopGroup")) {
+        shellWindows := ComObjCreate("Shell.Application").Windows
+        VarSetCapacity(hwnd, 4, 0)
+        desktop := shellWindows.FindWindowSW(0, "", 8, ComObj(0x4003, &hwnd), 1)
+        doc := desktop.Document
+        items := doc.SelectedItems
+        Loop % items.Count {
+            doc.SelectItem(items.Item(A_Index - 1), 0)
+        }
+        desktop.Refresh()
+        items := doc.Folder.Items
+        for item in items {
+            doc.SelectItem(item, contains(item.Name, list))
+        }
+    }
+}
+
 selfReload() {
     showSplash("Reloading script...", 500)
     Reload
@@ -5359,11 +5496,12 @@ showQuickHelp(waitforKey) {
         CtrlWin-A`tToggle click-through`t
         Win-C`t`tRun Calculator`t`t
         Win-D`t`tRun DOS`t`t`t
+        Alt-Win-D`tRun DOS (Explorer)`t
         Win-E`t`tRun editor`t`t
         Win-G`t`tGoogle (or goto)`t
         Win-Q`t`tQuick lookup`t`t
-        Win-S`t`tRun Win Services`t
-        Win-X`t`tRun Win Explorer`t
+        Win-S`t`tRun Windows Services`t
+        Win-X`t`tRun Windows Explorer`t
         Win-F12`t`tExit this script`t
         Win-PrintScreen`tRun Snipping tool`t
         LCtrl-RCtrl`tRun Control Panel`t
@@ -5437,15 +5575,17 @@ showQuickHelp(waitforKey) {
 
     hkMiscHelpEnabled =
     ( LTrim
-        Miscellaneous hotkeys`t`t`t
+        Miscellaneous hotkeys
         %colLine%
-        CtrlAlt-V`tPaste as text`t`t
-        Win-Enter`tPastes 'enter'`t`t
-        Win-Tab`t`tPastes 'tab'`t`t
-        Win-V`t`tPreview clipboard`t
-        Win-Z`t`tShow zoom window`t
-        AltWin-ARROW`tMove mouse 1px`t`t
-        CtrlWin-ARROW`tDrag mouse 1px`t`t
+        CtrlAlt-D`tCreate folder
+        CtrlAlt-F`tCreate file
+        CtrlAlt-V`tPaste as text
+        Win-Enter`tPastes 'enter'
+        Win-Tab`t`tPastes 'tab'
+        Win-V`t`tPreview clipboard
+        Win-Z`t`tShow zoom window
+        AltWin-ARROW`tMove mouse 1px
+        CtrlWin-ARROW`tDrag mouse 1px
     )
     hkMiscHelpDisabled := replaceEachLine(hkMiscHelpEnabled, spacer)
     hkMiscHelp := (hs.config.user.enableHkMisc ? hkMiscHelpEnabled : hkMiscHelpDisabled)
@@ -5749,7 +5889,7 @@ showQuickHelp(waitforKey) {
     purple := "E4D6EF"
     red := "FFE2E3"
     yellow := "FFFEE3"
-    Progress("B1 C00 CT000000 CW" . yellow . "h FM11 FS8 W1125 WM1200 ZH0", quickHelp,, splashTitle, "Courier New")
+    Progress("B1 C00 CT000000 CW" . yellow . "h FM11 FS8 W1120 WM1200 ZH0", quickHelp,, splashTitle, "Courier New")
     isShowing := true
     centerWindow(splashTitle)
     if (waitForKey) {

@@ -1,3 +1,26 @@
+Differences in 1.20151030.1
+===========================
+HotKeys
+    - NEW   : Added Ctrl-Alt-D to create a folder (directory) in Explorer or on the desktop.
+    - NEW   : Added Ctrl-Alt-F to create a file in Explorer or on the desktop.
+    - NEW   : Added Alt-Win-D to open a DOS window to the current path in Explorer, if it is the active Window.
+Miscellaneous
+    - CHANGE: Improved the ability to launch Explorer via Win-X.
+              Now it will activate an existing window, if it exists but is not focused.
+              The default starting location will be the root of the SystemDrive (as defined by Windows) instead of C:\
+    - CHANGE: Modified runDos() to accept a location (path), which will be the active directory when DOS is executed.
+    - CHANGE: Increased sleep time from 100ms to 250ms when launching an application to allow more time for the window to exist.
+              This may help with certain issues where the application is launched, but is not activated (focused).
+Functions
+    - NEW   : Added the following new functions:
+                - createNewInExplorer()
+                - createNewOnDesktop()
+                - getExplorerPath()
+                - getUniqueNewName()
+                - selectInExplorer()
+                - selectOnDesktop()
+
+
 Differences in 1.20151027.1
 ===========================
 HotStrings
