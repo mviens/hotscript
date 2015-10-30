@@ -992,7 +992,7 @@ WinGetTitle(winTitle:="", winText:="", excludeTitle:="", excludeText:="") {
 ;__________________________________________________
 ;hotstring functions
 hsBackInX($) {
-    sendText("Back in " . $.value(2) . " minutes...")
+    sendText("Back in " . $.value(1) . " minutes...")
 }
 
 ;__________________________________________________
@@ -3990,7 +3990,7 @@ initHotStrings() {
 
 initInternalVars() {
     global $ := ""
-    hs.VERSION := "1.20151030.1"
+    hs.VERSION := "1.20151030.2"
     hs.TITLE := "HotScript"
     hs.BASENAME := A_ScriptDir . "\" . hs.TITLE
 
