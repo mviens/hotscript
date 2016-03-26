@@ -12,53 +12,53 @@ more you embrace using it, the more you will find you don't want to use Windows 
         color: #333;
     }
     body {
-    	font-family: Arial, sans-serif;
-    	font-size: 14px;
-    	line-height: 1.5em;
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+        line-height: 1.5em;
     }
-	.sectionColumnWrapper {
-	    display: block;
-	    overflow-x: auto;
-	}
-	.sectionMacro {
-	    display: table;
-	    margin-top: 10px;
-	    width: 100%;
-	}
-	.sectionMacroRow {
-	    display: table-row;
-	}
-	.sectionMacro .columnMacro {
-	    border: medium none;
-	    padding: 0;
-	}
-	.columnMacro {
-	    display: table-cell;
-	    vertical-align: top;
-	}
-	.panel, #content .panel {
-	    border-radius: 5px;
-	}
-	.panel, .alertPanel, .infoPanel {
-	    color: #333;
-	    margin: 5px 10px;
-	    overflow: hidden;
-	    padding: 0;
-	}
-	.panel .panelHeader {
-	    border-top-left-radius: 5px;
-	    border-top-right-radius: 5px;
-	    color: #333;
-	    line-height: 1em;
-	    margin-bottom: 0;
-	    padding: 10px 10px 5px;
-	    text-align: left;
-	}
-	.panel .panelContent {
-	    margin-bottom: 10px;
-	    margin-top: 10px;
-	    padding: 0 10px;
-	}
+    .sectionColumnWrapper {
+        display: block;
+        overflow-x: auto;
+    }
+    .sectionMacro {
+        display: table;
+        margin-top: 10px;
+        width: 100%;
+    }
+    .sectionMacroRow {
+        display: table-row;
+    }
+    .sectionMacro .columnMacro {
+        border: medium none;
+        padding: 0;
+    }
+    .columnMacro {
+        display: table-cell;
+        vertical-align: top;
+    }
+    .panel, #content .panel {
+        border-radius: 5px;
+    }
+    .panel, .alertPanel, .infoPanel {
+        color: #333;
+        margin: 5px 10px;
+        overflow: hidden;
+        padding: 0;
+    }
+    .panel .panelHeader {
+        border-top-left-radius: 5px;
+        border-top-right-radius: 5px;
+        color: #333;
+        line-height: 1em;
+        margin-bottom: 0;
+        padding: 10px 10px 5px;
+        text-align: left;
+    }
+    .panel .panelContent {
+        margin-bottom: 10px;
+        margin-top: 10px;
+        padding: 0 10px;
+    }
 </style>
 <div class="sectionColumnWrapper">
     <div class="sectionMacro">
