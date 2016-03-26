@@ -1,3 +1,82 @@
+Differences in 1.20160326.1
+===========================
+HotKeys
+    - NEW   : Added Ctrl-Alt-C to copy/append text to the clipboard. This does NOT work for files.
+    - NEW   : Added Ctrl-Alt-V to swap the currently selected text into the clipboard, replacing the selected text with
+              the previous contents of the clipboard.
+    - NEW   : Added Ctrl-Alt-X to cut/append text to the clipboard. This does NOT work for files.
+    - NEW   : Added Ctrl-Win-Arrow to move the current window to the edge of the screen, without resizing it.
+    - NEW   : Added Win-M to run Character Map.
+    - NEW   : Added Alt-Win-H to run Windows Explorer in the HotScript folder.
+    - NEW   : Added Alt-Win-S to run Windows Explorer in the Startup folder.
+    - NEW   : Added Win-` to run DebugView.
+    - CHANGE: Modified the HotKeys for dragging the mouse from CtrlWin-Arrow to CtrlAltWin-Arrow to avoid collision
+              with the new "Move to Edge" HotKeys.
+    - CHANGE: Moved the HotKey definitions for dragging the mouse into the appropriate group (Miscellaneous).
+    - CHANGE: Changed key for "Toggle Minimized" from Win-M to Ctrl-Win-M.
+    - CHANGE: Changed Preview Clipboard (Win-V) to indicate if the data is complex and therefore cannot be previewed.
+    - CHANGE: Added back previous error checking when running Snipping Tool (Win-PrintScreen) for Windows 2008 but also
+              added checking for Windows 2012.
+    - REMOVE: Deleted the hkCustom HotKey group (and configuration setting), moving the only entry into the hkText group.
+HotStrings
+    - NEW   : Added new fractions for 1/6, 1/5, 2/8, 2/6, 2/5, 2/4, 3/6, 4/8, 3/5, 4/6, 6/8, 4/5 and 5/6.
+    - CHANGE: Changed trigger for fractions to start with some type of separator ("3 1/2" instead of "31/2").
+    - CHANGE: Changed several HotStrings (@addr, @ip, @me, @sig) to be case-sensitive.
+    - CHANGE: Changed how fraction HotStrings are defined; they now use hotString().
+    - CHANGE: Changed how date and time HotStrings are defined; they now use hotString().
+Variables
+    - NEW   : Added "@dob" to use the new variable MY_DOB.
+    - NEW   : Added "@pw" to use the new variable MY_PASSWORD. The value is encrypted using the same function as
+              CtrlShift-E and will be unencrypted when this hotstring is used.
+    - NEW   : Added "@w" to use the new variable MY_WORK_EMAIL.
+    - NEW   : Missing MY_xxxxxx variables (in HotScriptVariables.ahk) will now be automatically added with a default
+              value if they are missing. This means that there is no longer a need to manually edit this file to add
+              new variables that will be supported in future versions of HotScript, but this file will still need to
+              be edited by the user to provide the appropriate real values to be used.
+    - NEW   : Added new configuration setting (enableHsVariables) for enabling/disabling HotStrings for HotScript
+              variables (MY_xxxxxx).
+Miscellaneous
+    - NEW   : Added "Historical changes" to the HotScript tray menu.
+    - CHANGE: Huge refactor of the help screen!  To switch between tabs with keyboard use Ctrl-PgUp / Ctrl-PgDn. Press
+              ESC to close.
+    - CHANGE: Changed configuration setting for enableAutoUpdate from false to true.
+    - CHANGE: Added "#32770" (Open/Save dialog) as a member of the Explorer group.
+Functions
+    - NEW   : Added the following new functions:
+                - getActiveProcessID()
+                - getActiveProcessName()
+                - getDateString()
+                - getDayString()
+                - getDddString()
+                - getDtmsString()
+                - getDtsString()
+                - getMmmString()
+                - getMonthString()
+                - getNowString()
+                - getTimeString()
+                - getTmsString()
+                - isActiveDos()
+                - isCalculatorNotActive()
+                - moveToEdge()
+                - pad()
+                - parseTemplate()
+    - NEW   : Added support for user-defined initialization function called userInit(). Because of how AutoHotKey works,
+              do not define HotKeys or HotStrings within the userInit() function. These should be placed in
+              HotScriptKeys.ahk or HotScriptStrings.ahk. Failure to do so will almost certainly cause significant
+              parts of HotScript to stop functioning.
+    - CHANGE: Modified toBool() to return true if the value is a number and greater than zero.
+    - CHANGE: Modified hotString() to use any return value from a named function as the replacement text.
+    - CHANGE: Renamed showDebugVar() to showVariable().
+    - CHANGE: Improved output of showVariable().
+    - CHANGE: Improved output of toString().
+    - CHANGE: Enhanced output of templateHtml().
+    - CHANGE: Modified resizeTo() for Windows 10. This affects all window movement HotKeys. Windows 10 puts transparent
+              borders around non-maxmimied windows along the left, right and bottom of a window. When these windows line
+              up next to each other, "gaps" appear which show whatever is underneath the windows. I found this quite
+              annoying, so the math was changed for Windows 10 to accommodate these gaps. The coordinates are adjusted
+              as follows:  X -6, Y -1, Width +16, Height +9.
+
+
 Differences in 1.20151030.2
 ===========================
 HotStrings
@@ -15,8 +94,9 @@ Miscellaneous
               Now it will activate an existing window, if it exists but is not focused.
               The default starting location will be the root of the SystemDrive (as defined by Windows) instead of C:\
     - CHANGE: Modified runDos() to accept a location (path), which will be the active directory when DOS is executed.
-    - CHANGE: Increased sleep time from 100ms to 250ms when launching an application to allow more time for the window to exist.
-              This may help with certain issues where the application is launched, but is not activated (focused).
+    - CHANGE: Increased sleep time from 100ms to 250ms when launching an application to allow more time for the window
+              to exist. This may help with certain issues where the application is launched, but is not activated
+              (focused).
 Functions
     - NEW   : Added the following new functions:
                 - createNewInExplorer()
@@ -48,15 +128,18 @@ Miscellaneous
     - REMOVE: getHotKeySections() because it was an obsolete function from a very old version
     - CHANGE: Minor change within hotString() to call addHotString() only if any conditional function returns true
     - CHANGE: Minor renaming of variables and optimization within hotString()
-    - CHANGE: Added a "." to the end of some of the aliases on the help screen to signify that an ending character is needed
+    - CHANGE: Added a "." to the end of some of the aliases on the help screen to signify that an ending character is
+              needed
 
 
 Differences in 1.20151018.1
 ===========================
-- Added configuration flag to disabling auto-updates (auto-update is on by default - may be disabled via enableAutoUpdate in the INI).
+- Added configuration flag to disabling auto-updates (auto-update is on by default - may be disabled via
+  enableAutoUpdate in the INI).
 - Added ability to create an auto-startup link (may be disabled via enableAutoStart in the INI)
 - Fixed issue with ask() returning any value entered even if the user closed dialog, click cancel or pressed Escape
-- Removed warning message about being unable to obtain version information if an internet connection is not available at startup
+- Removed warning message about being unable to obtain version information if an internet connection is not available
+  at startup
 - Made changes that may have finally corrected intermittent issues with pasting text to a DOS window
 - Swapped Win-6 and Win-8 to allow Win-8 and Win-9 to be next grouped together
 - Added new functions:
@@ -78,7 +161,8 @@ Differences in 1.20151018.1
 - Delete downloaded installer after upgrading
 - Added new global variable (defined in HotScriptVariables.ahk)
     - MY_PHONE        (trigger by the hotstring "@#")
-        - This will need to be added manually (by the user - you!) until I can determine a way of SAFELY adding it to existing files
+        - This will need to be added manually (by the user - you!) until I can determine a way of SAFELY adding it to
+          existing files
 
 
 Differences in 1.20150910.2

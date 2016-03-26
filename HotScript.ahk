@@ -36,55 +36,11 @@ global hs := {}
 init()
 
 ;__________________________________________________
-;HotStrings
+;Includes
 #Include *i HotScriptStrings.ahk
+#Include *i HotScriptKeys.ahk
 
-; Auto-correct
-;-------------
-#if, toBool(hs.config.user.enableHsAutoCorrect)
-    :*c:cL:: ;; change "cL" to "c:"
-        addHotString()
-        SendInput, c{:}
-        return
-    #ifWinNotActive ahk_class CalcFrame
-        ::1/8:: ;; 1/8 as a fraction
-            addHotString()
-            sendText(chr(8539) . A_EndChar)
-            return
-        ::1/4:: ;; 1/4 as a fraction
-            addHotString()
-            sendText(chr(188) . A_EndChar)
-            return
-        ::1/3:: ;; 1/3 as a fraction
-            addHotString()
-            sendText(chr(8531) . A_EndChar)
-            return
-        ::3/8:: ;; 3/8 as a fraction
-            addHotString()
-            sendText(chr(8540) . A_EndChar)
-            return
-        ::1/2:: ;; 1/2 as a fraction
-            addHotString()
-            sendText(chr(189) . A_EndChar)
-            return
-        ::5/8:: ;; 5/8 as a fraction
-            addHotString()
-            sendText(chr(8541) . A_EndChar)
-            return
-        ::2/3:: ;; 2/3 as a fraction
-            addHotString()
-            sendText(chr(8532) . A_EndChar)
-            return
-        ::3/4:: ;; 3/4 as a fraction
-            addHotString()
-            sendText(chr(190) . A_EndChar)
-            return
-        ::7/8:: ;; 7/8 as a fraction
-            addHotString()
-            sendText(chr(8542) . A_EndChar)
-            return
-    #if
-#if
+
 ;Code
 ;----
 #if, toBool(hs.config.user.enableHsCode)
@@ -160,60 +116,6 @@ init()
         addHotString()
         sendText("System.out.println("""");", "{Left 3}")
         return
-#if
-;Date and Time
-;-------------
-#if, toBool(hs.config.user.enableHsDates)
-    :*:dts:: ;; datestamp - the current date as 'YYYYMMDD'
-        addHotString()
-        sendText(A_YYYY . A_MM . A_DD)
-        return
-    :*:dtms:: ;; datetimestamp - the current date and time as 'YYYYMMDD_24MMSS'
-        addHotString()
-        sendText(A_YYYY . A_MM . A_DD . "_" . A_Hour . A_Min . A_Sec)
-        return
-    :*:tms:: ;; timestamp - the current time as '24MMSS'
-        addHotString()
-        sendText(A_Hour . A_Min . A_Sec)
-        return
-    :*:@date:: ;; the current date as 'MM/DD/YYYY'
-        addHotString()
-        sendText(A_MM . "/" . A_DD . "/" . A_YYYY)
-        return
-    :*:@day:: ;; the current date as the name of the day
-        addHotString()
-        sendText(A_DDDD)
-        return
-    :*:@ddd:: ;; the current date as the abbreviated name of the day
-        addHotString()
-        sendText(A_DDD)
-        return
-    :*:@mmm:: ;; the current date as the abbreviated name of the month
-        addHotString()
-        sendText(A_MMM)
-        return
-    :*:@month:: ;; the current date as the name of the month
-        addHotString()
-        sendText(A_MMMM)
-        return
-    :*:@now:: ;; the current date and time as 'MM/DD/YYYY at 24:MM:SS'
-        addHotString()
-        sendText(A_MM . "/" . A_DD . "/" . A_YYYY . " at " . A_Hour . ":" . A_Min . ":" . A_Sec)
-        return
-    :*:@time:: ;; the current time as '24:MM:SS'
-        addHotString()
-        sendText(A_Hour . ":" . A_Min . ":" . A_Sec)
-        return
-#if
-;DOS
-;---
-#if, toBool(hs.config.user.enableHsDos)
-    #ifWinActive ahk_class ConsoleWindowClass
-        :*b0:cd :: ;; Appends '/d' onto 'cd ' commands to allow changing drive++DOS only
-            addHotString()
-            SendInput, /d{Space}
-            return
-    #ifWinActive
 #if
 ;HTML
 ;----
@@ -587,10 +489,6 @@ init()
         sendJiraPanel(hs.config.user.jiraPanels.formatYellow)
         return
 #if
-
-;__________________________________________________
-;HotKeys
-#Include *i HotScriptKeys.ahk
 
 ; TODO - why is this not configurable and part of external definitions?
 ;      - because any hotkey/hotstring subroutine whose very first line is Suspend (except Suspend On)
@@ -1009,6 +907,10 @@ hkActionClickThrough() {
     toggleClickThrough()
 }
 
+hkActionCharacterMap() {
+    findOrRunByExe("charmap")
+}
+
 hkActionControlPanel() {
     runTarget("Control Panel")
 }
@@ -1033,6 +935,10 @@ hkActionQuickLookup() {
     runQuickLookup()
 }
 
+hkActionStartupFolder() {
+    runTarget("explore " . A_AppData . "\Microsoft\Windows\Start Menu\Programs\Startup")
+}
+
 hkActionToggleDesktopIcons() {
     toggleDesktopIcons()
 }
@@ -1054,22 +960,15 @@ hkActionWindowsServices() {
 hkActionWindowsSnip() {
     snip := findOnPath("SnippingTool.exe")
     if (snip == "") {
-        MsgBox, 48, File not found, Unable to locate SnippingTool on the PATH.
+        winVer := RegRead("HKEY_LOCAL_MACHINE", "SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ProductName")
+        msg := ""
+        if (contains(winVer, "2008", "2012")) {
+            msg := "`n`nFor Windows Server 2008 or 2012, you need to install 'Themes' or 'Desktop Experience' to get the SnippingTool."
+        }
+        MsgBox, 48, File not found, Unable to locate SnippingTool on the PATH.%msg%
     }
     else {
         Run(snip)
-    }
-}
-
-hkCustomDeleteToEol() {
-    if (hs.config.user.enableHkEpp && WinActive("ahk_exe i)EditPadPro\d*\.exe")) {
-        hkEppDeleteToEol()
-    }
-    else if (hs.config.user.enableHkDos && WinActive("ahk_class ConsoleWindowClass")) {
-        hkDosDeleteToEol()
-    }
-    else {
-        SendInput, ^{Delete}
     }
 }
 
@@ -1157,10 +1056,6 @@ hkHotScriptAutoHotKeyHelp() {
     runAhkHelp()
 }
 
-hkHotScriptDebugVariable() {
-    showDebugVar()
-}
-
 hkHotScriptEditDefaultIni() {
     runEditor(hs.config.default.file)
 }
@@ -1197,6 +1092,10 @@ hkHotScriptHome() {
     Run(hs.vars.url[hs.TITLE].home)
 }
 
+hkHotScriptFolder() {
+    runTarget("explore " . A_ScriptDir)
+}
+
 hkHotScriptQuickHelp() {
     showQuickHelp(true)
 }
@@ -1207,6 +1106,43 @@ hkHotScriptQuickHelpToggle() {
 
 hkHotScriptReload() {
     selfReload()
+}
+
+hkHotScriptRunDebugView() {
+    exe := "DbgView.exe"
+    exeStr := "ahk_exe " . exe
+    if (WinExist(exeStr) && !WinActive(exeStr)) {
+        WinActivate
+    }
+    else {
+        dvExe := findOnPath(exe)
+        if (dvExe == "") {
+            msg := "Unable to locate DebugView on the PATH.`n`nDebugView displays Windows debug messages, which HotScript`n(and many other programs) can generate.`n`nClick the 'Download' button to go to the website for DebugView."
+            SetTimer, ChangeButtons, 30
+            ; 1 + 48 + 256 = 305
+            MsgBox, 305, File Not Found, % msg
+            IfMsgBox, OK
+                Run("https://technet.microsoft.com/en-us/sysinternals/debugview.aspx")
+            return
+
+            ChangeButtons:
+                IfWinNotExist, File Not Found
+                    return  ; Keep waiting.
+                SetTimer, ChangeButtons, off
+                WinActivate
+                ControlSetText, Button1, &Download
+                ControlSetText, Button2, &Close
+                return
+        }
+        else {
+            Run(dvExe)
+        }
+    }
+
+}
+
+hkHotScriptShowVariable() {
+    showVariable()
 }
 
 hkMiscCreateFile() {
@@ -1231,6 +1167,48 @@ hkMiscCreateFolder() {
     else {
         SendInput, %A_ThisHotKey%
     }
+}
+
+hkMiscCopyAppend() {
+    origClipboard := Clipboard
+    Clipboard := ""
+    SendInput, ^c
+    ClipWait(1, 1)
+    Sleep(50)
+    newClipboard := (ErrorLevel ? "" : Clipboard)
+    Clipboard := origClipboard . newClipboard
+    Sleep(50)
+    origClipboard := ""
+    newClipboard := ""
+}
+
+hkMiscCutAppend() {
+    origClipboard := Clipboard
+    Clipboard := ""
+    SendInput, ^x
+    ClipWait(1, 1)
+    Sleep(50)
+    newClipboard := (ErrorLevel ? "" : Clipboard)
+    Clipboard := origClipboard . newClipboard
+    Sleep(50)
+    origClipboard := ""
+    newClipboard := ""
+}
+
+hkMiscDragMouseDown() {
+    MouseClickDrag("Left", 0, 0, 0, 1, 0)
+}
+
+hkMiscDragMouseLeft() {
+    MouseClickDrag("Left", 0, 0, -1, 0, 0)
+}
+
+hkMiscDragMouseRight() {
+    MouseClickDrag("Left", 0, 0, 1, 0, 0)
+}
+
+hkMiscDragMouseUp() {
+    MouseClickDrag("Left", 0, 0, 0, -1, 0)
 }
 
 hkMiscMouseDown() {
@@ -1265,6 +1243,15 @@ hkMiscPreviewClipboard() {
     showClipboard()
 }
 
+hkMiscSwapToClipboard() {
+    origClipboard := Clipboard
+    Clipboard :=
+    SendInput, ^c
+    ClipWait(1, 1)
+    Sleep(50)
+    pasteText(origClipboard)
+}
+
 hkMiscZoomWindow() {
     zoomStart()
 }
@@ -1275,6 +1262,18 @@ hkTextDeleteCurrentLine() {
     }
     else {
         deleteCurrentLine()
+    }
+}
+
+hkTextDeleteToEol() {
+    if (hs.config.user.enableHkEpp && WinActive("ahk_exe i)EditPadPro\d*\.exe")) {
+        hkEppDeleteToEol()
+    }
+    else if (hs.config.user.enableHkDos && isActiveDos()) {
+        hkDosDeleteToEol()
+    }
+    else {
+        SendInput, ^{Delete}
     }
 }
 
@@ -1300,7 +1299,7 @@ hkTextMoveCurrentLineUp() {
     if (WinActive("ahk_exe i)EditPadPro\d*\.exe")) {
         SendInput, ^!+{Up}
     }
-    else if (WinActive("ahk_class ConsoleWindowClass")) {
+    else if (isActiveDos()) {
         hkDosCdParent()
     }
     else {
@@ -1447,22 +1446,6 @@ hkWindowDecreaseTransparency() {
     setTransparency(false)
 }
 
-hkWindowDragMouseDown() {
-    MouseClickDrag("Left", 0, 0, 0, 1, 0)
-}
-
-hkWindowDragMouseLeft() {
-    MouseClickDrag("Left", 0, 0, -1, 0, 0)
-}
-
-hkWindowDragMouseRight() {
-    MouseClickDrag("Left", 0, 0, 1, 0, 0)
-}
-
-hkWindowDragMouseUp() {
-    MouseClickDrag("Left", 0, 0, 0, -1, 0)
-}
-
 hkWindowHide() {
     hideWindow()
 }
@@ -1481,6 +1464,22 @@ hkWindowMaximize() {
 
 hkWindowMinimize() {
     minimize()
+}
+
+hkWindowMoveToEdgeBottom() {
+    moveToEdge("B")
+}
+
+hkWindowMoveToEdgeLeft() {
+    moveToEdge("L")
+}
+
+hkWindowMoveToEdgeRight() {
+    moveToEdge("R")
+}
+
+hkWindowMoveToEdgeTop() {
+    moveToEdge("T")
 }
 
 hkWindowPageDown() {
@@ -1579,6 +1578,27 @@ addHotString() {
     IniWrite(hs.config.user.file, "config", "hsTotalCount" . hs.vars.uniqueId, value)
 }
 
+addMissingVariables() {
+    varAppend := ""
+    FileRead, hsVars, % hs.file.USER_VARIABLES
+    quote := chr(34)
+    for key, value in hs.vars.defaultMyVars {
+        if (!contains(hsVars, "global MY_" . key)) {
+            tmpQ := (contains(value, quote) ? "" : quote)
+            comment := ""
+            if (key == "PASSWORD") {
+                comment := "  `; this is encrypted using CtrlShift-E (delete this comment after editing the value)"
+            }
+            varAppend .= hs.const.EOL_WIN . "global MY_" . key . " := " . tmpQ . value . tmpQ . comment
+        }
+    }
+    if (varAppend != "") {
+        FileAppend(varAppend . hs.const.EOL_WIN, hs.file.USER_VARIABLES)
+        selfReload(true)
+    }
+}
+
+
 arrayToList(arr, delim:=",", trim:="") {
     delim := (delim == "" ? "," : delim)
     arrList := ""
@@ -1637,7 +1657,7 @@ checkVersions() {
     if (hs.config.user.enableVersionCheck) {
         ahkAvailable := urlToVar(hs.vars.url.ahk.version)
         if (ahkAvailable == "") {
-            debug("Unable to obtain AutoHotKey version information from:`n`n" . hs.vars.url.ahk.version)
+            debug("Unable to obtain AutoHotKey version information from:`n    " . hs.vars.url.ahk.version)
             return
         }
         else if (ahkAvailable > A_AhkVersion) {
@@ -1684,7 +1704,7 @@ checkVersions() {
         }
         hsAvailable := urlToVar(hs.vars.url[hs.TITLE].version)
         if (hsAvailable == "") {
-            debug("Unable to obtain " . hs.TITLE . " version information from:`n`n" . hs.vars.url[hs.TITLE].version)
+            debug("Unable to obtain " . hs.TITLE . " version information from:`n    " . hs.vars.url[hs.TITLE].version)
             return
         }
         else if (hsAvailable > hs.VERSION) {
@@ -1801,7 +1821,7 @@ containsIgnoreCase(str, values*) {
 
 createIcon() {
     iconData1 =
-    ( LTrim Join
+    (LTrim Join
         000001000400101000000000200068040000460000002020000000002000A8100000AE040000
         3030000000002000A825000056150000404000000000200028420000FE3A0000280000001000
         0000200000000100200000000000400400000000000000000000000000000000000000000015
@@ -2010,7 +2030,7 @@ createIcon() {
     )
 
     iconData2 =
-    ( LTrim Join
+    (LTrim Join
         080169FF070164FF070160FF06014E650500506B070163FF070166FF08016AFF08016DFF0801
         6EFF08016EFF08016EFF08016EFF08016EFF08016EFF08016EFF08016EFF08016EFF08016EFF
         08016EFF08016EFF08016EFF08016EFF08016EFF08016EFF08016EFF08016EFF08016EFF0801
@@ -2219,7 +2239,7 @@ createIcon() {
     )
 
     iconData3 =
-    ( LTrim Join
+    (LTrim Join
         0099000000930000008F00000089000000810000007900000071000000670000005B0000004F
         00000041000000370000002D000000250000001D00000015000000110000000B000000090000
         001100000019000000230000002F0000003B0000004B0000005B0000007500000497020016BB
@@ -2428,7 +2448,7 @@ createIcon() {
     )
 
     iconData4 =
-    ( LTrim Join
+    (LTrim Join
         050281FF050281FF050281FF050281FF050281FF050281FF050281FF050281FF050281FF0502
         81FF050281FF09067CFF676783FFD5D5D5FF8786BEFF393782FFB0AFB2FFEBEBEBFFFEFEFEFF
         FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
@@ -2637,7 +2657,7 @@ createIcon() {
     )
 
     iconData5 =
-    ( LTrim Join
+    (LTrim Join
         CBFF7073CBFF7073CBFF7073CBFF7073CBFF7073CBFF7073CBFF7073CBFF7072CBFF7072CBFF
         7072CBFF6F71CAFF6E70CAFF6C6EC9FF696CC8FF6769C7FF6366C6FF6163C5FF5F61C4FB5B5E
         BFCD5456B66F3B3D850FFFFFFF01FFFFFF01FFFFFF01FFFFFF01FFFFFF01FFFFFF01FFFFFF01
@@ -2671,18 +2691,26 @@ createIcon() {
 }
 
 createNewInExplorer(type:="file") {
+;    debug("type = " . type)
     folder := getExplorerPath()
+;    debug("folder = " . folder)
     if (folder != "") {
         type := StringLower(type)
         name := getUniqueNewName(folder, type)
+;        debug("name = " . name)
         fullName := folder . name
+;        debug("fullName = " . fullName)
         if (type == "folder") {
             FileCreateDir, %fullName%
         }
         else {
             FileAppend("", fullName)
         }
-        ControlFocus, DirectUIHWND3, A
+        if (!FileExist(fullName)) {
+            message("Unable to create " . type . ": " . fullName)
+        }
+        ctrl := "DirectUIHWND" . (WinActive("ahk_class #32770") ? "2" : "3")
+        ControlFocus, %ctrl%, A
         selectInExplorer(name)
         Sleep(50)
         SendInput, {F2}
@@ -2727,368 +2755,366 @@ createUserFiles() {
     file := hs.file.USER_FUNCTIONS
     if (FileExist(file) == "") {
         contents =
-(
-; All user-defined functions should be declared below.
-; Functions defined here can be used referenced by HotScriptKeys.ahk or HotScriptStrings.ahk.
-; Any functions defined within HotScript itself can be called by functions created here.
+        (LTrim
+            ; All user-defined functions should be declared below.
+            ; Functions defined here can be used referenced by HotScriptKeys.ahk or HotScriptStrings.ahk.
+            ; Any functions defined within HotScript itself can be called by functions created here.
 
-/*
-simpleFunction`(someVar`) {
-    ; do something here...
-}
-*/
+            /*
+            simpleFunction`(someVar`) {
+            %A_Space%   ; do something here...
+            }
 
-)
+            userInit() {
+            %A_Space%   ; this is a special function that will be executed whenever HotScript is loaded.
+            }
+            */
+
+        )
         FileAppend(contents, file)
     }
     file := hs.file.USER_KEYS
     if (FileExist(file) == "") {
         contents =
-(
-; All user-defined hotkeys should be declared below.
-; Functions defined in HotScript are available for use here.
+        (LTrim
+            ; All user-defined hotkeys should be declared below.
+            ; Functions defined in HotScript are available for use here.
 
-/*
-    #  - Win
-    !  - Alt
-    ^  - Control
-    +  - Shift
-    <  - left key
-    >  - right key
-    *  - wild card `(fire even if extra modifier keys are pressed`)
-    ~  - do not block native key function
-    UP - fire upon key release instead of key press
-*/
+            /*
+            %A_Space%   #  - Win
+            %A_Space%   !  - Alt
+            %A_Space%   ^  - Control
+            %A_Space%   +  - Shift
+            %A_Space%   <  - left key
+            %A_Space%   >  - right key
+            %A_Space%   *  - wild card `(fire even if extra modifier keys are pressed`)
+            %A_Space%   ~  - do not block native key function
+            %A_Space%   UP - fire upon key release instead of key press
+            */
 
-/*
-Key Names and Symbols
----------------------
-'
-,
--
-.
-/
-0
-1
-2
-3
-4
-5
-6
-7
-8
-9
-;
-=
-[
-\
-]
-``
-A
-Alt
-AppsKey
-B
-Backspace
-Break
-Browser_Back
-Browser_Favorites
-Browser_Forward
-Browser_Home
-Browser_Refresh
-Browser_Search
-Browser_Stop
-Bs
-C
-CapsLock
-Control
-Ctrl
-CtrlBreak
-D
-Del
-Delete
-Down
-E
-End
-Enter
-Esc
-Escape
-F
-F1
-F2
-F3
-F4
-F5
-F6
-F7
-F8
-F9
-F10
-F11
-F12
-F13
-F14
-F15
-F16
-F17
-F18
-F19
-F20
-F21
-F22
-F23
-F24
-G
-H
-Help
-Home
-I
-Ins
-Insert
-J
-Joy1
-Joy2
-Joy3
-Joy4
-Joy5
-Joy6
-Joy7
-Joy8
-Joy9
-Joy10
-Joy11
-Joy12
-Joy13
-Joy14
-Joy15
-Joy16
-Joy17
-Joy18
-Joy19
-Joy20
-Joy21
-Joy22
-Joy23
-Joy24
-Joy25
-Joy26
-Joy27
-Joy28
-Joy29
-Joy30
-Joy31
-Joy32
-K
-L
-LAlt
-Launch_App1
-Launch_App2
-Launch_Mail
-Launch_Media
-LButton
-LControl
-LCtrl
-Left
-LShift
-LWin
-M
-MButton
-Media_Next
-Media_Play_Pause
-Media_Prev
-Media_Stop
-N
-NumLock
-Numpad0
-Numpad1
-Numpad2
-Numpad3
-Numpad4
-Numpad5
-Numpad6
-Numpad7
-Numpad8
-Numpad9
-NumpadAdd
-NumpadClear
-NumpadDel
-NumpadDiv
-NumpadDot
-NumpadDown
-NumpadEnd
-NumpadEnter
-NumpadHome
-NumpadIns
-NumpadLeft
-NumpadMult
-NumpadPgDn
-NumpadPgUp
-NumpadRight
-NumpadSub
-NumpadUp
-O
-P
-Pause
-PgDn
-PgUp
-PrintScreen
-Q
-R
-RAlt
-RButton
-RControl
-RCtrl
-Return
-Right
-RShift
-RWin
-S
-SCnnn
-ScrollLock
-Shift
-Sleep
-Space
-T
-Tab
-U
-Up
-V
-VKnn
-Volume_Down
-Volume_Mute
-Volume_Up
-W
-WheelDown
-WheelLeft
-WheelRight
-WheelUp
-X
-XButton1
-XButton2
-Y
-Z
-*/
+            /*
+            Key Names and Symbols
+            ---------------------
+            '
+            ,
+            -
+            .
+            /
+            0
+            1
+            2
+            3
+            4
+            5
+            6
+            7
+            8
+            9
+            ;
+            =
+            [
+            \
+            ]
+            ``
+            A
+            Alt
+            AppsKey
+            B
+            Backspace
+            Break
+            Browser_Back
+            Browser_Favorites
+            Browser_Forward
+            Browser_Home
+            Browser_Refresh
+            Browser_Search
+            Browser_Stop
+            Bs
+            C
+            CapsLock
+            Control
+            Ctrl
+            CtrlBreak
+            D
+            Del
+            Delete
+            Down
+            E
+            End
+            Enter
+            Esc
+            Escape
+            F
+            F1
+            F2
+            F3
+            F4
+            F5
+            F6
+            F7
+            F8
+            F9
+            F10
+            F11
+            F12
+            F13
+            F14
+            F15
+            F16
+            F17
+            F18
+            F19
+            F20
+            F21
+            F22
+            F23
+            F24
+            G
+            H
+            Help
+            Home
+            I
+            Ins
+            Insert
+            J
+            Joy1
+            Joy2
+            Joy3
+            Joy4
+            Joy5
+            Joy6
+            Joy7
+            Joy8
+            Joy9
+            Joy10
+            Joy11
+            Joy12
+            Joy13
+            Joy14
+            Joy15
+            Joy16
+            Joy17
+            Joy18
+            Joy19
+            Joy20
+            Joy21
+            Joy22
+            Joy23
+            Joy24
+            Joy25
+            Joy26
+            Joy27
+            Joy28
+            Joy29
+            Joy30
+            Joy31
+            Joy32
+            K
+            L
+            LAlt
+            Launch_App1
+            Launch_App2
+            Launch_Mail
+            Launch_Media
+            LButton
+            LControl
+            LCtrl
+            Left
+            LShift
+            LWin
+            M
+            MButton
+            Media_Next
+            Media_Play_Pause
+            Media_Prev
+            Media_Stop
+            N
+            NumLock
+            Numpad0
+            Numpad1
+            Numpad2
+            Numpad3
+            Numpad4
+            Numpad5
+            Numpad6
+            Numpad7
+            Numpad8
+            Numpad9
+            NumpadAdd
+            NumpadClear
+            NumpadDel
+            NumpadDiv
+            NumpadDot
+            NumpadDown
+            NumpadEnd
+            NumpadEnter
+            NumpadHome
+            NumpadIns
+            NumpadLeft
+            NumpadMult
+            NumpadPgDn
+            NumpadPgUp
+            NumpadRight
+            NumpadSub
+            NumpadUp
+            O
+            P
+            Pause
+            PgDn
+            PgUp
+            PrintScreen
+            Q
+            R
+            RAlt
+            RButton
+            RControl
+            RCtrl
+            Return
+            Right
+            RShift
+            RWin
+            S
+            SCnnn
+            ScrollLock
+            Shift
+            Sleep
+            Space
+            T
+            Tab
+            U
+            Up
+            V
+            VKnn
+            Volume_Down
+            Volume_Mute
+            Volume_Up
+            W
+            WheelDown
+            WheelLeft
+            WheelRight
+            WheelUp
+            X
+            XButton1
+            XButton2
+            Y
+            Z
+            */
 
-/*
-Each hotkey should use the following format:
+            /*
+            Each hotkey should use the following format:
 
-^!+m:: ;; a simple test key defined in an external file
-    addHotKey`(`)
-    showSplash`("This hotkey was defined by an external script!"`)
-    return
-*/
+            ^!+m:: ;; a simple test key defined in an external file
+            %A_Space%   addHotKey`(`)
+            %A_Space%   showSplash`("This hotkey was defined by an external script!"`)
+            %A_Space%   return
+            */
 
-)
+        )
         FileAppend(contents, file)
     }
     file := hs.file.USER_STRINGS
     if (FileExist(file) == "") {
         contents =
-(
-; All user-defined HotStrings should be declared below.
-; Functions defined in HotScript are available for use here.
+        (LTrim
+            ; All user-defined HotStrings should be declared below.
+            ; Functions defined in HotScript are available for use here.
 
-/*
-    HotStrings configured through AutoHotKey
-    ----------------------------------------
-    * `(asterisk`): An ending character `(e.g. space, period, or enter`) is not required to trigger the hotstring.
+            /*
+            %A_Space%   HotStrings configured through AutoHotKey
+            %A_Space%   ----------------------------------------
+            %A_Space%   * `(asterisk`): An ending character `(e.g. space, period, or enter`) is not required to trigger the hotstring.
 
-    ? `(question mark`): The hotstring will be triggered even when it is inside another word; that is, when the character typed immediately before it is alphanumeric.
+            %A_Space%   ? `(question mark`): The hotstring will be triggered even when it is inside another word; that is, when the character typed immediately before it is alphanumeric.
 
-    B0 `(B followed by a zero`): Automatic backspacing is not done to erase the abbreviation you type.
+            %A_Space%   B0 `(B followed by a zero`): Automatic backspacing is not done to erase the abbreviation you type.
 
-    C: Case-sensitive
+            %A_Space%   C: Case-sensitive
 
-    C1: Do not conform to typed case.
-    Use this option to make auto-replace HotStrings case insensitive and prevent them from conforming to the case of the characters you actually type.
-    Case-conforming HotStrings `(which are the default`) produce their replacement text in all caps if you type the abbreviation in all caps.
-    If you type only the first letter in caps, the first letter of the replacement will also be capitalized `(if it is a letter`).
-    If you type the case in any other way, the replacement is sent exactly as defined.
+            %A_Space%   C1: Do not conform to typed case.
+            %A_Space%   Use this option to make auto-replace HotStrings case insensitive and prevent them from conforming to the case of the characters you actually type.
+            %A_Space%   Case-conforming HotStrings `(which are the default`) produce their replacement text in all caps if you type the abbreviation in all caps.
+            %A_Space%   If you type only the first letter in caps, the first letter of the replacement will also be capitalized `(if it is a letter`).
+            %A_Space%   If you type the case in any other way, the replacement is sent exactly as defined.
 
-    O: Omit the ending character of auto-replace HotStrings when the replacement is produced.
-    This is useful when you want a hotstring to be kept unambiguous by still requiring an ending character, but don't actually want the ending character to be shown on the screen.
+            %A_Space%   O: Omit the ending character of auto-replace HotStrings when the replacement is produced.
+            %A_Space%   This is useful when you want a hotstring to be kept unambiguous by still requiring an ending character, but don't actually want the ending character to be shown on the screen.
 
-    R: Send the replacement text raw; that is, exactly as it appears rather than translating {Enter} to an ENTER keystroke, ^c to Control-C, etc.
-    This option is put into effect automatically for hotstrings that have a continuation section. Use R0 to turn this option back off.
+            %A_Space%   R: Send the replacement text raw; that is, exactly as it appears rather than translating {Enter} to an ENTER keystroke, ^c to Control-C, etc.
+            %A_Space%   This option is put into effect automatically for hotstrings that have a continuation section. Use R0 to turn this option back off.
 
-    SI or SP or SE: Sets the method by which auto-replace hotstrings send their keystrokes. These options are mutually exclusive: only one can be in effect at a time.
-    The following describes each option:
+            %A_Space%   SI or SP or SE: Sets the method by which auto-replace hotstrings send their keystrokes. These options are mutually exclusive: only one can be in effect at a time.
+            %A_Space%   The following describes each option:
 
-    - SI stands for SendInput, which typically has superior speed and reliability than the other modes.
-    - SP stands for SendPlay, which may allow hotstrings to work in a broader variety of games.
-    - SE stands for SendEvent, which is the default in versions older than 1.0.43.
+            %A_Space%   - SI stands for SendInput, which typically has superior speed and reliability than the other modes.
+            %A_Space%   - SP stands for SendPlay, which may allow hotstrings to work in a broader variety of games.
+            %A_Space%   - SE stands for SendEvent, which is the default in versions older than 1.0.43.
 
-    Z: This rarely-used option resets the hotstring recognizer after each triggering of the hotstring. In other words, the script will begin waiting for an entirely new
-    hotstring, eliminating from consideration anything you previously typed. This can prevent unwanted triggerings of hotstrings.
+            %A_Space%   Z: This rarely-used option resets the hotstring recognizer after each triggering of the hotstring. In other words, the script will begin waiting for an entirely new
+            %A_Space%   hotstring, eliminating from consideration anything you previously typed. This can prevent unwanted triggerings of hotstrings.
 
-    You can use the built-in variable A_EndChar to reference the ending character that was typed.
-*/
+            %A_Space%   You can use the built-in variable A_EndChar to reference the ending character that was typed.
+            */
 
-/*
-Each hotstring should use the following format:
+            /*
+            Each hotstring should use the following format:
 
-:*:hw.:: ;; Hello World.
-    addHotString`(`)
-    sendText`("Hello World."`)
-    return
-*/
+            :*:hw.:: ;; Hello World.
+            %A_Space%   addHotString`(`)
+            %A_Space%   sendText`("Hello World."`)
+            %A_Space%   return
+            */
 
-/*
-    Dynamic HotStrings configured through Hotscript
-    -----------------------------------------------
-    hotString`(trigger, replace, mode, clearTrigger, cond`)
-        trigger   - string or regex to trigger the action
-        replace   - string to replace trigger, OR function to call, OR label to go to
-                        - passing a blank value will delete any existing hotstring for the specified trigger
-                        - this can be useful to allow a hotstring to trigger until some conditional has been met
-        mode      - the operating mode of the trigger
-                        - 1 = case insensitive `(default`)
-                        - 2 = case sensitive
-                        - 3 = regex
-        clear     - true if the trigger should be erased `(default = true`)
-        condition - function name that should return true/false is the action should be executed
+            /*
+            %A_Space%   Dynamic HotStrings configured through Hotscript
+            %A_Space%   -----------------------------------------------
+            %A_Space%   hotString`(trigger, replace, mode, clearTrigger, cond`)
+            %A_Space%       trigger   - string or regex to trigger the action
+            %A_Space%       replace   - string to replace trigger, OR function to call, OR label to go to
+            %A_Space%                       - passing a blank value will delete any existing hotstring for the specified trigger
+            %A_Space%                       - this can be useful to allow a hotstring to trigger until some conditional has been met
+            %A_Space%       mode      - the operating mode of the trigger
+            %A_Space%                       - 1 = case insensitive `(default`)
+            %A_Space%                       - 2 = case sensitive
+            %A_Space%                       - 3 = regex
+            %A_Space%       clear     - true if the trigger should be erased `(default = true`)
+            %A_Space%       condition - function name that should return true/false is the action should be executed
 
-    Only the first two parameters are required.
-        - The "mode" defaults to case-insentive (1), if not specified.
-        - The "clear" defaults to true, if not specified.
-        - The "condition" is optional.
+            %A_Space%   Only the first two parameters are required.
+            %A_Space%       - The "mode" defaults to case-insentive (1), if not specified.
+            %A_Space%       - The "clear" defaults to true, if not specified.
+            %A_Space%       - The "condition" is optional.
 
-    Unlike using the method defined by AutoHotKey `(above`), there is no need to manually call addHotString`(`).
+            %A_Space%   Unlike using the method defined by AutoHotKey `(above`), there is no need to manually call addHotString`(`).
 
-    hotString`("hw", "Hello World."`)
-    hotString`("hw", ""`)
-        - the hotstring for "hw" is now deleted
-    hotString`("@math", "myMath"`)
-        - if "myMath" exists as a function, it is called
-        - if "myMath" exists as a label, it is called
-        - otherwise the text "myMath" will be used
-    hotString`("gett", "ing much more efficient, with HotScript!", 1, false`)
-    hotString`("myTest", "Conditional testing worked!", 1, true, "myTestFunc"`)
-        - if myTestFunc exists, it is called
-            - if it returns true, the hotstring will be triggered
-            - if it returns false, the hotstring will be ignored
-        - if myTestFunc does not exist, the hotstring will be triggered
-    hotString`("aBc", "This is case-sensitive!", 2`)
-    hotString`("\w{3}\d{3}", "Three letters and three numbers...", 3`)
-*/
+            %A_Space%   hotString`("hw", "Hello World."`)
+            %A_Space%   hotString`("hw", ""`)
+            %A_Space%       - the hotstring for "hw" is now deleted
+            %A_Space%   hotString`("@math", "myMath"`)
+            %A_Space%       - if "myMath" exists as a function, it is called
+            %A_Space%       - if "myMath" exists as a label, it is called
+            %A_Space%       - otherwise the text "myMath" will be used
+            %A_Space%   hotString`("gett", "ing much more efficient, with HotScript!", 1, false`)
+            %A_Space%   hotString`("myTest", "Conditional testing worked!", 1, true, "myTestFunc"`)
+            %A_Space%       - if myTestFunc exists, it is called
+            %A_Space%           - if it returns true, the hotstring will be triggered
+            %A_Space%           - if it returns false, the hotstring will be ignored
+            %A_Space%       - if myTestFunc does not exist, the hotstring will be triggered
+            %A_Space%   hotString`("aBc", "This is case-sensitive!", 2`)
+            %A_Space%   hotString`("\w{3}\d{3}", "Three letters and three numbers...", 3`)
+            */
 
-)
+        )
         FileAppend(contents, file)
     }
     file := hs.file.USER_VARIABLES
     if (FileExist(file) == "") {
         contents =
-(
-; All user-defined variables should be declared below.
-; Variables defined here can be used referenced by HotScriptFunctions.ahk, HotScriptKeys.ahk or HotScriptStrings.ahk.
-; All variables should be declared with "global" to make them easily accessible by other HotScript scripts and functions.
+        (LTrim
+            ; All user-defined variables should be declared below.
+            ; Variables defined here can be used referenced by HotScriptFunctions.ahk, HotScriptKeys.ahk or HotScriptStrings.ahk.
+            ; All variables should be declared with "global" to make them easily accessible by other HotScript scripts and functions.
 
-global MY_ADDRESS := "123 Main Street"
-global MY_EMAIL := "firstlast@mail.com"
-global MY_NAME := "First Last"
-global MY_PHONE := "789-456-0123"
-global MY_SIGNATURE := "Sincerely,``n" . MY_NAME
-
-)
+        )
         FileAppend(contents, file)
     }
 }
@@ -3238,6 +3264,31 @@ getActiveMonitor(hWnd:="A") {
     return monIdx
 }
 
+getActiveProcessID() {
+    WinGet, procName, ProcessName, A
+    if (procName == "ApplicationFrameHost.exe") {
+        ControlGet, hwnd, Hwnd,, Windows.UI.Core.CoreWindow1, A
+        if (hwnd) {
+            WinGet, procPID, PID, ahk_id %hwnd%
+        }
+    }
+    else {
+        WinGet, procPID, PID, A
+    }
+    return procPID
+}
+
+getActiveProcessName() {
+    WinGet, procName, ProcessName, A
+    if (procName == "ApplicationFrameHost.exe") {
+        ControlGet, hwnd, Hwnd,, Windows.UI.Core.CoreWindow1, A
+        if (hwnd) {
+            WinGet, procName, ProcessName, ahk_id %hwnd%
+        }
+    }
+    return procName
+}
+
 getCenter(winW, winH, monitor:="A") {
     if (monitor == "A") {
         monitor := getActiveMonitor()
@@ -3264,11 +3315,24 @@ getCurrentLine() {
     return getSelectedText()
 }
 
+getDateString() {
+    return A_MM . "/" . A_DD . "/" . A_YYYY
+}
+
+getDayString() {
+    return A_DDDD
+}
+
+getDddString() {
+    return A_DDD
+}
+
 getDefaultHotKeyDefs(type) {
     hk := {}
     if (type == "hkAction") {
         hk["hkActionAlwaysOnTop"] := "#a"
         hk["hkActionCalculator"] := "#c"
+        hk["hkActionCharacterMap"] := "#m"
         hk["hkActionClickThrough"] := "^#a"
         hk["hkActionControlPanel"] := "^rctrl"
         hk["hkActionDosPrompt"] := "#d"
@@ -3276,13 +3340,11 @@ getDefaultHotKeyDefs(type) {
         hk["hkActionEditor"] := "#e"
         hk["hkActionGoogleSearch"] := "#g"
         hk["hkActionQuickLookup"] := "#q"
+        hk["hkActionStartupFolder"] := "!#s"
         hk["hkActionToggleDesktopIcons"] := "!appskey"
         hk["hkActionWindowsExplorer"] := "#x"
         hk["hkActionWindowsServices"] := "#s"
         hk["hkActionWindowsSnip"] := "#printscreen"
-    }
-    else if (type == "hkCustom") {
-        hk["hkCustomDeleteToEol"] := "^delete"
     }
     else if (type == "hkDos") {
         hk["hkDosCdParent-1"] := "!."
@@ -3314,7 +3376,6 @@ getDefaultHotKeyDefs(type) {
     }
     else if (type == "hkHotScript") {
         hk["hkHotScriptAutoHotKeyHelp"] := "#1"
-        hk["hkHotScriptDebugVariable"] := "^#f12"
         hk["hkHotScriptEditDefaultIni"] := "#9"
         hk["hkHotScriptEditHotScript"] := "#3"
         hk["hkHotScriptEditUserIni"] := "#8"
@@ -3324,14 +3385,22 @@ getDefaultHotKeyDefs(type) {
         hk["hkHotScriptEditUserVariables"] := "#6"
         hk["hkHotScriptExit"] := "#f12"
         hk["hkHotScriptHome"] := "#0"
+        hk["hkHotScriptFolder"] := "!#h"
         hk["hkHotScriptQuickHelp"] := "#h"
-        hk["hkHotScriptQuickHelpToggle-1"] := "^#h"
-        hk["hkHotScriptQuickHelpToggle-2"] := "!#h"
+        hk["hkHotScriptQuickHelpToggle"] := "^#h"
         hk["hkHotScriptReload"] := "#2"
+        hk["hkHotScriptRunDebugView"] := "#``"
+        hk["hkHotScriptShowVariable"] := "^#f12"
     }
     else if (type == "hkMisc") {
+        hk["hkMiscCopyAppend"] := "^!a"
         hk["hkMiscCreateFile"] := "^!f"
         hk["hkMiscCreateFolder"] := "^!d"
+        hk["hkMiscCutAppend"] := "^!x"
+        hk["hkMiscDragMouseDown"] := "^!#down"
+        hk["hkMiscDragMouseLeft"] := "^!#left"
+        hk["hkMiscDragMouseRight"] := "^!#right"
+        hk["hkMiscDragMouseUp"] := "^!#up"
         hk["hkMiscMouseDown"] := "!#down"
         hk["hkMiscMouseLeft"] := "!#left"
         hk["hkMiscMouseRight"] := "!#right"
@@ -3340,10 +3409,12 @@ getDefaultHotKeyDefs(type) {
         hk["hkMiscPasteEnter"] := "#enter"
         hk["hkMiscPasteTab"] := "#tab"
         hk["hkMiscPreviewClipboard"] := "#v"
+        hk["hkMiscSwapToClipboard"] := "^!c"
         hk["hkMiscZoomWindow"] := "#z"
     }
     else if (type == "hkText") {
         hk["hkTextDeleteCurrentLine"] := "!delete"
+        hk["hkTextDeleteToEol"] := "^delete"
         hk["hkTextDuplicateCurrentLine"] := "^+up"
         hk["hkTextMoveCurrentLineDown"] := "!down"
         hk["hkTextMoveCurrentLineUp"] := "!up"
@@ -3393,10 +3464,6 @@ getDefaultHotKeyDefs(type) {
         hk["hkWindowDecreaseTransparency-1"] := "#-"
         hk["hkWindowDecreaseTransparency-2"] := "#numpadsub"
         hk["hkWindowDecreaseTransparency-3"] := "#wheeldown"
-        hk["hkWindowDragMouseDown"] := "^#down"
-        hk["hkWindowDragMouseLeft"] := "^#left"
-        hk["hkWindowDragMouseRight"] := "^#right"
-        hk["hkWindowDragMouseUp"] := "^#up"
         hk["hkWindowHide"] := "#delete"
         hk["hkWindowIncreaseTransparency-1"] := "#="
         hk["hkWindowIncreaseTransparency-2"] := "#numpadadd"
@@ -3405,6 +3472,10 @@ getDefaultHotKeyDefs(type) {
         hk["hkWindowLeft-2"] := "#left"
         hk["hkWindowMaximize"] := "#up"
         hk["hkWindowMinimize"] := "#down"
+        hk["hkWindowMoveToEdgeBottom"] := "^#down"
+        hk["hkWindowMoveToEdgeLeft"] := "^#left"
+        hk["hkWindowMoveToEdgeRight"] := "^#right"
+        hk["hkWindowMoveToEdgeTop"] := "^#up"
         hk["hkWindowPageDown"] := "!wheeldown"
         hk["hkWindowPageUp"] := "!wheelup"
         hk["hkWindowResize"] := "^#r"
@@ -3433,10 +3504,18 @@ getDefaultHotKeyDefs(type) {
         hk["hkWindowRestoreHidden"] := "#insert"
         hk["hkWindowRight-1"] := "wheelright"
         hk["hkWindowRight-2"] := "#right"
-        hk["hkWindowToggleMinimized"] := "#m"
+        hk["hkWindowToggleMinimized"] := "^#m"
         hk["hkWindowToggleTransparency"] := "#t"
     }
     return hk
+}
+
+getDtmsString() {
+    return getDtsString() . "_" . getTmsString()
+}
+
+getDtsString() {
+    return A_YYYY . A_MM . A_DD
 }
 
 getEol(text) {
@@ -3461,15 +3540,34 @@ getExplorerPath() {
     xPath := ""
     if (WinActive("ahk_group ExplorerGroup")) {
         hwnd := WinExist("A")
+;        debug("hwnd = " . hwnd)
         url := ""
-        for item in ComObjCreate("Shell.Application").Windows {
-            if (url == "" && item.hwnd == hwnd) {
-                url := item.LocationURL
-            }
+        if (WinActive("ahk_class #32770")) {
+            /*
+            debug("Checking dialog...")
+            ;url := ControlGetText("ToolbarWindow322", "ahk_id %hwnd%")
+            ControlGetText, url, ToolbarWindow322, Open ahk_class #32770
+            debug("url = " . url)
+            ; TODO - is this an issue for non-paths? Such as current user or "My Documents'?
+            ; TODO - is this an issue for open dialog, too
+            pos := InStr(url, ":\") - 1
+            xPath := SubStr(url, pos)
+            debug("xPath = " . xPath)
+            */
+            message("Unable to determine current path from a dialog...")
+            centerWindow()
         }
-        if (url != "") {
-            VarSetCapacity(xPath, pathSize := 2084, 0)
-            DllCall("shlwapi\PathCreateFromUrl" . (A_IsUnicode ? "W" : "A"), Str, url, Str, xPath, UIntP, pathSize, UInt, 0)
+        else {
+;            debug("Checking windows...")
+            for item in ComObjCreate("Shell.Application").Windows {
+                if (url == "" && item.hwnd == hwnd) {
+                    url := item.LocationURL
+                }
+            }
+            if (url != "") {
+                VarSetCapacity(xPath, pathSize := 2084, 0)
+                DllCall("shlwapi\PathCreateFromUrl" . (A_IsUnicode ? "W" : "A"), Str, url, Str, xPath, UIntP, pathSize, UInt, 0)
+            }
         }
     }
     return xPath
@@ -3483,6 +3581,18 @@ getListSize(list, delim:="") {
         tmpCount++
     }
     return tmpCount
+}
+
+getMmmString() {
+    return A_MMM
+}
+
+getMonthString() {
+    return A_MMMM
+}
+
+getNowString() {
+    return getDateString() . " at " . getTimeString()
 }
 
 getSelectedText() {
@@ -3518,6 +3628,14 @@ getSize(value) {
         size := is(value, "number") ? value : StrLen(value)
     }
     return size
+}
+
+getTimeString() {
+    return A_Hour . ":" . A_Min . ":" . A_Sec
+}
+
+getTmsString() {
+    return A_Hour . A_Min . A_Sec
 }
 
 getUniqueNewName(ByRef path, type:="file") {
@@ -3634,14 +3752,15 @@ hkToStr(key) {
 }
 
 /*
-; Hotstring(trigger, replace, mode, clear, condition)
+; hotString(trigger, replace, mode, clear, condition)
 ;   trigger    - string or regex to trigger the action
 ;   replace    - string to replace trigger, OR label to go to, OR function to call, OR object containing function name and optional parameters
 ;   mode 1/2/3 - insensitive/sensitive/regex (default = 1)
-;   clear      - true if the trigger should be erased (default = true)
 ;   condition  - function name that should return true/false is the action should be executed
+;   clear      - true if the trigger should be erased (default = true)
 TODO
     - make "replace" support being text/label/function/object
+    - "replace" should support being able to reevaluate itself (such as A_Hour)
     - when object, it (may) contain all necessary parameters
         - mode
         - clearTrigger
@@ -3658,7 +3777,7 @@ TODO
         - hs.EndChar
         - could be added to "replace", if it is an object
 */
-hotString(trigger, replace, mode:=1, clearTrigger:=1, condition:= "") {
+hotString(trigger, replace, mode:=1, condition:= "", clearTrigger:=1) {
     global $
     static keysBound := false
     static hotkeyPrefix := "~$"
@@ -3809,10 +3928,13 @@ hotString(trigger, replace, mode:=1, clearTrigger:=1, condition:= "") {
                     callbackFunc := Func(v.replace)
                     ; TODO - add support for sending parameters to the function
                     if (callbackFunc.minParams >= 1) {
-                        callbackFunc.(returnValue)
+                        funcResult := callbackFunc.(returnValue)
                     }
                     else {
-                        callbackFunc.()
+                        funcResult := callbackFunc.()
+                    }
+                    if (funcResult != "") {
+                        pasteText(funcResult)
                     }
                 }
                 else if (IsLabel(v.replace)) {
@@ -3879,11 +4001,13 @@ hsPercentOf($) {
 }
 
 init() {
+    ;debug("DBGVIEWCLEAR")
     initInternalVars()
     GroupAdd, DesktopGroup, ahk_class Progman
     GroupAdd, DesktopGroup, ahk_class WorkerW
     GroupAdd, ExplorerGroup, ahk_class CabinetWClass
     GroupAdd, ExplorerGroup, ahk_class ExploreWClass
+    GroupAdd, ExplorerGroup, ahk_class #32770
     refreshMonitors()
     SetTimer("refreshMonitors", 30000)
     createUserFiles()
@@ -3891,6 +4015,7 @@ init() {
     cleanupDeprecated()
     createStartupLink()
     updateRegistry()
+    addMissingVariables()
     icon := hs.BASENAME . ".ico"
     tip := hs.TITLE . " v" . hs.VERSION . " (AHK v" . A_AhkVersion . ") - enabled"
     Menu, Tray, Icon, %icon%,, 1
@@ -3901,15 +4026,22 @@ init() {
     Menu, Tray, Add, Window Spy, customTrayMenu
     Menu, Tray, Add
     Menu, Tray, Add, Home Page, customTrayMenu
+    Menu, Tray, Add, Historical changes, customTrayMenu
     Menu, Tray, Add
     Menu, Tray, Add, Exit, customTrayMenu
     initHotStrings()
-    checkVersions()
+    if (!toBool(DEV_MODE)) {
+        checkVersions()
+    }
     if (FileExist(hs.config.user.editor) == "") {
         if (findOnPath(hs.config.user.editor) = "") {
             msg := "The configured editor cannot be found: " . hs.config.user.editor . "`n`nTo change this, edit the " . hs.config.user.file . " file and add the 'editor' value in the [config] section."
             MsgBox, 48,, %msg%
         }
+    }
+    if (isFunc("userInit")) {
+        userFunc := Func("userInit")
+        userFunc.()
     }
     return
 
@@ -3927,6 +4059,9 @@ init() {
         }
         else if (A_ThisMenuItem == "Home Page") {
             hkHotScriptHome()
+        }
+        else if (A_ThisMenuItem == "Historical changes") {
+            Run(hs.vars.url[hs.TITLE].history)
         }
         else if (A_ThisMenuItem == "Exit") {
             stop()
@@ -3957,9 +4092,57 @@ initHotStrings() {
         hotString("\bvg" . hs.const.END_CHARS_REGEX, "very good$1", 3)
         hotString("\byw" . hs.const.END_CHARS_REGEX, "You're welcome$1", 3)
         hotString("\bwyb", "Please let me know when you are back...", 3)
+    }
+    if (toBool(hs.config.user.enableHsAutoCorrect)) {
+        hotString("@ip", A_IPAddress1, 2)
         hotString("(\d+)\/(\d+)%", "hsDivPercent", 3)
         hotString("(\d+)%(\d+)" . hs.const.END_CHARS_REGEX, "hsPercentOf", 3)
-        hotString("@ip", A_IPAddress1)
+        hotString("\b1\/8" . hs.const.END_CHARS_REGEX, chr(8539), 3, "isCalculatorNotActive")
+        hotString("\b1\/6" . hs.const.END_CHARS_REGEX, chr(8537), 3, "isCalculatorNotActive")
+        hotString("\b1\/5" . hs.const.END_CHARS_REGEX, chr(8533), 3, "isCalculatorNotActive")
+        hotString("\b1\/4" . hs.const.END_CHARS_REGEX, chr(188), 3, "isCalculatorNotActive")
+        hotString("\b2\/8" . hs.const.END_CHARS_REGEX, chr(188), 3, "isCalculatorNotActive")
+        hotString("\b1\/3" . hs.const.END_CHARS_REGEX, chr(8531), 3, "isCalculatorNotActive")
+        hotString("\b2\/6" . hs.const.END_CHARS_REGEX, chr(8531), 3, "isCalculatorNotActive")
+        hotString("\b3\/8" . hs.const.END_CHARS_REGEX, chr(8540), 3, "isCalculatorNotActive")
+        hotString("\b2\/5" . hs.const.END_CHARS_REGEX, chr(8534), 3, "isCalculatorNotActive")
+        hotString("\b1\/2" . hs.const.END_CHARS_REGEX, chr(189), 3, "isCalculatorNotActive")
+        hotString("\b2\/4" . hs.const.END_CHARS_REGEX, chr(189), 3, "isCalculatorNotActive")
+        hotString("\b3\/6" . hs.const.END_CHARS_REGEX, chr(189), 3, "isCalculatorNotActive")
+        hotString("\b4\/8" . hs.const.END_CHARS_REGEX, chr(189), 3, "isCalculatorNotActive")
+        hotString("\b3\/5" . hs.const.END_CHARS_REGEX, chr(8535), 3, "isCalculatorNotActive")
+        hotString("\b5\/8" . hs.const.END_CHARS_REGEX, chr(8541), 3, "isCalculatorNotActive")
+        hotString("\b2\/3" . hs.const.END_CHARS_REGEX, chr(8532), 3, "isCalculatorNotActive")
+        hotString("\b4\/6" . hs.const.END_CHARS_REGEX, chr(8532), 3, "isCalculatorNotActive")
+        hotString("\b3\/4" . hs.const.END_CHARS_REGEX, chr(190), 3, "isCalculatorNotActive")
+        hotString("\b6\/8" . hs.const.END_CHARS_REGEX, chr(190), 3, "isCalculatorNotActive")
+        hotString("\b4\/5" . hs.const.END_CHARS_REGEX, chr(8536), 3, "isCalculatorNotActive")
+        hotString("\b5\/6" . hs.const.END_CHARS_REGEX, chr(8538), 3, "isCalculatorNotActive")
+        hotString("\b7\/8" . hs.const.END_CHARS_REGEX, chr(8542), 3, "isCalculatorNotActive")
+        hotString("cL", "c:", 2)
+    }
+    if (toBool(hs.config.user.enableHsCode)) {
+        hotString("@html", "templateHtml", 2)
+        hotString("@java", "templateJava", 2)
+        hotString("@perl", "templatePerl", 2)
+        hotString("@sql", "templateSql", 2)
+    }
+    if (toBool(hs.config.user.enableHsDates)) {
+        hotString("\bdtms", "getDtmsString", 3)
+        hotString("\bdts", "getDtsString", 3)
+        hotString("\btms", "getTmsString", 3)
+        hotString("@date", "getDateString", 3)
+        hotString("@day", "getDayString", 2)
+        hotString("@ddd", "getDddString", 2)
+        hotString("@mmm", "getMmmString", 2)
+        hotString("@month", "getMonthString", 2)
+        hotString("@now", "getNowString", 2)
+        hotString("@time", "getTimeString", 2)
+    }
+    if (toBool(hs.config.user.enableHsDos)) {
+        hotString("\bcd ", "/d ", 3, "isActiveDos", false)
+    }
+    if (toBool(hs.config.user.enableHsVariables)) {
         if (MY_EMAIL != "") {
             hotString("@@", MY_EMAIL)
         }
@@ -3967,33 +4150,33 @@ initHotStrings() {
             hotString("@#", MY_PHONE)
         }
         if (MY_ADDRESS != "") {
-            hotString("@addr", MY_ADDRESS)
+            hotString("@addr", MY_ADDRESS, 2)
+        }
+        if (MY_DOB != "") {
+            hotString("@dob", MY_DOB, 2)
         }
         if (MY_NAME != "") {
-            hotString("@me", MY_NAME)
+            hotString("@me", MY_NAME, 2)
+        }
+        if (MY_PASSWORD != "") {
+            hotString("@pw", crypt(MY_PASSWORD), 2)
         }
         if (MY_SIGNATURE != "") {
-            hotString("@sig", MY_SIGNATURE)
+            hotString("@sig", MY_SIGNATURE, 2)
+        }
+        if (MY_WORK_EMAIL != "") {
+            hotString("@w", MY_WORK_EMAIL, 2)
         }
     }
-;    if (toBool(hs.config.user.enableHsAutoCorrect)) {
-;    }
-    if (toBool(hs.config.user.enableHsCode)) {
-        hotString("@html", "templateHtml", 2)
-        hotString("@java", "templateJava", 2)
-        hotString("@perl", "templatePerl", 2)
-        hotString("@sql", "templateSql", 2)
-    }
-;    if (toBool(hs.config.user.enableHsDates)) {
-;    }
 }
 
 initInternalVars() {
     global $ := ""
-    hs.VERSION := "1.20151030.2"
+    hs.VERSION := "1.20160326.1"
     hs.TITLE := "HotScript"
     hs.BASENAME := A_ScriptDir . "\" . hs.TITLE
 
+    quote := chr(34)
     markers := {
         (LTrim Join
             always_on_top: chr(5826) . chr(160),
@@ -4011,7 +4194,7 @@ initInternalVars() {
             EOL_NIX: "`n",
             EOL_WIN: "`r`n",
             EOL_REGEX: "(\r\n|\n|\r)",
-            LINE_SEP: repeatStr("·", 157),
+            LINE_SEP: repeatStr(chr(183), 157),
             MARKER: markers,
             MENU_SEP: "-",
             VIRTUAL_SPACE: chr(160)
@@ -4031,17 +4214,32 @@ initInternalVars() {
     urls.ahk := {
         (LTrim Join
             download: "http://ahkscript.org/download/1.1/",
-            install: "AutoHotkey{version}_Install.exe",
-            version: "http://ahkscript.org/download/1.1/version.txt"
+            install: "AutoHotkey{version}_Install.exe"
         )}
+    urls.ahk.version := urls.ahk.download . "version.txt"
     urls[hs.TITLE] := {
         (LTrim Join
-            home: "https://github.com/mviens/hotscript",
-            version: "https://github.com/mviens/hotscript/raw/release/version.txt"
+            home: "https://github.com/mviens/hotscript"
         )}
-    urls[hs.TITLE].download := urls[hs.TITLE].home . "/raw/release/HotScript.ahk",
+    homeRaw := urls[hs.TITLE].home . "/raw/release/"
+    urls[hs.TITLE].download := homeRaw . hs.TITLE . ".ahk"
+    urls[hs.TITLE].history := homeRaw . "changes.txt"
+    urls[hs.TITLE].version := homeRaw . "version.txt"
+    
+    myVars := {
+        (LTrim Join
+            ADDRESS: "123 Main Street",
+            DOB: "01/01/1980",
+            EMAIL: "firstlast@mail.com",
+            NAME: "First Last",
+            PASSWORD: "ÑÁ¥¥ö±óå¾",
+            PHONE: "789-456-0123",
+            SIGNATURE: quote . "Sincerely,``n" . quote . " . MY_NAME",
+            WORK_EMAIL: "firstlast@work.com"
+        )}
     hs.vars := {
         (LTrim Join Comments
+            defaultMyVars: myVars,
             hiddenWindows: "",   ; TODO - this should persist, because if windows were hidden and the script was reloaded, they would be lost
             monitors: {},
             uniqueId: "_" . A_Year . "_" . A_ComputerName,
@@ -4066,6 +4264,10 @@ is(value, type) {
     return result
 }
 
+isActiveDos() {
+    return (WinActive("ahk_class ConsoleWindowClass") || WinActive("ahk_exe cmd.exe"))
+}
+
 isDirectory(text) {
     return (InStr(FileExist(text), "D") > 0)
 }
@@ -4076,6 +4278,12 @@ isFile(text) {
 
 isUNC(text) {
     return RegexMatch(text, "\\\\[\\~`!@#$%^&\(\)\-_=+\[\]\{\};',.\d\w ]+")
+}
+
+isCalculatorNotActive() {
+    procName := SetCase(getActiveProcessName(), "L")
+    ; this is negated because hotString()'s "condition" parameter can only run a function, not negate it
+    return (procName != "calc.exe" && procName != "calculator.exe")
 }
 
 isUrl(text) {
@@ -4109,12 +4317,13 @@ lineWrapSelected() {
     pasteText(selText)
 }
 
-listToArray(list, delim:="") {
+listToArray(list, delim:="", doTrim:=false) {
     delim := (delim == "" ? hs.const.EOL_WIN : delim)
     arr := {}
     Loop, Parse, list, %delim%
     {
-        arr[A_Index] := A_LoopField
+        item := (toBool(doTrim) ? Trim(A_LoopField) : A_LoopField)
+        arr[A_Index] := item
     }
     return arr
 }
@@ -4138,8 +4347,9 @@ loadConfig() {
     }
     ; load from default config first
     hs.config.default.editor := IniRead(hs.config.default.file, "config", "editor", hs.config.default.editor)
+    hs.config.default.enableAutoStart := IniRead(hs.config.default.file, "config", "enableAutoStart", toBool(hs.config.default.enableAutoStart))
+    hs.config.default.enableAutoUpdate := IniRead(hs.config.default.file, "config", "enableAutoUpdate", toBool(hs.config.default.enableAutoUpdate))
     hs.config.default.enableHkAction := IniRead(hs.config.default.file, "config", "enableHkAction", toBool(hs.config.default.enableHkAction))
-    hs.config.default.enableHkCustom := IniRead(hs.config.default.file, "config", "enableHkCustom", toBool(hs.config.default.enableHkCustom))
     hs.config.default.enableHkDos := IniRead(hs.config.default.file, "config", "enableHkDos", toBool(hs.config.default.enableHkDos))
     hs.config.default.enableHkEpp := IniRead(hs.config.default.file, "config", "enableHkEpp", toBool(hs.config.default.enableHkEpp))
     hs.config.default.enableHkMisc := IniRead(hs.config.default.file, "config", "enableHkMisc", toBool(hs.config.default.enableHkMisc))
@@ -4153,9 +4363,8 @@ loadConfig() {
     hs.config.default.enableHsDos := IniRead(hs.config.default.file, "config", "enableHsDos", toBool(hs.config.default.enableHsDos))
     hs.config.default.enableHsHtml := IniRead(hs.config.default.file, "config", "enableHsHtml", toBool(hs.config.default.enableHsHtml))
     hs.config.default.enableHsJira := IniRead(hs.config.default.file, "config", "enableHsJira", toBool(hs.config.default.enableHsJira))
+    hs.config.default.enableHsVariables := IniRead(hs.config.default.file, "config", "enableHsVariables", toBool(hs.config.default.enableHsVariables))
     hs.config.default.enableVersionCheck := IniRead(hs.config.default.file, "config", "enableVersionCheck", toBool(hs.config.default.enableVersionCheck))
-    hs.config.default.enableAutoStart := IniRead(hs.config.default.file, "config", "enableAutoStart", toBool(hs.config.default.enableAutoStart))
-    hs.config.default.enableAutoUpdate := IniRead(hs.config.default.file, "config", "enableAutoUpdate", toBool(hs.config.default.enableAutoUpdate))
     hs.config.default.hkTotalCount := 0
     hs.config.default.hsTotalCount := 0
     hs.config.default.inputBoxFieldFont := IniRead(hs.config.default.file, "config", "inputBoxFieldFont", hs.config.default.inputBoxFieldFont)
@@ -4236,8 +4445,9 @@ loadConfig() {
     }
     ; now load from the user config, using the values from default if necessary
     hs.config.user.editor := IniRead(hs.config.user.file, "config", "editor", hs.config.default.editor)
+    hs.config.user.enableAutoStart := toBool(IniRead(hs.config.user.file, "config", "enableAutoStart", hs.config.default.enableAutoStart))
+    hs.config.user.enableAutoUpdate := toBool(IniRead(hs.config.user.file, "config", "enableAutoUpdate", hs.config.default.enableAutoUpdate))
     hs.config.user.enableHkAction := toBool(IniRead(hs.config.user.file, "config", "enableHkAction", hs.config.default.enableHkAction))
-    hs.config.user.enableHkCustom := toBool(IniRead(hs.config.user.file, "config", "enableHkCustom", hs.config.default.enableHkCustom))
     hs.config.user.enableHkDos := toBool(IniRead(hs.config.user.file, "config", "enableHkDos", hs.config.default.enableHkDos))
     hs.config.user.enableHkEpp := toBool(IniRead(hs.config.user.file, "config", "enableHkEpp", hs.config.default.enableHkEpp))
     hs.config.user.enableHkMisc := toBool(IniRead(hs.config.user.file, "config", "enableHkMisc", hs.config.default.enableHkMisc))
@@ -4251,9 +4461,8 @@ loadConfig() {
     hs.config.user.enableHsDos := toBool(IniRead(hs.config.user.file, "config", "enableHsDos", hs.config.default.enableHsDos))
     hs.config.user.enableHsHtml := toBool(IniRead(hs.config.user.file, "config", "enableHsHtml", hs.config.default.enableHsHtml))
     hs.config.user.enableHsJira := toBool(IniRead(hs.config.user.file, "config", "enableHsJira", hs.config.default.enableHsJira))
+    hs.config.user.enableHsVariables := toBool(IniRead(hs.config.user.file, "config", "enableHsVariables", hs.config.default.enableHsVariables))
     hs.config.user.enableVersionCheck := toBool(IniRead(hs.config.user.file, "config", "enableVersionCheck", hs.config.default.enableVersionCheck))
-    hs.config.user.enableAutoStart := toBool(IniRead(hs.config.user.file, "config", "enableAutoStart", hs.config.default.enableAutoStart))
-    hs.config.user.enableAutoUpdate := toBool(IniRead(hs.config.user.file, "config", "enableAutoUpdate", hs.config.default.enableAutoUpdate))
     hs.config.user.hkTotalCount := IniRead(hs.config.user.file, "config", "hkTotalCount" . hs.vars.uniqueId, hs.config.default.hkTotalCount)
     hs.config.user.hsTotalCount := IniRead(hs.config.user.file, "config", "hsTotalCount" . hs.vars.uniqueId, hs.config.default.hsTotalCount)
     hs.config.user.inputBoxFieldFont := IniRead(hs.config.user.file, "config", "inputBoxFieldFont", hs.config.default.inputBoxFieldFont)
@@ -4284,31 +4493,28 @@ loadConfig() {
 
 loadHotKeyDefs(config) {
     needToSave := false
-    if (not loadHotKeys(config, "hkAction")) {
+    if (!loadHotKeys(config, "hkAction")) {
         needToSave := true
     }
-    if (not loadHotKeys(config, "hkCustom")) {
+    if (!loadHotKeys(config, "hkDos")) {
         needToSave := true
     }
-    if (not loadHotKeys(config, "hkDos")) {
+    if (!loadHotKeys(config, "hkEpp")) {
         needToSave := true
     }
-    if (not loadHotKeys(config, "hkEpp")) {
+    if (!loadHotKeys(config, "hkHotScript")) {
         needToSave := true
     }
-    if (not loadHotKeys(config, "hkHotScript")) {
+    if (!loadHotKeys(config, "hkMisc")) {
         needToSave := true
     }
-    if (not loadHotKeys(config, "hkMisc")) {
+    if (!loadHotKeys(config, "hkText")) {
         needToSave := true
     }
-    if (not loadHotKeys(config, "hkText")) {
+    if (!loadHotKeys(config, "hkTransform")) {
         needToSave := true
     }
-    if (not loadHotKeys(config, "hkTransform")) {
-        needToSave := true
-    }
-    if (not loadHotKeys(config, "hkWindow")) {
+    if (!loadHotKeys(config, "hkWindow")) {
         needToSave := true
     }
     return needToSave
@@ -4331,7 +4537,8 @@ loadHotKeys(config, section) {
     if (not IsObject(config.hotkeys[(section)])) {
         config.hotkeys[(section)] := {}
     }
-    if (isDefault && not found) {
+;    if (isDefault && !found) {
+    if (isDefault) {
         keyArr := getDefaultHotKeyDefs(section)
     }
     for key, value in keyArr {
@@ -4428,6 +4635,43 @@ moveCurrentLineUp() {
     SendInput, {Up}
 }
 
+moveToEdge(edge:="T", hWnd:="") {
+    edge := setCase(edge, "U")
+    hWnd := setCase(Trim(hWnd), "U")
+    if (hWnd == "" || hWnd == "A") {
+        hWnd := WinExist("A")
+    }
+    if (WinExist("ahk_id " . hWnd)) {
+        WinGetPos, winX, winY, winW, winH, ahk_id %hWnd%
+        monitor := getActiveMonitor()
+        targetMon := hs.vars.monitors[monitor]
+        if (edge == "B") {
+            winY := (targetMon.workBottom - winH)
+        }
+        else if (edge == "L") {
+            winX := targetMon.workLeft
+        }
+        else if (edge == "R") {
+            winX := (targetMon.workRight - winW)
+        }
+        else {
+            winY := targetMon.workTop
+        }
+        if (startsWith(A_OSVersion, "10")) {
+            if (edge == "L") {
+                winX += -7
+            }
+            else if (edge == "R") {
+                winX += 7
+            }
+            else if (edge == "B") {
+                winY += 7
+            }
+        }
+        WinMove, ahk_id %hWnd%,, winX, winY, winW, winH
+    }
+}
+
 moveToMonitor(hWnd:="", direction:=1, keepRelativeSize:=true) {
     hWnd := setCase(Trim(hWnd), "U")
     if (hWnd == "" || hWnd == "A") {
@@ -4486,7 +4730,7 @@ moveToMonitor(hWnd:="", direction:=1, keepRelativeSize:=true) {
 
     WinGetClass, winClass, A
     if (winClass == "CalcFrame") {
-        ; TODO - also for Windows Start menu
+        ; TODO - also for Windows Start menu (check Start Menu for Win10 too)
         keepRelativeSize := false
     }
     if (keepRelativeSize) {
@@ -4572,30 +4816,41 @@ numberSelectedPrompt() {
     }
 }
 
-pasteTemplate(template, tokens:="", keys:="", delay:=250) {
+parseTemplate(template, tokens:="") {
     for name, value in tokens {
         token := "{" . name . "}"
         template := StringReplace(template, token, value, "All")
     }
-    sendText(template, keys, delay)
+    return template
+}
+
+pasteTemplate(template, tokens:="", keys:="", delay:=250) {
+    sendText(parseTemplate(template, tokens), keys, delay)
+}
+
+pad(value, width, type:="R") {
+    StringLower, type, type
+    type := (type == "l" || type == "left" ? "L" : "R")
+    Loop % (width - StrLen(value))
+    {
+        value := (type == "L" ? A_Space . value : value . A_Space)
+    }
+    return value
 }
 
 pasteText(text:="", delay:=250) {
     if (text != "") {
         prevClipboard := ClipboardAll
         Clipboard := ""
-        Sleep(20)
         eol := getEol(text)
         if (eol == hs.const.EOL_NIX) {
             ; because templates are often from a continuation section, convert EOLs to Windows (CRLF)
             text := StringReplace(text, hs.const.EOL_NIX, hs.const.EOL_WIN, "All")
         }
         Clipboard := text
-        Sleep(100)
-        ; this has been giving some trouble... "ConsoleWindowClass" worked for a long time, then stopped working on my home system and then on my laptop.
-        ; after switching to cmd.exe checking, then this stopped working on Paul's Win2012 system.
-        ; so, now we are going to try BOTH!
-        if (WinActive("ahk_class ConsoleWindowClass") || WinActive("ahk_exe cmd.exe")) {
+        ClipWait(1, 1)
+        Sleep(50)
+        if (isActiveDos()) {
             tmpCtrl := ControlGetFocus("A")
             SendMessage, 0x0111, 0xfff1, 0, %tmpCtrl%, A
             Sleep(50)
@@ -4605,8 +4860,8 @@ pasteText(text:="", delay:=250) {
         }
         Sleep(delay) ; wait or the clipboard is replaced with previous before it gets a chance to paste it, resulting in pasting the original clipboard
         Clipboard := prevClipboard
-        prevClipboard := ""
         Sleep(20)
+        prevClipboard := ""
     }
     else {
         SendInput, {Del}
@@ -4732,10 +4987,12 @@ resizeTo(anchor) {
     anchor := setCase(anchor, "U")
     curMonitor := getActiveMonitor()
     curMon := hs.vars.monitors[curMonitor]
-    noResize := false
     WinGetClass, winClass, A
+    ; TODO - this should also be for Start Menu, SysTray, and maybe others...
+    ; TODO - need to adjust for Windows 10 calculator, too - Brady1 pushes it too far down
     if (winClass == "CalcFrame") {
-        noResize := true
+        showSplash("Current window cannot be moved.", 2000)
+        return
     }
     hWnd := WinExist("A")
     if (anchor == "T") {
@@ -4861,10 +5118,11 @@ resizeTo(anchor) {
         message("Cannot resize window. Unknown anchor: " . anchor)
         return
     }
-    if (noResize) {
-        WinGetPos, winX, winY, winW, winH, A
-        newH := winH
-        newW := winW
+    if (startsWith(A_OSVersion, "10")) {
+        newX += -6
+        newY += -1
+        newW += 16
+        newH += 9
     }
     WinGet, minMaxState, MinMax, ahk_id %hWnd%
     if (minMaxState == 1) {
@@ -5056,8 +5314,9 @@ saveConfig(config, defaultConfig:=-1) {
     if (defaultConfig == -1) {
         ; save it, since nothing to compare against
         IniWrite(config.file, "config", "editor", config.editor)
+        IniWrite(config.file, "config", "enableAutoStart", boolToStr(config.enableAutoStart))
+        IniWrite(config.file, "config", "enableAutoUpdate", boolToStr(config.enableAutoUpdate))
         IniWrite(config.file, "config", "enableHkAction", boolToStr(config.enableHkAction))
-        IniWrite(config.file, "config", "enableHkCustom", boolToStr(config.enableHkCustom))
         IniWrite(config.file, "config", "enableHkDos", boolToStr(config.enableHkDos))
         IniWrite(config.file, "config", "enableHkEpp", boolToStr(config.enableHkEpp))
         IniWrite(config.file, "config", "enableHkMisc", boolToStr(config.enableHkMisc))
@@ -5071,9 +5330,8 @@ saveConfig(config, defaultConfig:=-1) {
         IniWrite(config.file, "config", "enableHsDos", boolToStr(config.enableHsDos))
         IniWrite(config.file, "config", "enableHsHtml", boolToStr(config.enableHsHtml))
         IniWrite(config.file, "config", "enableHsJira", boolToStr(config.enableHsJira))
+        IniWrite(config.file, "config", "enableHsVariables", boolToStr(config.enableHsVariables))
         IniWrite(config.file, "config", "enableVersionCheck", boolToStr(config.enableVersionCheck))
-        IniWrite(config.file, "config", "enableAutoStart", boolToStr(config.enableAutoStart))
-        IniWrite(config.file, "config", "enableAutoUpdate", boolToStr(config.enableAutoUpdate))
         IniWrite(config.file, "config", "inputBoxFieldFont", config.inputBoxFieldFont)
         IniWrite(config.file, "config", "inputBoxOptions", config.inputBoxOptions)
         IniWrite(config.file, "jira", "panelFormat", config.jiraPanels.format)
@@ -5099,11 +5357,14 @@ saveConfig(config, defaultConfig:=-1) {
         if (config.editor != defaultConfig.editor) {
             IniWrite(config.file, "config", "editor", config.editor)
         }
+        if (boolToStr(config.enableAutoStart) != boolToStr(defaultConfig.enableAutoStart)) {
+            IniWrite(config.file, "config", "enableAutoStart", boolToStr(config.enableAutoStart))
+        }
+        if (boolToStr(config.enableAutoUpdate) != boolToStr(defaultConfig.enableAutoUpdate)) {
+            IniWrite(config.file, "config", "enableAutoUpdate", boolToStr(config.enableAutoUpdate))
+        }
         if (boolToStr(config.enableHkAction) != boolToStr(defaultConfig.enableHkAction)) {
             IniWrite(config.file, "config", "enableHkAction", boolToStr(config.enableHkAction))
-        }
-        if (boolToStr(config.enableHkCustom) != boolToStr(defaultConfig.enableHkCustom)) {
-            IniWrite(config.file, "config", "enableHkCustom", boolToStr(config.enableHkCustom))
         }
         if (boolToStr(config.enableHkDos) != boolToStr(defaultConfig.enableHkDos)) {
             IniWrite(config.file, "config", "enableHkDos", boolToStr(config.enableHkDos))
@@ -5141,14 +5402,11 @@ saveConfig(config, defaultConfig:=-1) {
         if (boolToStr(config.enableHsJira) != boolToStr(defaultConfig.enableHsJira)) {
             IniWrite(config.file, "config", "enableHsJira", boolToStr(config.enableHsJira))
         }
+        if (boolToStr(config.enableHsVairables) != boolToStr(defaultConfig.enableHsVariables)) {
+            IniWrite(config.file, "config", "enableHsVariables", boolToStr(config.enableHsVariables))
+        }
         if (boolToStr(config.enableVersionCheck) != boolToStr(defaultConfig.enableVersionCheck)) {
             IniWrite(config.file, "config", "enableVersionCheck", boolToStr(config.enableVersionCheck))
-        }
-        if (boolToStr(config.enableAutoStart) != boolToStr(defaultConfig.enableAutoStart)) {
-            IniWrite(config.file, "config", "enableAutoStart", boolToStr(config.enableAutoStart))
-        }
-        if (boolToStr(config.enableAutoUpdate) != boolToStr(defaultConfig.enableAutoUpdate)) {
-            IniWrite(config.file, "config", "enableAutoUpdate", boolToStr(config.enableAutoUpdate))
         }
         if (config.inputBoxFieldFont != defaultConfig.inputBoxFieldFont) {
             IniWrite(config.file, "config", "inputBoxFieldFont", config.inputBoxFieldFont)
@@ -5213,20 +5471,20 @@ saveConfig(config, defaultConfig:=-1) {
 
 saveHotKeyDefs(config, defaultConfig:=false) {
     IniDelete(config.file, "hotkeys")
-    for section, svalue in config.hotkeys {
-        for key, kvalue in config.hotkeys[(section)] {
+    for section, sectionValue in config.hotkeys {
+        for key, keyValue in config.hotkeys[(section)] {
             doSave := false
             if (!defaultConfig) {
                 doSave := true
             }
             else {
                 defKeyValue := defaultConfig.hotkeys[(section)][(key)]
-                if (kvalue != defKeyValue) {
+                if (keyValue != defKeyValue) {
                     doSave := true
                 }
             }
             if (doSave) {
-                IniWrite(config.file, section, key, kvalue)
+                IniWrite(config.file, section, key, keyValue)
             }
         }
     }
@@ -5314,8 +5572,10 @@ selectOnDesktop(list) {
     }
 }
 
-selfReload() {
-    showSplash("Reloading script...", 500)
+selfReload(silent:=false) {
+    if (!silent) {
+        showSplash("Reloading script...", 500)
+    }
     Reload
     Sleep(1000)
     MsgBox, 4,, The script could not be reloaded. Would you like to open it for editing?
@@ -5432,7 +5692,15 @@ setTransparency(increase:=true, hWnd:="A") {
 }
 
 showClipboard() {
-    clipPreview := (Clipboard == "" ? "{Empty}" : Clipboard)
+    clipSize := StrLen(Clipboard)
+    clipAll := ClipboardAll
+    clipAllSize := StrLen(clipAll) * (A_IsUnicode ? 2 : 1)
+    if (clipSize == 0 && clipAllSize > 0) {
+        clipPreview := "{Complex data - image or advanced formatting}"
+    }
+    else {
+        clipPreview := (clipSize == 0 ? "{Empty}" : Clipboard)
+    }
     header := "Clipboard preview:" . hs.const.EOL_NIX . hs.const.LINE_SEP
     splashTitle := hs.TITLE . "Splash"
     Progress("B1 C00 CT000000 CWFFFFDD FM11 FS10 W1200 WM1200 ZH0", clipPreview, header, splashTitle, "Courier New")
@@ -5441,71 +5709,42 @@ showClipboard() {
     Progress("off")
 }
 
-showDebugVar(value:="") {
-    val := ""
-    msg := ""
-    if (IsObject(value)) {
-        val := toString(value)
-        varName := "array"
-    }
-    else if (value != "") {
-        val := value
-        varName := "param"
-    }
-    else {
-        varName := ask("Debug", "Please enter the name of the variable to inspect:", 330)
-        if (varName != "") {
-            try {
-                val := toString(getVar(varName))
-            }
-            catch e {
-                MsgBox % e.Message
-                return
-            }
-        }
-        else {
-            return
-        }
-    }
-    msg := varName . " = [" . val . "]"
-;    Gui, 99: Destroy
-;    Gui, 99: Add, Edit, w800 h600 ReadOnly, %msg%
-;    Gui, 99: Show
-    ListVars
-    WinWaitActive ahk_class AutoHotkey
-    ControlSetText Edit1, %msg%
-}
-
 showQuickHelp(waitforKey) {
     static isShowing := false
     if (isShowing) {
         KeyWait("h")
-        Progress("off")
+        Gui, 2: Destroy
         isShowing := false
         return
     }
 
-    colLine := "-------------------------------------`t"
-    spacer := hs.const.VIRTUAL_SPACE . "`t`t`t`t`t"
+    eol := hs.const.EOL_NIX
+    vspace := hs.const.VIRTUAL_SPACE
+    colLine := "—————————————————————————————————————`t"
+    spacer := vspace . "`t`t`t`t`t"
+    pointer := chr(9492) . chr(9472) . chr(9658)
+    pointerExtend := chr(9474)
+    trimChars := "`t " . vspace
 
     hkActionHelpEnabled =
     ( LTrim
-        Action hotkeys`t`t`t`t
+        Action hotkeys`t`t`t
         %colLine%
-        Win-A`t`tToggle always-on-top`t
-        CtrlWin-A`tToggle click-through`t
-        Win-C`t`tRun Calculator`t`t
-        Win-D`t`tRun DOS`t`t`t
-        Alt-Win-D`tRun DOS (Explorer)`t
-        Win-E`t`tRun editor`t`t
-        Win-G`t`tGoogle (or goto)`t
-        Win-Q`t`tQuick lookup`t`t
-        Win-S`t`tRun Windows Services`t
-        Win-X`t`tRun Windows Explorer`t
-        Win-F12`t`tExit this script`t
-        Win-PrintScreen`tRun Snipping tool`t
-        LCtrl-RCtrl`tRun Control Panel`t
-        Alt-Apps`tToggle desktop icons`t
+        [W]-A`t`tToggle always-on-top`t
+        [CW]-A`t`tToggle click-through`t
+        [W]-C`t`tRun Calculator`t`t
+        [W]-D`t`tRun DOS`t`t`t
+        [AW]-D`t`tRun DOS from Explorer`t
+        [W]-E`t`tRun editor`t`t
+        [W]-G`t`tGoogle (or goto)`t
+        [W]-M`t`tCharacter Map`t`t
+        [W]-Q`t`tQuick Lookup`t`t
+        [W]-S`t`tRun Windows Services`t
+        [AW]-S`t`tExplore 'Startup'`t
+        [W]-X`t`tRun Windows Explorer`t
+        [W]-PrintScreen`tRun Snipping tool`t
+        [LC]-[RC]`tRun Control Panel`t
+        [A]-Apps`tToggle desktop icons`t
     )
     hkActionHelpDisabled := replaceEachLine(hkActionHelpEnabled, spacer)
     hkActionHelp := (hs.config.user.enableHkAction ? hkActionHelpEnabled : hkActionHelpDisabled)
@@ -5513,23 +5752,23 @@ showQuickHelp(waitforKey) {
     hkDosHelpEnabled =
     ( LTrim Comments
         %spacer%
-        DOS hotkeys
+        DOS hotkeys`t`t`t
         %colLine%
-        Alt-C`t`t"copy "
-        Alt-D`t`tPUSHD to Downloads
-        Ctrl-Delete`tDelete to EOL
-        Ctrl-End`tScroll to bottom
-        Ctrl-Home`tScroll to top
-        Alt-M`t`t"move "
-        Alt-P`t`t"pushd "
-        Ctrl-P`t`tPOP to last dir
-        Ctrl-PgDn`tScroll down 1 page
-        Ctrl-PgUp`tScroll up 1 page
-        Alt-R`t`tCD to root dir
-        Alt-T`t`t"type "
-        Alt-Up / Alt-.`tCD to parent dir
-        Ctrl-V`t`tPaste clipboard
-        Alt-X`t`tRun 'exit'
+        [A]-C`t`t"copy "`t`t`t
+        [A]-D`t`tPUSHD to Downloads`t
+        [C]-Delete`tDelete to EOL`t`t
+        [C]-End`t`tScroll to bottom`t
+        [C]-Home`tScroll to top`t`t
+        [A]-M`t`t"move "`t`t`t
+        [A]-P`t`t"pushd "`t`t
+        [C]-P`t`tPOP to last dir`t`t
+        [C]-PgDn`tScroll down 1 page`t
+        [C]-PgUp`tScroll up 1 page`t
+        [A]-R`t`tCD to root dir`t`t
+        [A]-T`t`t"type "`t`t`t
+        [A]-Up / [A]-.`tCD to parent dir`t
+        [C]-V`t`tPaste clipboard`t`t
+        [A]-X`t`tRun 'exit'`t`t
     )
     hkDosHelpDisabled := replaceEachLine(hkDosHelpEnabled, spacer)
     hkDosHelp := (hs.config.user.enableHkDos ? hkDosHelpEnabled : hkDosHelpDisabled)
@@ -5538,12 +5777,12 @@ showQuickHelp(waitforKey) {
 ;    ( LTrim
 ;        EditPad Pro hotkeys`t`t`t
 ;        %colLine%
-;        Alt-Delete`tDelete line`t`t`t
-;        Alt-Down`tMove line down`t`t`t
-;        Alt-Up`t`tMove line up`t`t`t
-;        Ctrl-D`t`tDelete word`t`t`t
-;        Ctrl-Delete`tDelete to EOL`t`t`t
-;        Ctrl-G`t`tGo to line`t`t`t
+;        [A]-Delete`tDelete line`t`t`t
+;        [A]-Down`tMove line down`t`t`t
+;        [A]-Up`t`tMove line up`t`t`t
+;        [C]-D`t`tDelete word`t`t`t
+;        [C]-Delete`tDelete to EOL`t`t`t
+;        [C]-G`t`tGo to line`t`t`t
 ;        XButton1`tPrevious file`t`t`t
 ;        XButton2`tNext file`t`t`t
 ;    )
@@ -5556,67 +5795,125 @@ showQuickHelp(waitforKey) {
         %spacer%
         %title% hotkeys`t`t`t
         %colLine%
-        CtrlWin-H`tToggle quick help`t
-        CtrlWin-F12`tDebug variable`t`t
-        Win-F12`t`tExit %title%`t`t
-        Win-H`t`tShow quick help`t`t
-        Win-1`t`tRun AHK help`t`t
-        Win-2`t`tReload %title%`t
-        Win-3`t`tEdit %title%`t`t
-        Win-4`t`tEdit user keys`t`t
-        Win-5`t`tEdit user strings`t
-        Win-6`t`tEdit user variables`t
-        Win-7`t`tEdit user functions`t
-        Win-8`t`tEdit user INI`t`t
-        Win-9`t`tEdit default INI`t`t
-        Win-0`t`t%title% home page`t`t
-        Win-Pause`tPause %title%`t`t
+        [AW]-H`t`tExplore '%title%'`t
+        [CW]-H`t`tToggle quick help`t
+        [CW]-F12`tShow variable`t`t
+        [W]-F12`t`tExit %title%`t`t
+        [W]-H`t`tShow quick help`t`t
+        [W]-1`t`tRun AHK help`t`t
+        [W]-2`t`tReload %title%`t
+        [W]-3`t`tEdit %title%`t`t
+        [W]-4`t`tEdit user keys`t`t
+        [W]-5`t`tEdit user strings`t
+        [W]-6`t`tEdit user variables`t
+        [W]-7`t`tEdit user functions`t
+        [W]-8`t`tEdit user INI`t`t
+        [W]-9`t`tEdit default INI`t
+        [W]-0`t`t%title% home page`t`t
+        [W]-Pause`tPause %title%`t`t
+        [W]-```t`tRun DebugView`t`t
+        %spacer%
+        %spacer%
     )
 
     hkMiscHelpEnabled =
     ( LTrim
         Miscellaneous hotkeys
         %colLine%
-        CtrlAlt-D`tCreate folder
-        CtrlAlt-F`tCreate file
-        CtrlAlt-V`tPaste as text
-        Win-Enter`tPastes 'enter'
-        Win-Tab`t`tPastes 'tab'
-        Win-V`t`tPreview clipboard
-        Win-Z`t`tShow zoom window
-        AltWin-ARROW`tMove mouse 1px
-        CtrlWin-ARROW`tDrag mouse 1px
+        [CA]-A`t`tCopy Append
+        [CA]-C`t`tSwap to clipboard
+        [CA]-D`t`tCreate directory
+        [CA]-F`t`tCreate file
+        [CA]-V`t`tPaste as text
+        [CA]-X`t`tCut Append
+        [W]-Enter`tPastes 'enter'
+        [W]-Tab`t`tPastes 'tab'
+        [W]-V`t`tPreview clipboard
+        [W]-Z`t`tShow zoom window
+        [AW]-ARROW`tMove mouse 1px
+        [CAW]-ARROW`tDrag mouse 1px
     )
     hkMiscHelpDisabled := replaceEachLine(hkMiscHelpEnabled, spacer)
     hkMiscHelp := (hs.config.user.enableHkMisc ? hkMiscHelpEnabled : hkMiscHelpDisabled)
 
+    hkTextHelpEnabled =
+    ( LTrim
+        %spacer%
+        Text hotkeys`t`t`t
+        %colLine%
+        [A]-Delete`tDelete line`t`t
+        [A]-Down`tMove line down`t`t
+        [A]-Up`t`tMove line up`t`t
+        [CS]-Up`t`tDuplicate line`t`t
+        %spacer%
+        %spacer%
+        %spacer%
+    )
+    hkTextHelpDisabled := replaceEachLine(hkTextHelpEnabled, spacer)
+    hkTextHelp := (hs.config.user.enableHkText ? hkTextHelpEnabled : hkTextHelpDisabled)
+
+    hkTransformHelpEnabled =
+    ( LTrim
+        Transform hotkeys`t`t`t
+        %colLine%
+        [CS]-```t`tEscape text`t`t
+        [CS]-A`t`tSort ascending`t`t
+        [CS]-D`t`tSort descending`t`t
+        [CS]-E`t`tEncrypt text`t`t
+        [CS]-I`t`tiNVERT cASE`t`t
+        [CS]-L`t`tlower case`t`t
+        [CA]-N`t`tAuto-Denumber`t`t
+        [CAS]-N`t`tAuto-number (prompt)`t
+        [CS]-N`t`tAuto-number (1)`t`t
+        [CS]-O`t`tOracle words to UPPER`t
+        [CS]-R`t`tReverse text`t`t
+        [CS]-S`t`tSentence case`t`t
+        [CS]-T`t`tTitle Case`t`t
+        [CS]-U`t`tUPPER case`t`t
+        [CA]-W`t`tUnwrap wrapped text`t
+        [CS]-W`t`tWrap text at width`t
+        [AS]-KEY`tTagify text`t`t
+        %A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%%pointer% KEY is: < >`t`t`t
+        [CA]-KEY`tWrap in SYMBOLS`t`t
+        [AW]-KEY`tWrap each in SYMBOLS`t
+        %A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%%pointer% KEY is: [ ] '`t`t`t
+        [CS]-KEY`tWrap in SYMBOLS`t`t
+        [SW]-KEY`tWrap each in SYMBOLS`t
+        %A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%%pointer% KEY is: ( ) { } " < >`t`t
+    )
+    hkTransformHelpDisabled := replaceEachLine(hkTransformHelpEnabled, spacer)
+    hkTransformHelp := (hs.config.user.enableHkTransform ? hkTransformHelpEnabled : hkTransformHelpDisabled)
+
     hkWindowHelpEnabled =
     ( LTrim
-        Window hotkeys`t`t`t`t
+        Window hotkeys`t`t`t
         %colLine%
-        Alt-WheelDown`tPageDown`t`t
-        Alt-WheelUp`tPageUp`t`t`t
-        WheelLeft`tMove to left monitor`t
-        WheelRight`tMove to right monitor`t
-        Win-- | Win-Whl`tDecrease transparency`t
-        Win-+ | Win-Whl`tIncrease transparency`t
-        Win-Delete`tHide active window`t
-        Win-Down`tMinimize the window`t
-        Win-Insert`tShow hidden windows`t
-        Win-Home`tCenter current window`t
-        Win-Left`tMove to left monitor`t
-        Win-M`t`tToggle minimized`t
-        CtrlWin-R`tResize to ...`t`t
-        Win-Right`tMove to right monitor`t
-        Win-T`t`tToggle transparency`t
-        Win-Up`t`tMaximize the window`t
-        ShiftWin-ARROW`tResize to edge (50`%)`t
-        ShiftWin-DnLt`tResize to SW (25`%)`t
-        ShiftWin-DnRt`tResize to SE (25`%)`t
-        ShiftWin-UpLt`tResize to NW (25`%)`t
-        ShiftWin-UpRt`tResize to NE (25`%)`t
-        Win-KEY`t`tResize to grid (11`%)`t
-        %A_Space%%A_Space%%A_Space%%A_Space%KEY is: NumPad # (1-9)`t`t
+        [A]-WheelDown`tPageDown`t`t
+        [A]-WheelUp`tPageUp`t`t`t
+        WheelLeftTilt`tMove to left monitor`t
+        WheelRightTilt`tMove to right monitor`t
+        [W]-- / [W]-Whl`tDecrease transparency`t
+        [W]-+ / [W]-Whl`tIncrease transparency`t
+        [W]-Delete`tHide active window`t
+        [W]-Down`tMinimize the window`t
+        [W]-Insert`tShow hidden windows`t
+        [W]-Home`tCenter current window`t
+        [W]-Left`tMove to prev. monitor`t
+        [CW]-M`t`tToggle minimized`t
+        [CW]-R`t`tQuick Resolutions`t
+        [W]-Right`tMove to next monitor`t
+        [W]-T`t`tToggle transparency`t
+        [W]-Up`t`tMaximize the window`t
+        [CW]-ARROW`tMove to edge`t`t
+        [SW]-ARROW`tResize to edge (50`%)`t
+        [SW]-DnLt`tResize to SW (25`%)`t
+        [SW]-DnRt`tResize to SE (25`%)`t
+        [SW]-UpLt`tResize to NW (25`%)`t
+        [SW]-UpRt`tResize to NE (25`%)`t
+        [W]-KEY`t`tResize to grid (11`%)`t
+        %A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%%pointer% KEY is: NumPad # (1-9)`t`t
+        %spacer%
+        %spacer%
         %spacer%
         %spacer%
         %spacer%
@@ -5629,63 +5926,11 @@ showQuickHelp(waitforKey) {
     hkWindowHelpDisabled := replaceEachLine(hkWindowHelpEnabled, spacer)
     hkWindowHelp := (hs.config.user.enableHkWindow ? hkWindowHelpEnabled : hkWindowHelpDisabled)
 
-    hkTextHelpEnabled =
-    ( LTrim
-        %spacer%
-        Text hotkeys`t`t`t`t
-        %colLine%
-        Alt-Delete`tDelete current line`t
-        Alt-Down`tMove current line down`t
-        Alt-Up`t`tMove current line up`t
-        CtrlShift-Up`tDuplicate current line`t
-    )
-    hkTextHelpDisabled := replaceEachLine(hkTextHelpEnabled, spacer)
-    hkTextHelp := (hs.config.user.enableHkText ? hkTextHelpEnabled : hkTextHelpDisabled)
-
-    hkTransformHelpEnabled =
-    ( LTrim
-        Transform hotkeys`t`t`t
-        %colLine%
-        CtrlShift-```tEscape text`t`t
-        CtrlShift-A`tSort ascending`t`t
-        CtrlShift-D`tSort descending`t`t
-        CtrlShift-E`tEncrypt text`t`t
-        CtrlShift-I`tiNVERT cASE`t`t
-        CtrlShift-L`tlower case`t`t
-        CtrlAlt-N`tAuto-Denumber`t`t
-        CtrlAltShift-N`tAuto-number (prompt)`t
-        CtrlShift-N`tAuto-number (1)`t`t
-        CtrlShift-O`tOracle words to UPPER`t
-        CtrlShift-R`tReverse text`t`t
-        CtrlShift-S`tSentence case`t`t
-        CtrlShift-T`tTitle Case`t`t
-        CtrlShift-U`tUPPER case`t`t
-        CtrlAlt-W`tUnwrap wrapped text`t
-        CtrlShift-W`tWrap text at width`t
-        AltShift-KEY`tTagify text`t`t
-        %A_Space%%A_Space%%A_Space%%A_Space%KEY is: < >`t`t`t`t
-        CtrlAlt-KEY`tWrap in SYMBOLS`t`t
-        WinAlt-KEY`tWrap each in SYMBOLS`t
-        %A_Space%%A_Space%%A_Space%%A_Space%KEY is: [ ] '`t`t`t
-        CtrlShift-KEY`tWrap in SYMBOLS`t`t
-        WinShift-KEY`tWrap each in SYMBOLS`t
-        %A_Space%%A_Space%%A_Space%%A_Space%KEY is: ( ) { } " < >`t`t
-        %spacer%
-        %spacer%
-        %spacer%
-        %spacer%
-        %spacer%
-        %spacer%
-        %spacer%
-    )
-    hkTransformHelpDisabled := replaceEachLine(hkTransformHelpEnabled, spacer)
-    hkTransformHelp := (hs.config.user.enableHkTransform ? hkTransformHelpEnabled : hkTransformHelpDisabled)
-
-    hkCol1 := hkActionHelp . hs.const.EOL_NIX . hkHotScriptHelp
+    hkHeader := vpsace . "`t`t`t`t`t[ C = Ctrl  |  A = Alt  |  S = Shift  |  W = Win  |  L = Left  |  R = Right ]" . eol . eol
+    hkCol1 := hkActionHelp . eol . hkDosHelp
     hkCol2 := hkWindowHelp
-    hkCol3 := hkTransformHelp
-    hkCol4 := hkMiscHelp . hs.const.EOL_NIX . hkDosHelp
-;   TODO - this needs to be added back, once it is fully stable/accurate   . hs.const.EOL_NIX . hkTextHelp
+    hkCol3 := hkTransformHelp . eol . hkTextHelp
+    hkCol4 := hkMiscHelp . eol . hkHotScriptHelp
 ;    hkCol5 := hkEppHelp
 
     hkArr1 := listToArray(hkCol1)
@@ -5694,12 +5939,19 @@ showQuickHelp(waitforKey) {
     hkArr4 := listToArray(hkCol4)
 ;    hkArr5 := listToArray(hkCol5)
 
-    hkResult := ""
+    hkResult := hkHeader
     for key, value in hkArr1
     {
-        ;hkResult .= LTrim(RTrim(value . hkArr2[key] . hkArr3[key] . hkArr4[key] . hkArr5[key])) . hs.const.EOL_NIX
-        hkResult .= LTrim(RTrim(value . hkArr2[key] . hkArr3[key] . hkArr4[key])) . hs.const.EOL_NIX
+        ;hkResult .= LTrim(RTrim(value . hkArr2[key] . hkArr3[key] . hkArr4[key] . hkArr5[key], trimChars)) . eol
+        hkResult .= LTrim(RTrim(value . hkArr2[key] . hkArr3[key] . hkArr4[key], trimChars)) . eol
     }
+    hkResult := RegexReplace(hkResult, "<", "&lt;")
+    hkResult := RegexReplace(hkResult, ">", "&gt;")
+    hkResult := RegexReplace(hkResult, "(C|A|S|W|L|R)( =)", "<span class=""mod"">$1</span>$2")
+    hkResult := RegexReplace(hkResult, "([A-Z][^\t\n]+ )(hot)(keys)", "<span class=""section"">$1$3</span>`t")
+    hkResult := RegexReplace(hkResult, "(\[\w+\])", "<span class=""mod"">$1</span>")
+    hkResult := RegexReplace(hkResult, "(-)(KEY)", "$1<span class=""explain"">$2</span>")
+    hkResult := RegexReplace(hkResult, vspace, "&nbsp;")
 
     hsAliasHelpEnabled =
     ( LTrim
@@ -5707,7 +5959,7 @@ showQuickHelp(waitforKey) {
         %colLine%
         bbl`tbe back later`t`t`t
         bbs`tbe back soon`t`t`t
-        bi#`tback in # minutes`t`t
+        bi#%vspace%`tback in # minutes`t`t
         brb`tbe right back`t`t`t
         brt`tbe right there`t`t`t
         g2g`tGood to go.`t`t`t
@@ -5715,24 +5967,22 @@ showQuickHelp(waitforKey) {
         idk`tI don't know.`t`t`t
         lmc`tLet me check on that...`t`t
         lmk`tLet me know `t`t`t
-        nm.`tnever mind...`t`t`t
+        nm%vspace%`tnever mind...`t`t`t
         nmif`tNever mind, I found it.`t`t
-        np.`tno problem`t`t`t
+        np%vspace%`tno problem`t`t`t
         nw`tno worries`t`t`t
         okt`tOK, thanks...`t`t`t
         thok`tThat's OK...`t`t`t
         thx`tthanks`t`t`t`t
-        ty.`tThank you.`t`t`t
-        vg.`tvery good`t`t`t
-        yw.`tYou're welcome`t`t`t
+        ty%vspace%`tThank you.`t`t`t
+        vg%vspace%`tvery good`t`t`t
+        yw%vspace%`tYou're welcome`t`t`t
         wyb`tLet me know when you are back`t
-        @@`temail address`t`t`t
-        @addr`taddress`t`t`t`t
-        @#`tphone number`t`t`t`t
-        @me`tyour name`t`t`t`t
-        @sig`tyour signature`t`t`t`t
-        #/#`%`tdivide as percent`t`t
-        #`%#`tpercent of number`t`t
+        %spacer%
+        %spacer%
+        %spacer%
+        %spacer%
+        %spacer%
     )
     hsAliasHelpDisabled := replaceEachLine(hsAliasHelpEnabled, spacer)
     hsAliasHelp := (hs.config.user.enableHsAlias ? hsAliasHelpEnabled : hsAliasHelpDisabled)
@@ -5740,17 +5990,24 @@ showQuickHelp(waitforKey) {
     hsAutoCorrectHelpEnabled =
     ( LTrim
         %spacer%
-        Auto-correct hotstrings`t`t`t
+        Auto-correct hotstrings`t`t
         %colLine%
+        @ip`tCurrent IP address`t`t
+        #/#`%`tdivide as percent`t`t
+        #`%#`tpercent of number`t`t
+        #/#`tCommon fractions (n/[2-6,8])`t
         cL`tc:`t`t`t`t
-        common fractions (1/2, n/3, n/4, n/8)`t
+        %spacer%
+        %spacer%
+        %spacer%
+        %spacer%
     )
     hsAutoCorrectHelpDisabled := replaceEachLine(hsAutoCorrectHelpEnabled, spacer)
     hsAutoCorrectHelp := (hs.config.user.enableHsAutoCorrect ? hsAutoCorrectHelpEnabled : hsAutoCorrectHelpDisabled)
 
     hsCodeHelpEnabled =
     ( LTrim
-        Code hotstrings`t`t`t`t
+        Code hotstrings`t`t`t
         %colLine%
         chh`tComment header: HTML`t`t
         chj`tComment header: Java/JS`t`t
@@ -5761,25 +6018,21 @@ showQuickHelp(waitforKey) {
         func(`t'function' block`t`t
         if(`t'if' block`t`t`t
         ifel`t'if/else' block`t`t`t
-        sf.`tString.format("", )`t`t
+        sf%vspace%`tString.format("", )`t`t
         switch(`t'switch' block`t`t`t
         sysout`tSystem.out.println("");`t`t
         while(`t'while' block`t`t`t
         @html`tHTML template`t`t`t
-        @ip`tCurrent IP address`t`t
         @java`tJava template`t`t`t
         @perl`tPerl template`t`t`t
         @sql`tSQL template`t`t`t
-        %spacer%
-        %spacer%
-        %spacer%
     )
     hsCodeHelpDisabled := replaceEachLine(hsCodeHelpEnabled, spacer)
     hsCodeHelp := (hs.config.user.enableHsCode ? hsCodeHelpEnabled : hsCodeHelpDisabled)
 
     hsDatesHelpEnabled =
     ( LTrim
-        Date/Time hotstrings`t`t`t
+        Date/Time hotstrings`t`t
         %colLine%
         dtms`tYYYYMDD_24MMSS`t`t`t
         dts`tYYYYMMDD`t`t`t
@@ -5798,34 +6051,30 @@ showQuickHelp(waitforKey) {
     hsDosHelpEnabled =
     ( LTrim
         %spacer%
-        DOS hotstrings`t`t`t`t
+        DOS hotstrings`t`t`t
         %colLine%
         cd`tcd /d`t`t`t`t
     )
     hsDosHelpDisabled := replaceEachLine(hsDosHelpEnabled, spacer)
     hsDosHelp := (hs.config.user.enableHsDos ? hsDosHelpEnabled : hsDosHelpDisabled)
 
-;    hsHtmlHelpEnabled =
-;    ( LTrim
-;        %spacer%
-;        HTML/XML hotstrings`t`t`t
-;        %colLine%
-;        a/b/big/block/body/br/but/cap/code`t
-;        del/div/em/field/foot/form/h[1-6]`t
-;        head/header/hgroup/hr/html/i/iframe`t
-;        img/input/label/legend/li/link/ol`t
-;        optg/opti/p/pre/q/script/section`t
-;        select/small/source/span/strong`t`t
-;        style/sub/sum/sup/table/tbody/td`t
-;        texta/tfoot/th/title/tr/u/ul/xml`t
-;    )
     hsHtmlHelpEnabled =
     ( LTrim
-        %spacer%
         HTML/XML hotstrings`t`t`t
         %colLine%
-        <tag`tMost tags auto-complete.`t
-        `t(Some create child tags)`t
+        <TAG`tMost HTML tags auto-complete`t
+        %A_SPACE%%A_SPACE%%pointerExtend%`t(Some create child tags)`t
+        %A_SPACE%%A_SPACE%%pointer% TAG is any of the following:`t
+        `ta/b/big/block/body/br/but/cap`t
+        `tcode/del/div/em/field/foot`t
+        `tform/h[1-6]/head/header`t
+        `thgroup/hr/html/i/iframe/img`t
+        `tinput/label/legend/li/link/ol`t
+        `toptg/opti/p/pre/q/script`t
+        `tsection/select/small/source`t
+        `tspan/strong/style/sub/sum`t
+        `tsup/table/tbody/td/texta`t
+        `ttfoot/th/title/tr/u/ul`t
         <xml`tAuto-completes XML header`t
     )
     hsHtmlHelpDisabled := replaceEachLine(hsHtmlHelpEnabled, spacer)
@@ -5833,6 +6082,7 @@ showQuickHelp(waitforKey) {
 
     hsJiraHelpEnabled =
     ( LTrim
+        %spacer%
         Jira/Confluence hotstrings`t`t
         %colLine%
         `{bpan`t'panel' tags (blue)`t`t`t
@@ -5853,59 +6103,144 @@ showQuickHelp(waitforKey) {
         `{warn`t'warn' tags`t`t`t
         `{xml`t'code' tags for XML`t`t
         `{ypan`t'panel' tags (yellow)`t`t`t
+        %spacer%
+        %spacer%
     )
     hsJiraHelpDisabled := replaceEachLine(hsJiraHelpEnabled, spacer)
     hsJiraHelp := (hs.config.user.enableHsJira ? hsJiraHelpEnabled : hsJiraHelpDisabled)
 
-    hsCol1 := hsAliasHelp
-    hsCol2 := hsCodeHelp
-    hsCol3 := hsDatesHelp . hs.const.EOL_NIX . hsAutoCorrectHelp . hs.const.EOL_NIX . hsHtmlHelp
-    hsCol4 := hsJiraHelp . hs.const.EOL_NIX
+    hsVariableHelpEnabled =
+    ( LTrim
+        %spacer%
+        Variable hotstrings`t`t
+        %colLine%
+        @@`temail address`t`t`t
+        @#`tphone number`t`t`t
+        @addr`taddress`t`t`t`t
+        @dob`tyour D.o.B.`t`t`t
+        @me`tyour name`t`t`t
+        @sig`tyour signature`t`t`t
+    )
+    hsVariableHelpDisabled := replaceEachLine(hsVariableHelpEnabled, spacer)
+    hsVariableHelp := (hs.config.user.enableHsVariables ? hsVariableHelpEnabled : hsVariableHelpDisabled)
 
-    ; TODO - add hsDosHelp
+    hsHeader := vspace . "`t`t`t`tHotString aliases ending with " . vspace . " means any whitespace or punctuation character is required." . eol . eol
+    hsCol1 := hsAliasHelp
+    hsCol2 := hsCodeHelp . eol . hsVariableHelp
+    hsCol3 := hsDatesHelp . eol . hsDosHelp . eol . hsAutoCorrectHelp
+    hsCol4 := hsHtmlHelp . eol . hsJiraHelp
 
     hsArr1 := listToArray(hsCol1)
     hsArr2 := listToArray(hsCol2)
     hsArr3 := listToArray(hsCol3)
     hsArr4 := listToArray(hsCol4)
 
-    hsResult := ""
+    hsResult := hsHeader
     for key, value in hsArr1 {
-        hsResult .= LTrim(RTrim(value . hsArr2[key] . hsArr3[key] . hsArr4[key])) . hs.const.EOL_NIX
+        hsResult .= LTrim(RTrim(value . hsArr2[key] . hsArr3[key] . hsArr4[key], trimChars)) . eol
     }
+    hsResult := RegexReplace(hsResult, "<", "&lt;")
+    hsResult := RegexReplace(hsResult, ">", "&gt;")
+    hsResult := RegexReplace(hsResult, "(with )(" . vspace . ")( means)", "$1<span class=""sep"">&nbsp;</span>$3")
+    hsResult := RegexReplace(hsResult, "([A-Z][^\t\n]+ )(hot)(strings)", "<span class=""section"">$1$3</span>`t")
+    hsResult := RegexReplace(hsResult, "(\w)(" . vspace . ")(\t)", "$1<span class=""sep"">&nbsp;</span>$3")
+    hsResult := RegexReplace(hsResult, "(&lt;)(TAG)", "$1<span class=""explain"">$2</span>")
+    hsResult := RegexReplace(hsResult, vspace, "&nbsp;")
 
-    quickHelp := hkResult . hs.const.LINE_SEP . hs.const.EOL_NIX . Trim(hsResult, (" `t" . hs.const.EOL_WIN))
-    splashTitle := hs.TITLE . "Splash"
-    /*
-    yellow := "FFFFDD"
-    blue := "DDDDFF"
-    green := "D9F4DC"
-    red := "F4D9D9"
-    cyan := "CFFFFD"
-    */
-    green := "D9F4DC"
-    cyan := "D2EAEC"
-    blue := "D7DEEF"
-    purple := "E4D6EF"
-    red := "FFE2E3"
-    yellow := "FFFEE3"
-    Progress("B1 C00 CT000000 CW" . yellow . "h FM11 FS8 W1120 WM1200 ZH0", quickHelp,, splashTitle, "Courier New")
+    hsVersion := hs.VERSION
+    helpHtml =
+    (Ltrim Join
+        <!DOCTYPE html><meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <html>
+            <head>
+                <meta charset="UTF-8"/>
+                <style type="text/css">
+                    body {background-color:#FFFEE3;color:#333;font-size:13px;margin-top:2px;}
+                    .explain {background-color:#E4D6EF;padding:1px;}
+                    .sep {background-color:#DEA5A4;padding:0px;}
+                    .mod {color:#FF6961;font-weight:bold;}
+                    .section {font-weight:bold;background-color:#C5D3E9;padding:2px 3px;border:1px solid #BBB;}
+                    .title {float:right;font-family:Serif;font-size:14px;}
+                    pre {-moz-tab-size:8;-o-tab-size:8;tab-size:8;}
+                </style>
+            </head>
+        <body>
+            <div class="title">HotScript v%hsVersion%</div>
+            <pre>${help}</pre>
+        </body>
+        </html>
+    )
+
+    hkContent := StrReplace(helpHtml, "${help}", hkResult)
+    hsContent := StrReplace(helpHtml, "${help}", hsResult)
+
+    static helpTab := ""
+    static htmlHK := ""
+    static htmlHS := ""
+
+    Gui, 2: -DpiScale
+    Gui, 2: +AlwaysOnTop -Caption +Border
+    Gui, 2: Add, Tab2, x0 y0 w1275 h643 bottom vhelpTab, HotKeys|HotStrings
+    Gui, 2: Add, ActiveX, x0 y0 w1272 h618 vhtmlHK, HtmlFile
+    while (htmlHK.ReadyState != "complete") {
+        Sleep, 50
+    }
+    htmlHK.write(hkContent)
+    Gui, 2: Tab, 2
+    Gui, 2: Add, ActiveX, x0 y0 w1272 h618 vhtmlHS, HtmlFile
+    while (htmlHS.ReadyState != "complete") {
+        Sleep, 50
+    }
+    htmlHS.write(hsContent)
+    Gui, 2: Tab
+    Gui, 2: Color, FFEBCD
+    Gui, 2: Show, Center w1272 h645
+
     isShowing := true
-    centerWindow(splashTitle)
     if (waitForKey) {
         KeyWait("h")
         isShowing := false
-        Progress("off")
+        Gui, 2: Destroy
     }
     return
+
+    2GuiEscape:
+        Gui, 2: Destroy
+        return
 }
 
 showSplash(msg,timeout:=1500) {
     splashTitle := hs.TITLE . "Splash"
-    SplashImage("", "b1 cwff9999 fs12", msg, "", splashTitle)
+    SplashImage("", "b1 cwDEA5A4 fs12", msg, "", splashTitle)
     centerWindow(splashTitle)
     Sleep(timeout)
     SplashImage("off")
+}
+
+showVariable(value:="") {
+    msg := ""
+    type := "Parameter"
+    if (!IsObject(value) && value == "") {
+        varName := trim(ask("Debug", "Please enter the name of the variable to inspect:", 330))
+        if (varName == "") {
+            return
+        }
+        try {
+            value := getVar(varName)
+        }
+        catch e {
+            MsgBox % e.Message
+            return
+        }
+        type := varName
+    }
+    bracket := (IsObject(value) ? ["{", "}"] : ["[", "]"])
+    msg := type . " = " . bracket[1] . toString(value) . bracket[2]
+    ListVars
+    debugWin := WinExist("A")
+    WinActivate, ahk_id %debugWin%
+    WinWaitActive, ahk_id %debugWin%
+    ControlSetText, Edit1, %msg%
 }
 
 sortSelected(direction:="") {
@@ -5971,9 +6306,30 @@ templateHtml() {
     <head>
         <meta charset='UTF-8'/>
         <title>Quick HTML template</title>
+        <style type="text/css">
+            table {
+                border-collapse: collapse;
+                margin-top: 20px;
+            }
+            table, td, th {
+                border: 1px solid black;
+            }
+            tr:nth-child(even) {
+                background: #c2d8f0;
+            }
+            tr:nth-child(odd) {
+                background: #bbdabe;
+            }
+            tr:first-child {
+                background: #dfc7c7;
+            }
+            td, th {
+                padding: 10px;
+            }
+        </style>
     </head>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
     <script>
         function test() {
             //
@@ -5982,6 +6338,28 @@ templateHtml() {
 <body>
     <h2>This is a simple HTML template. (generated by HotScript)</h2>
     <input type='button' value='Test' onclick='test()'/>
+    <table>
+        <tr>
+            <th>Header 1</th>
+            <th>Header 2</th>
+            <th>Header 3</th>
+        </tr>
+        <tr>
+            <td>C1-1</td>
+            <td>C1-2</td>
+            <td>C1-3</td>
+        </tr>
+        <tr>
+            <td>C2-1</td>
+            <td>C2-2</td>
+            <td>C2-3</td>
+        </tr>
+        <tr>
+            <td>C3-1</td>
+            <td>C3-2</td>
+            <td>C3-3</td>
+        </tr>
+    </table>
 </body>
 </html>
 
@@ -6193,7 +6571,10 @@ toBool(value)
     value := StringLower(value)
     value := Trim(value)
     result := false
-    if value in %trueList%
+    if (is(value, "Number") && value > 0) {
+        result := true
+    }
+    else if value in %trueList%
     {
         result := true
     }
@@ -6329,16 +6710,24 @@ toggleTransparency(hWnd:="A") {
     }
 }
 
-toString(obj, depth:=8, indent:="") {
+toString(obj, depth:=10, indent:="") {
     result := ""
     if (IsObject(obj)) {
+        keyWidth := 1
         for key, value in obj {
-            result .= (depth == 8 && StrLen(result) == 0 && getSize(obj) > 1 ? hs.const.EOL_WIN : "") . "`t" . indent . key
+            tmpWidth := StrLen(key)
+            if (tmpWidth > keyWidth) {
+                keyWidth := tmpWidth
+            }
+        }
+        pad := indent . "    "
+        for key, value in obj {
+            result .= (depth == 10 && StrLen(result) == 0 && getSize(obj) > 1 ? hs.const.EOL_WIN : "") . pad
             if (IsObject(value) && depth > 1) {
-                result .= hs.const.EOL_WIN . toString(value, depth - 1, indent . "`t")
+                result .= key . " = {" . hs.const.EOL_WIN . toString(value, depth - 1, pad) . pad . "}" . hs.const.EOL_WIN
             }
             else {
-                result .= "`t= [" . value . "]" . hs.const.EOL_WIN
+                result .= pad(key, keyWidth) . " = [" . value . "]" . hs.const.EOL_WIN
             }
         }
     }
@@ -6954,7 +7343,6 @@ class OldConfig {
     __New(rootName:="") {
         this.editor := "notepad.exe"
         this.enableHkAction := true
-        this.enableHkCustom := true
         this.enableHkDos := true
         this.enableHkEpp := true
         this.enableHkMisc := true
@@ -6968,9 +7356,10 @@ class OldConfig {
         this.enableHsDos := true
         this.enableHsHtml := true
         this.enableHsJira := true
+        this.enableHsVariables := true
         this.enableVersionCheck := true
         this.enableAutoStart := true
-        this.enableAutoUpdate := false
+        this.enableAutoUpdate := true
         this.file := ""
         this.hkSessionCount := 0
         this.hsSessionCount := 0
