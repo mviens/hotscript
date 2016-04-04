@@ -31,6 +31,7 @@ StringCaseSense On
 ;__________________________________________________
 ;Initialization
 global hs := {}
+global $ := ""
 #Include *i HotScriptVariables.ahk
 #Include *i HotScriptFunctions.ahk
 init()
@@ -41,465 +42,18 @@ init()
 #Include *i HotScriptKeys.ahk
 
 
-;Code
-;----
-#if, toBool(hs.config.user.enableHsCode)
-    :*c:chh:: ;; Comment header for HTML
-       addHotString()
-       sendText("<!--", "{Enter}")
-       sendText(hs.const.COMMENT_HEADER_LINE, "{Enter}")
-       sendText("    ", "{Enter}")
-       sendText(hs.const.COMMENT_HEADER_LINE, "{Enter}")
-       sendText("-->", "{Enter}{Up 3}{End}")
-       return
-    :*c:chj:: ;; Comment header for Java or JavaScript
-       addHotString()
-       sendText("/**", "{Enter}")
-       sendText(" * ", "{Enter}")
-       sendText(" */", "{Enter}{Up 2}{End}")
-       return
-    :*c:chp:: ;; Comment header for Perl
-       addHotString()
-       sendText("#" . hs.const.COMMENT_HEADER_LINE, "{Enter}")
-       sendText("#  ", "{Enter}")
-       sendText("#" . hs.const.COMMENT_HEADER_LINE, "{Enter}{Up 2}{End}")
-       return
-    :*c:chs:: ;; Comment header for SQL
-       addHotString()
-       sendText("--" . hs.const.COMMENT_HEADER_LINE, "{Enter}")
-       sendText("--  ", "{Enter}")
-       sendText("--" . hs.const.COMMENT_HEADER_LINE, "{Enter}{Up 2}{End}")
-       return
-    :*b0:for(:: ;; auto-completion of a 'for' block
-    :*b0:for (:: ;; auto-completion of a 'for' block
-    :*b0:if(:: ;; auto-completion of an 'if' block
-    :*b0:if (:: ;; auto-completion of an 'if' block
-    :*b0:while(:: ;; auto-completion of a 'while' block
-    :*b0:while (:: ;; auto-completion of a 'while' block
-        addHotString()
-        sendText(") {", "{Enter}{Tab}{Enter}{Backspace}")
-        sendText("}", "{Up 2}{End}{Left 3}")
-        return
-    :*:func(:: ;; auto-completion of an 'function' block
-    :*:func (:: ;; auto-completion of an 'function' block
-        addHotString()
-        sendText("function () {", "{Enter}{Tab}{Enter}{Backspace}")
-        sendText("}", "{Up 2}{End}{Left 4}")
-        return
-    :*:ifel:: ;; auto-completion of an 'if/else' block
-        addHotString()
-        sendText("if () {", "{Enter}{Tab}{Enter}{Backspace}")
-        sendText("}", "{Enter}")
-        sendText("else {", "{Enter}{Tab}{Enter}{Backspace}")
-        sendText("}", "{Up 5}{End}{Left 3}")
-        return
-    :*:elif:: ;; auto-completion of an 'else/if' block
-        addHotString()
-        sendText("else if () {", "{Enter}{Tab}{Enter}{Backspace}")
-        sendText("}", "{Enter}{Up 3}{End}{Left 3}")
-        return
-    :*b0:switch(:: ;; auto-completion of a 'switch' block
-    :*b0:switch (:: ;; auto-completion of a 'switch' block
-        addHotString()
-        sendText(") {", "{Enter}{Tab}")
-        sendText("case x:", "{Enter}{Tab}")
-        sendText("break;", "{Enter}{Backspace}")
-        sendText("default:", "{Enter}{Tab}")
-        sendText("break;", "{Enter}{Backspace 2}")
-        sendText("}", "{Up 5}{End}{Left 3}")
-        return
-    :*:sf.:: ;; String.format("", )
-        addHotString()
-        sendText("String.format("""", )", "{Left 4}")
-        return
-    :*:sysout:: ;; System.out.println("");
-        addHotString()
-        sendText("System.out.println("""");", "{Left 3}")
-        return
-#if
-;HTML
-;----
-#if, toBool(hs.config.user.enableHsHtml)
-    :*b0:<!-:: ;; HTML/XML comment
-        addHotString()
-        sendText("-  -->", "{Left 4}")
-        return
-    :?*b0:<a :: ;; auto-completion of the HTML 'a' tag (with 'href' attribute)
-        addHotString()
-        sendText("href=""""></a>", "{Left 4}")
-        return
-    :?b0o:<b:: ;; auto-completion of the HTML 'b' tag
-        addHotString()
-        sendText("></b>", "{Left 4}")
-        return
-    :?*b0:<big:: ;; auto-completion of the HTML 'big' tag
-        addHotString()
-        sendText("></big>", "{Left 6}")
-        return
-    :?*b0:<block:: ;; auto-completion of the HTML 'blockquote' tag
-        addHotString()
-        sendText("quote>", "{Enter}{Tab}{Enter}{Backspace}")
-        sendText("</blockquote>", "{Up}{End}")
-        return
-    :?*b0:<body:: ;; auto-completion of the HTML 'body' tag
-        addHotString()
-        sendText(">", "{Enter}{Tab}{Enter}{Backspace}")
-        sendText("</body>", "{Up}{End}")
-        return
-    :?*b0:<br:: ;; auto-completion of the HTML 'br' tag
-    :?*b0:<hr:: ;; auto-completion of the HTML 'hr' tag
-        addHotString()
-        sendText("/>")
-        return
-    :?*b0:<but:: ;; auto-completion of the HTML 'button' tag
-        addHotString()
-        sendText("ton></button>", "{Left 9}")
-        return
-    :?*b0:<cap:: ;; auto-completion of the HTML 'caption' tag
-        addHotString()
-        sendText("tion></caption>", "{Left 10}")
-        return
-    :?*b0:<code:: ;; auto-completion of the HTML 'code' tag
-        addHotString()
-        sendText(">", "{Enter}{Tab}{Enter}{Backspace}")
-        sendText("</code>", "{Up}{End}")
-        return
-    :?*b0:<del:: ;; auto-completion of the HTML 'del' tag
-        addHotString()
-        sendText("></del>", "{Left 6}")
-        return
-    :?*b0:<div:: ;; auto-completion of the HTML 'div' tag (with 'id' attribute)
-        addHotString()
-        sendText(" id="""">", "{Enter}{Tab}{Enter}{Backspace}")
-        sendText("</div>", "{Up}{End}")
-        return
-    :?*b0:<em:: ;; auto-completion of the HTML 'em' tag
-        addHotString()
-        sendText("></em>", "{Left 5}")
-        return
-    :?*b0:<field:: ;; auto-completion of the HTML 'fieldset' tag
-        addHotString()
-        sendText("set>", "{Enter}{Tab}{Enter}{Backspace}")
-        sendText("</fieldset>", "{Up}{End}")
-        return
-    :?*b0:<foot:: ;; auto-completion of the HTML 'footer' tag
-        addHotString()
-        sendText("er>", "{Enter}{Tab}{Enter}{Backspace}")
-        sendText("</footer>", "{Up}{End}")
-        return
-    :?*b0:<form:: ;; auto-completion of the HTML 'form' tag
-        addHotString()
-        sendText(">", "{Enter}{Tab}{Enter}{Backspace}")
-        sendText("</form>", "{Up}{End}")
-        return
-    :?*b0:<h1:: ;; auto-completion of the HTML 'h1' tag
-        addHotString()
-        sendText("></h1>", "{Left 5}")
-        return
-    :?*b0:<h2:: ;; auto-completion of the HTML 'h2' tag
-        addHotString()
-        sendText("></h2>", "{Left 5}")
-        return
-    :?*b0:<h3:: ;; auto-completion of the HTML 'h3' tag
-        addHotString()
-        sendText("></h3>", "{Left 5}")
-        return
-    :?*b0:<h4:: ;; auto-completion of the HTML 'h4' tag
-        addHotString()
-        sendText("></h4>", "{Left 5}")
-        return
-    :?*b0:<h5:: ;; auto-completion of the HTML 'h5' tag
-        addHotString()
-        sendText("></h5>", "{Left 5}")
-        return
-    :?*b0:<h6:: ;; auto-completion of the HTML 'h6' tag
-        addHotString()
-        sendText("></h6>", "{Left 5}")
-        return
-    :?b0o:<head:: ;; auto-completion of the HTML 'head' tag
-        addHotString()
-        sendText(">", "{Enter}{Tab}{Enter}{Backspace}")
-        sendText("</head>", "{Up}{End}")
-        return
-    :?*b0:<header:: ;; auto-completion of the HTML 'header' tag
-        addHotString()
-        sendText(">", "{Enter}{Tab}{Enter}{Backspace}")
-        sendText("</header>", "{Up}{End}")
-        return
-    :?*b0:<hgroup:: ;; auto-completion of the HTML 'hgroup' tag
-        addHotString()
-        sendText(">", "{Enter}{Tab}{Enter}{Backspace}")
-        sendText("</hgroup>", "{Up}{End}")
-        return
-    :?*b0:<html:: ;; auto-completion of the HTML 'body' tag (with nested 'body' tag)
-        addHotString()
-        sendText(">", "{Enter}")
-        sendText("<body>", "{Enter}{Tab}{Enter}{Backspace}")
-        sendText("</body>", "{Enter}")
-        sendText("</html>", "{Up 2}{End}")
-        return
-    :?b0o:<i:: ;; auto-completion of the HTML 'i' tag
-        addHotString()
-        sendText("></i>", "{Left 4}")
-        return
-    :?*b0:<iframe:: ;; auto-completion of the HTML 'iframe' tag
-    :?*b0:<img:: ;; auto-completion of the HTML 'img' tag (with 'src' attribute)
-        addHotString()
-        sendText(" src=""""/>", "{Left 3}")
-        return
-    :?*b0:<input:: ;; auto-completion of the HTML 'input' tag (with 'type', 'name', 'id' and 'value' attributes)
-        addHotString()
-        sendText(" type="""" name="""" id="""" value=""""/>", "{End}{Home}{Right 13}")
-        return
-    :?*b0:<label:: ;; auto-completion of the HTML 'label' tag (with 'for' attribute)
-        addHotString()
-        sendText(" for=""""></label>", "{Left 10}")
-        return
-    :?*b0:<legend:: ;; auto-completion of the HTML 'legend' tag
-        addHotString()
-        sendText("></legend>", "{Left 9}")
-        return
-    :?b0o:<li:: ;; auto-completion of the HTML 'li' tag
-        addHotString()
-        sendText("></li>", "{Left 5}")
-        return
-    :?*b0:<link:: ;; auto-completion of the HTML 'link' tag (with 'rel', 'type' and 'href' attributes)
-        addHotString()
-        sendText(" rel=""stylesheet"" type=""text/css"" href=""""/>", "{Left 3}")
-        return
-    :?*b0:<ol:: ;; auto-completion of the HTML 'ol' tag
-        addHotString()
-        sendText(">", "{Enter}{Tab}")
-        sendText("<li></li>", "{Enter}{Backspace}")
-        sendText("</ol>", "{Up}{End}{Left 5}")
-        return
-    :?*b0:<optg:: ;; auto-completion of the HTML 'optgroup' tag (with nested 'option' tag)
-        addHotString()
-        sendText("roup>", "{Enter}{Tab}")
-        sendText("<option></option>", "{Enter}{Backspace}")
-        sendText("</optgroup>", "{Up}{End}{Left 9}")
-        return
-    :?*b0:<opti:: ;; auto-completion of the HTML 'option' tag
-        addHotString()
-        sendText("on></option>", "{Left 9}")
-        return
-    :?b0o:<p:: ;; auto-completion of the HTML 'p' tag
-        addHotString()
-        sendText(">", "{Enter}{Tab}{Enter}{Backspace}")
-        sendText("</p>", "{Up}{End}")
-        return
-    :?*b0:<pre:: ;; auto-completion of the HTML 'pre' tag
-        addHotString()
-        sendText(">", "{Enter}{Tab}{Enter}{Backspace}")
-        sendText("</pre>", "{Up}{End}")
-        return
-    :?b0o:<q:: ;; auto-completion of the HTML 'q' tag
-        addHotString()
-        sendText("></q>", "{Left 4}")
-        return
-    :?*b0:<script:: ;; auto-completion of the HTML 'script' tag
-        addHotString()
-        sendText(">", "{Enter}{Tab}{Enter}{Backspace}")
-        sendText("</script>", "{Up}{End}")
-        return
-    :?*b0:<section:: ;; auto-completion of the HTML 'section' tag
-        addHotString()
-        sendText(">", "{Enter}{Tab}{Enter}{Backspace}")
-        sendText("</section>", "{Up}{End}")
-        return
-    :?*b0:<select:: ;; auto-completion of the HTML 'sel' tag (with 'name' and 'id' attributes and nested 'option' tag)
-        addHotString()
-        sendText(" name="""" id="""">", "{Enter}{Tab}")
-        sendText("<option></option>", "{Enter}{Backspace}")
-        sendText("</select>", "{Up}{End}{Left 9}")
-        return
-    :?*b0:<small:: ;; auto-completion of the HTML 'small' tag
-        addHotString()
-        sendText("></small>", "{Left 8}")
-        return
-    :?*b0:<source:: ;; auto-completion of the HTML 'source' tag (with 'type' and 'src' attributes)
-        addHotString()
-        sendText(" type="""" src=""""/>", "{Left 3}")
-        return
-    :?*b0:<span:: ;; auto-completion of the HTML 'span' tag (with 'id' attribute)
-        addHotString()
-        sendText(" id=""""></span>", "{Left 7}")
-        return
-    :?*b0:<strong:: ;; auto-completion of the HTML 'strong' tag
-        addHotString()
-        sendText("></strong>", "{Left 9}")
-        return
-    :?*b0:<style:: ;; auto-completion of the HTML 'style' tag (with 'type' attribute)
-        addHotString()
-        sendText(" type=""text/css"">", "{Enter}{Tab}{Enter}{Backspace}")
-        sendText("</style>", "{Up}{End}")
-        return
-    :?*b0:<sub:: ;; auto-completion of the HTML 'sub' tag
-        addHotString()
-        sendText("></sub>", "{Left 6}")
-        return
-    :?*b0:<sum:: ;; auto-completion of the HTML 'summary' tag
-        addHotString()
-        sendText("mary></summary>", "{Left 10}")
-        return
-    :?*b0:<sup:: ;; auto-completion of the HTML 'sup' tag
-        addHotString()
-        sendText("></sup>", "{Left 6}")
-        return
-    :?*b0:<table:: ;; auto-completion of the HTML 'table' tag (with nested 'tr' and 'td' tags)
-        addHotString()
-        sendText(">", "{Enter}{Tab}")
-        sendText("<tr>", "{Enter}{Tab}")
-        sendText("<td>", "{Enter}{Tab}{Enter}{Backspace}")
-        sendText("</td>", "{Enter}{Backspace}")
-        sendText("</tr>", "{Enter}{Backspace}")
-        sendText("</table>", "{Up 3}{End}")
-        return
-    :?*b0:<tbody:: ;; auto-completion of the HTML 'tbody' tag
-        addHotString()
-        sendText(">", "{Enter}{Tab}{Enter}{Backspace}")
-        sendText("</tbody>", "{Up}{End}")
-        return
-    :?*b0:<td:: ;; auto-completion of the HTML 'td' tag
-        addHotString()
-        sendText(">", "{Enter}{Tab}{Enter}{Backspace}")
-        sendText("</td>", "{Up}{End}")
-        return
-    :?*b0:<tfoot:: ;; auto-completion of the HTML 'tfoot' tag
-        addHotString()
-        sendText(">", "{Enter}{Tab}{Enter}{Backspace}")
-        sendText("</tfoot>", "{Up}{End}")
-        return
-    :?b0o:<th:: ;; auto-completion of the HTML 'th' tag
-        addHotString()
-        sendText(">", "{Enter}{Tab}{Enter}{Backspace}")
-        sendText("</th>", "{Up}{End}")
-        return
-    :?*b0:<thead:: ;; auto-completion of the HTML 'thead' tag
-        addHotString()
-        sendText(">", "{Enter}{Tab}{Enter}{Backspace}")
-        sendText("</thead>", "{Up}{End}")
-        return
-    :?*b0:<tr:: ;; auto-completion of the HTML 'tr' tag
-        addHotString()
-        sendText(">", "{Enter}{Tab}")
-        sendText("<td>", "{Enter}{Tab}{Enter}{Backspace}")
-        sendText("</td>", "{Enter}{Backspace}")
-        sendText("</tr>", "{Up 2}{End}")
-        return
-    :?*b0:<texta:: ;; auto-completion of the HTML 'textarea' tag (with 'rows' and 'cols' attributes)
-        addHotString()
-        sendText("rea rows="""" cols="""">", "{Enter}{Tab}{Enter}{Backspace}")
-        sendText("</textarea>", "{Up}{End}")
-        return
-    :?*b0:<title:: ;; auto-completion of the HTML 'title' tag
-        addHotString()
-        sendText("></title>", "{Left 8}")
-        return
-    :?b0o:<u:: ;; auto-completion of the HTML 'u' tag
-        addHotString()
-        sendText("></u>", "{Left 4}")
-        return
-    :?*b0:<ul:: ;; auto-completion of the HTML 'ul' tag
-        addHotString()
-        sendText(">", "{Enter}{Tab}")
-        sendText("<li></li>", "{Enter}{Backspace}")
-        sendText("</ul>", "{Up}{End}{Left 5}")
-        return
-    :?*:<xml:: ;; auto-complettion of the XML header in UTF-8
-        addHotString()
-        sendText("<?xml version='1.0' encoding='UTF-8'?>", "{Enter}")
-        return
-#if
-;Jira
-;----
-#if, toBool(hs.config.user.enableHsJira)
-    :*:{bpan:: ;; a pair of {panel} tags with blue background++used by Jira/Confluence
-        addHotString()
-        sendJiraPanel(hs.config.user.jiraPanels.formatBlue)
-        return
-    :*:{code:: ;; a pair of generic {code} tags++used by Jira/Confluence
-        addHotString()
-        sendJiraCode("")
-        return
-    :*b0:{color:: ;; a pair of {color} tags++used by Jira/Confluence
-        addHotString()
-        sendText(":}{color}", "{Left 8}")
-        return
-    :*:{gpan:: ;; a pair of {panel} tags with green background++used by Jira/Confluence
-        addHotString()
-        sendJiraPanel(hs.config.user.jiraPanels.formatGreen)
-        return
-    :*:{info:: ;; a pair of {info} tags++used by Jira/Confluence
-        addHotString()
-        sendJiraSpecialPanel("info")
-        return
-    :*:{java:: ;; a pair of {code} tags for Java++used by Jira/Confluence
-        addHotString()
-        sendJiraCode("Java")
-        return
-    :*:{js:: ;; a pair of {code} tags for JavaScript++used by Jira/Confluence
-        addHotString()
-        sendJiraCode("JavaScript")
-        return
-    :*b0:{nof:: ;; a pair of {noformat} tags++used by Jira/Confluence
-        addHotString()
-        sendText("ormat}", "{Enter}")
-        sendText("{noformat}", "{Enter}{Up}{End}{Home}")
-        return
-    :*:{note:: ;; a pair of {note} tags++used by Jira/Confluence
-        addHotString()
-        sendJiraSpecialPanel("note")
-        return
-    :*:{pan:: ;; a pair of {panel} tags++used by Jira/Confluence
-        addHotString()
-        sendJiraPanel(hs.config.user.jiraPanels.format)
-        return
-    :*b0:{quo:: ;; a pair of {quote} tags++used by Jira/Confluence
-        addHotString()
-        sendText("te}", "{Enter}")
-        sendText("{quote}", "{Enter}{Up}{End}{Home}")
-        return
-    :*:{rpan:: ;; a pair of {panel} tags with red background++used by Jira/Confluence
-        addHotString()
-        sendJiraPanel(hs.config.user.jiraPanels.formatRed)
-        return
-    :*:{sql:: ;; a pair of {code} tags for SQL++used by Jira/Confluence
-        addHotString()
-        sendJiraCode("SQL")
-        return
-    :*:{table:: ;; a simple table structure for Jira/Confluence
-        addHotString()
-        templateJiraTable()
-        return
-    :*:{tip:: ;; a pair of {tip} tags++used by Jira/Confluence
-        addHotString()
-        sendJiraSpecialPanel("tip")
-        return
-    :*:{warn:: ;; a pair of {warning} tags++used by Jira/Confluence
-        addHotString()
-        sendJiraSpecialPanel("warning")
-        return
-    :*:{xml:: ;; a pair of {code} tags for XML++used by Jira/Confluence
-        addHotString()
-        sendJiraCode("XML")
-        return
-    :*:{ypan:: ;; a pair of {panel} tags with yellow background++used by Jira/Confluence
-        addHotString()
-        sendJiraPanel(hs.config.user.jiraPanels.formatYellow)
-        return
-#if
+;__________________________________________________
+; Auto initialization processing stops here because when either a HotKey or HotString
+; is defined using the AHK-style registration, all initialization processing stops.
 
-; TODO - why is this not configurable and part of external definitions?
-;      - because any hotkey/hotstring subroutine whose very first line is Suspend (except Suspend On)
-;        will be exempt from suspension, so it can act as a toggle.
-#if, toBool(hs.config.user.enableHkMisc)
-    #pause:: ;; toggles suspension of this script
-        Suspend
-        addHotKey()
-        toggleSuspend()
-        return
-#if
+; Why is this not configurable and part of external definitions?
+;   - because any hotkey/hotstring subroutine whose very first line is Suspend (except Suspend On)
+;     will be exempt from suspension, so it can act as a toggle.
+#pause:: ;; toggles suspension of this script
+    Suspend
+    addHotKey()
+    toggleSuspend()
+    return
 
 ;__________________________________________________
 ;wrapper functions
@@ -885,12 +439,6 @@ WinGetTitle(winTitle:="", winText:="", excludeTitle:="", excludeText:="") {
     v := ""
     WinGetTitle, v, %winTitle%, %winText%, %excludeTitle%, %excludeText%
     return v
-}
-
-;__________________________________________________
-;hotstring functions
-hsBackInX($) {
-    sendText("Back in " . $.value(1) . " minutes...")
 }
 
 ;__________________________________________________
@@ -1561,7 +1109,456 @@ hkWindowToggleTransparency() {
 }
 
 ;__________________________________________________
-;custom functions
+;hotstring functions
+hsAliasBackInX() {
+    sendText("Back in " . $.value(1) . " minutes...")
+}
+
+hsCodeBlock() {
+    SendInput, ^{Left}
+    indent := getIndent()
+    indent1 := getIndent1(indent)
+    template =
+    (LTrim
+        `) {
+        %indent%%indent1%
+        %indent%}
+
+    )
+    sendText(template, "{Up 3}{End}{Left 3}")
+}
+
+hsCodeElseIf() {
+    indent := getIndent()
+    indent1 := getIndent1(indent)
+    template =
+    (LTrim
+        else if `(`) {
+        %indent%%indent1%
+        %indent%}
+
+    )
+    sendText(template, "{Up 3}{End}{Left 3}")
+}
+
+hsCodeFunction() {
+    trigger := StrReplace($, "func", "function")
+    indent := getIndent()
+    indent1 := getIndent1(indent)
+    template =
+    (LTrim
+        %trigger%`) {
+        %indent%%indent1%
+        %indent%}
+
+    )
+    sendText(template, "{Up 3}{End}{Left 3}")
+}
+
+hsCodeIfElse() {
+    indent := getIndent()
+    indent1 := getIndent1(indent)
+    template =
+    (LTrim
+        if `(`) {
+        %indent%%indent1%
+        %indent%}
+        %indent%else {
+        %indent%%indent1%
+        %indent%}
+
+    )
+    sendText(template, "{Up 6}{End}{Left 3}")
+}
+
+hsCodeStringFormat() {
+    sendText("String.format("""", )", "{Left 4}")
+}
+
+hsCodeSwitch() {
+    SendInput, ^{Left}
+    indent := getIndent()
+    indent1 := getIndent1(indent)
+    template =
+    (LTrim
+        `) {
+        %indent%%indent1%case x:
+        %indent%%indent1%%indent1%break;
+        %indent%%indent1%default:
+        %indent%%indent1%%indent1%break;
+        %indent%}
+
+    )
+    sendText(template, "{Up 6}{End}{Left 3}")
+}
+
+hsCodeSysOut() {
+    sendText("System.out.println("""");", "{Left 3}")
+}
+
+hsCommentHeaderHtml() {
+    line := hs.const.COMMENT_HEADER_LINE
+    indent := getIndent()
+    template =
+    (LTrim
+        <!--%line%
+        %indent%   %A_Space%
+        %indent%%line%--->
+    )
+    sendText(template, "{Up}{End}")
+}
+
+hsCommentHeaderJava() {
+    indent := getIndent()
+    template =
+    (LTrim
+        /**
+        %indent% *%A_Space%
+        %indent% */
+    )
+    sendText(template, "{Up 2}{End}")
+}
+
+hsCommentHeaderPerl() {
+    line := hs.const.COMMENT_HEADER_LINE
+    indent := getIndent()
+    template =
+    (LTrim
+        # %line%
+        %indent%#%A_Space%
+        %indent%# %line%
+    )
+    sendText(template, "{Up 2}{End}")
+}
+
+hsCommentHeaderSql() {
+    line := hs.const.COMMENT_HEADER_LINE
+    indent := getIndent()
+    template =
+    (LTrim
+        -- %line%
+        %indent%--%A_Space%
+        %indent%-- %line%
+    )
+    sendText(template, "{Up 2}{End}")
+}
+
+hsHtmlA() {
+    sendText("href=""""></a>", "{Left 4}")
+}
+
+hsHtmlComment() {
+    SendInput, ^{Left}
+    indent := getIndent()
+    indent1 := getIndent1(indent)
+    template =
+    (LTrim
+        -
+        %indent%%indent1%
+        %indent%-->
+    )
+    sendText(template, "{Up}{End}")
+}
+
+hsHtmlHeader() {
+    sendText("></h" . $.value(1) . ">", "{Left 5}")
+}
+
+hsHtmlHtml() {
+    SendInput, ^{Left}{Left}
+    indent := getIndent()
+    indent1 := getIndent1(indent)
+    template =
+    (LTrim
+        >
+        %indent%%indent1%<body>
+        %indent%%indent1%%indent1%
+        %indent%%indent1%</body>
+        %indent%</html>
+    )
+    sendText(template, "{Up 2}{End}")
+}
+
+hsHtmlInput() {
+    sendText(" type="""" id="""" value=""""/>", "{End}{Left 18}")
+}
+
+hsHtmlLink() {
+    sendText(" rel=""stylesheet"" type=""text/css"" href=""""/>", "{Left 3}")
+}
+
+hsHtmlList() {
+    tag := $.value(1)
+    SendInput, ^{Left}{Left}
+    indent := getIndent()
+    indent1 := getIndent1(indent)
+    template =
+    (LTrim
+        >
+        %indent%%indent1%<li></li>
+        %indent%</%tag%>
+    )
+    sendText(template, "{Up}{End}{Left 5}")
+}
+
+hsHtmlOptGroup() {
+    SendInput, ^{Left}{Left}
+    indent := getIndent()
+    indent1 := getIndent1(indent)
+    template =
+    (LTrim
+        roup>
+        %indent%%indent1%<option></option>
+        %indent%</optgroup>
+    )
+    sendText(template, "{Up}{End}{Left 9}")
+}
+
+hsHtmlSelect() {
+    SendInput, ^{Left}{Left}
+    indent := getIndent()
+    indent1 := getIndent1(indent)
+    template =
+    (LTrim
+        %A_Space%id="">
+        %indent%%indent1%<option></option>
+        %indent%</select>
+    )
+    sendText(template, "{Up}{End}{Left 9}")
+}
+
+hsHtmlSource() {
+    sendText(" type="""" src=""""/>", "{Left 3}")
+}
+
+hsHtmlStyle() {
+    SendInput, ^{Left}{Left}
+    indent := getIndent()
+    indent1 := getIndent1(indent)
+    template =
+    (LTrim
+        %A_Space%type="text/css">
+        %indent%%indent1%
+        %indent%</style>
+    )
+    sendText(template, "{Up}{End}")
+}
+
+hsHtmlTable() {
+    SendInput, ^{Left}{Left}
+    indent := getIndent()
+    indent1 := getIndent1(indent)
+    template =
+    (LTrim
+        >
+        %indent%%indent1%<tr>
+        %indent%%indent1%%indent1%<td>
+        %indent%%indent1%%indent1%%indent1%
+        %indent%%indent1%%indent1%</td>
+        %indent%%indent1%</tr>
+        %indent%</table>
+    )
+    sendText(template, "{Up 3}{End}")
+}
+
+hsHtmlTagAbbr() {
+    tag := $.value(1)
+    if (tag == "but") {
+        extra := "ton"
+    }
+    else if (tag == "cap") {
+        extra := "tion"
+    }
+    else if (tag == "field") {
+        extra := "set"
+    }
+    else if (tag == "foot") {
+        extra := "er"
+    }
+    else if (tag == "opti") {
+        extra := "on"
+    }
+    else if (tag == "sum") {
+        extra := "mary"
+    }
+    tag .= extra
+    sendText(extra . "></" . tag . ">", "{Left " . (StrLen(tag) + 3) . "}")
+}
+
+hsHtmlTagBlock() {
+    tag := $.value(1)
+    SendInput, ^{Left}{Left}
+    indent := getIndent()
+    indent1 := getIndent1(indent)
+    template =
+    (LTrim
+        >
+        %indent%%indent1%
+        %indent%</%tag%>
+    )
+    sendText(template, "{Up}{End}")
+}
+
+
+hsHtmlTagFor() {
+    tag := $.value(1)
+    sendText(" for=""""/>", "{Left 3}")
+}
+
+hsHtmlTagNoEndChar() {
+    tag := $.value(1)
+    SendInput, {BS}
+    sendText("></" . tag . ">", "{Left " . (StrLen(tag) + 3) . "}")
+}
+
+hsHtmlTagSimple() {
+    tag := $.value(1)
+    sendText("></" . tag . ">", "{Left " . (StrLen(tag) + 3) . "}")
+}
+
+hsHtmlTagSrc() {
+    sendText(" src=""""/>", "{Left 3}")
+}
+
+hsHtmlTextarea() {
+    SendInput, ^{Left}{Left}
+    indent := getIndent()
+    indent1 := getIndent1(indent)
+    template =
+    (LTrim
+        rea rows="" cols="">
+        %indent%%indent1%
+        %indent%</textarea>
+    )
+    sendText(template, "{Up}{End}")
+}
+
+hsHtmlTr() {
+    SendInput, ^{Left}{Left}
+    indent := getIndent()
+    indent1 := getIndent1(indent)
+    template =
+    (LTrim
+        >
+        %indent%%indent1%<td>
+        %indent%%indent1%%indent1%
+        %indent%%indent1%</td>
+        %indent%</tr>
+    )
+    sendText(template, "{Up 2}{End}")
+}
+
+hsJiraCode(type) {
+    if (startsWith(type, "{")) {
+        type := SubStr(type, 2)
+    }
+    type1 := setCase(type, "L")
+    type2 := setCase(type, "S")
+    if (type == "code") {
+        type1 := ""
+    }
+    else if (type == "js") {
+        type2 := "JavaScript"
+        type1 := setCase(type2, "L")
+    }
+    else if (type == "sql" || type == "xml") {
+        type2 := setCase(type2, "U")
+    }
+    template =
+    (LTrim
+        {code:{type1}title={type2} snippet|{format}}
+        {code}
+
+    )
+    tokens := {type1:type1 . (type1 == "" ? "" : "|"), type2:type2, format:hs.config.user.jiraPanels.format}
+    pasteTemplate(template, tokens, "{Up}")
+}
+
+hsJiraColor() {
+    sendText(":}{color}", "{Left 8}")
+}
+
+hsJiraNoFormat() {
+    template =
+    (LTrim
+        ormat}
+        {noformat}
+
+    )
+    sendText(template, "{Up}{End}{Home}")
+}
+
+hsJiraPanel(type) {
+    if (startsWith(type, "{")) {
+        type := SubStr(type, 2)
+    }
+    if (type == "pan") {
+        panelFormat := hs.config.user.jiraPanels.format
+    }
+    else {
+        color := SubStr(type, 1, 1)
+        if (color == "b") {
+            color := "Blue"
+        }
+        else if (color == "g") {
+            color := "Green"
+        }
+        else if (color == "r") {
+            color := "Red"
+        }
+        else if (color == "y") {
+            color := "Yellow"
+        }
+        panel := "format" . color
+        panelFormat := hs.config.user.jiraPanels[panel]
+    }
+    template =
+    (LTrim
+        {panel:title=Title|{format}}
+        {panel}
+
+    )
+    tokens := {format:panelFormat}
+    pasteTemplate(template, tokens, "{Up}")
+}
+
+hsJiraQuote() {
+    template =
+    (LTrim
+        te}
+        {quote}
+
+    )
+    sendText(template, "{Up}{End}{Home}")
+}
+
+hsJiraSpecialPanel(type) {
+    if (startsWith(type, "{")) {
+        type := SubStr(type, 2)
+    }
+    template =
+    (LTrim
+        :title={title} Title}
+        {{type}}
+
+    )
+    tokens := {type:type, title:setCase(type, "S")}
+    pasteTemplate(template, tokens, "{Up}")
+}
+
+hsJiraTable() {
+    template =
+    (LTrim
+        || Column1 || Column2 || Column3 || Column4 || Column5 ||
+        | Row1_1 | Row1_2 | Row1_3 | Row1_4 | Row1_5 |
+
+    )
+    template := RegExReplace(template, hs.const.EOL_NIX, hs.const.EOL_WIN)
+    pasteTemplate(template, "", "{Home}{Up 2}{Right 3}^+{Right}")
+}
+
+;__________________________________________________
+;internal functions
 addHotKey() {
     hs.config.user.hkSessionCount++
     hs.config.user.hkTotalCount++
@@ -1667,7 +1664,7 @@ checkVersions() {
             }
             else {
                 msg =
-                    ( LTrim
+                    (LTrim
                         The version of AutoHotKey in use is out-dated.
 
                         %A_Tab%Current`t: %A_AhkVersion%
@@ -3142,8 +3139,7 @@ cryptSelected() {
 }
 
 debug(str) {
-    msg := hs.TITLE . " :: "
-    OutputDebug % msg . str
+    OutputDebug % " --> " . str
 }
 
 deleteCurrentLine() {
@@ -3207,10 +3203,10 @@ escapeText(text:="") {
         isSelected := true
     }
     if (text != "") {
-        text := StringReplace(text, "``", "````", "All")
-        text := StringReplace(text, "%", "``%", "All")
-        text := StringReplace(text, "(", "``(", "All")
-        text := StringReplace(text, ")", "``)", "All")
+        text := StrReplace(text, "``", "````")
+        text := StrReplace(text, "%", "``%")
+        text := StrReplace(text, "(", "``(")
+        text := StrReplace(text, ")", "``)")
         if (isSelected) {
             replaceSelected(text)
         }
@@ -3573,6 +3569,21 @@ getExplorerPath() {
     return xPath
 }
 
+getIndent() {
+    SendInput, +{Home}
+    result := getSelectedText()
+    SendInput, {End}
+    return result
+}
+
+getIndent1(indent) {
+    result := ""
+    if (indent != "") {
+        result := (contains(indent, A_Tab) ? A_Tab : "    ")
+    }
+    return result
+}
+
 getListSize(list, delim:="") {
     delim := (delim == "" ? hs.const.EOL_WIN : delim)
     tmpCount := 0
@@ -3732,43 +3743,25 @@ hideWindow(title:="A") {
     }
 }
 
-hkToStr(key) {
-    static regexKeys := ""
-    static regexUpper := ""
-    if (regexKeys == "") {
-        regexKeys := "i)(a)(dd|lt|pp[1-2]|pps)|(b)(ack|reak|rowser_|s|utton)|(c)(aps|lear|ontrol|trl)|(d)(el|elete|iv|n|ot|own)|(e)(nd|nter|sc|scape)|(f)([1-9]\b|1[0-9]\b|2[0-4]\b|avorites|orward)|(h)(elp|ome)|(i)(ns|nsert)|(joy)([1-9]\b|[1-2][0-9]\b|3[0-2]\b)|(k)(ey)|(l)(aunch_|eft|ock)|(la)(lt)|(lb)(utton)|(lc)(ontrol|trl)|(ls)(hift)|(lw)(in)|(m)(ail|edia_?|ult|ute)|(mb)(utton)|(n)(ext|um)|(p)(ad\d?|ause|g|lay_?|rev|rint)|(r)(efresh|eturn|ight)|(ra)(lt)|(rb)(utton)|(rc)(ontrol|trl)|(rs)(hift)|(rw)(in)|(s)(creen|croll|earch|hift|leep|pace|top|ub)|(sc)(\d{3}\b)|(t)(ab)|(u)(p)|(vk)([\da-f]{2}\b)|(v)(olume_)|(w)(heel|in)|(xb)(utton\d?)|(\b[a-z]\b)"
-        regexUpper := "$U{1}${2}$U{3}${4}$U{5}${6}$U{7}${8}$U{9}${10}$U{11}${12}$U{13}${14}$U{15}${16}$U{17}${18}$U{19}${20}$U{21}${22}$U{23}${24}$U{25}${26}$U{27}${28}$U{29}${30}$U{31}${32}$U{33}${34}$U{35}${36}$U{37}${38}$U{39}${40}$U{41}${42}$U{43}${44}$U{45}${46}$U{47}${48}$U{49}${50}$U{51}${52}$U{53}${54}$U{55}${56}$U{57}${58}$U{59}${60}$U{61}${62}$U{63}${64}$U{65}${66}$U{67}${68}$U{69}${70}$U{71}${72}$U{73}${74}$U{75}${76}$U{77}${78}$U{79}${80}$U{81}${82}$U{83}${84}$U{85}${86}$U{87}${88}$U{89}${90}$U{91}${92}$U{93}${94}$U{95}${96}$U{97}${98}$U{99}${100}"
-    }
-
-    hook := (InStr(key, "$") ? " [hook]" : "")
-    key := StringReplace(key, "$", "")
-    key := StringReplace(key, "^", "Ctrl-")
-    key := StringReplace(key, "!", "Alt-")
-    key := StringReplace(key, "+", "Shift-")
-    key := StringReplace(key, "#", "Win-")
-    key := StringReplace(key, "&", "+")
-    key := RegExReplace(key, regexKeys, regexUpper)
-    return (key . hook)
-}
-
 /*
-; hotString(trigger, replace, mode, clear, condition)
-;   trigger    - string or regex to trigger the action
-;   replace    - string to replace trigger, OR label to go to, OR function to call, OR object containing function name and optional parameters
-;   mode 1/2/3 - insensitive/sensitive/regex (default = 1)
-;   condition  - function name that should return true/false is the action should be executed
-;   clear      - true if the trigger should be erased (default = true)
+hotString(trigger, replace, mode, clear, condition)
+    trigger    - string or regex to trigger the action
+    replace    - string to replace trigger, OR label to go to, OR function to call, OR object containing function name and optional parameters
+    mode       - NORMAL (case-insensitive), CASE (case-sensitive), REGEX (regular expression) (default = NORMAL)
+    clear      - true if the trigger should be erased (default = true)
+    condition  - function name that should return true/false is the action should be executed
 TODO
     - make "replace" support being text/label/function/object
     - "replace" should support being able to reevaluate itself (such as A_Hour)
-    - when object, it (may) contain all necessary parameters
+    - when "replace" is an object, it (may) contain all necessary parameters
         - mode
         - clearTrigger
         - condition
         - function
-        - parameters
+        - functionParameters
         - keys (after replacing the text)
-TODO
+        - text
+        - evalText
     - how to handle block / template replacement
         - maybe function call?
     - how to handle multi-text with keys after each (cannot use template because the cursor needs to move after each "text")
@@ -3777,8 +3770,7 @@ TODO
         - hs.EndChar
         - could be added to "replace", if it is an object
 */
-hotString(trigger, replace, mode:=1, condition:= "", clearTrigger:=1) {
-    global $
+hotString(trigger, replace, mode:=1, clearTrigger:=true, condition:= "") {
     static keysBound := false
     static hotkeyPrefix := "~$"
     static hotstrings := {}
@@ -3833,7 +3825,7 @@ hotString(trigger, replace, mode:=1, condition:= "", clearTrigger:=1) {
         ;keysBound is a static variable, so now the keys won't be bound twice
         keysBound := true
     }
-    if (mode == "CALLBACK") {
+    if (mode == hs.const.replaceMode.CALLBACK) {
         ;Callback for the hotkeys
         Hotkey := SubStr(A_ThisHotkey, 3)
         if (StrLen(Hotkey) == 2 && Substr(Hotkey, 1, 1) == "+" && Instr(keys.alpha, Substr(Hotkey, 2, 1))) {
@@ -3925,6 +3917,7 @@ hotString(trigger, replace, mode:=1, condition:= "", clearTrigger:=1) {
                     }
                 }
                 if (IsFunc(v.replace)) {
+                    $ := local$
                     callbackFunc := Func(v.replace)
                     ; TODO - add support for sending parameters to the function
                     if (callbackFunc.minParams >= 1) {
@@ -3981,15 +3974,15 @@ hotString(trigger, replace, mode:=1, condition:= "", clearTrigger:=1) {
 
     __hotstring:
         ;this label is triggered every time a key is pressed
-        hotString("", "", "CALLBACK")
+        hotString("", "", hs.const.replaceMode.CALLBACK)
         return
 }
 
-hsDivPercent($) {
+hsDivPercent() {
     sendText(Round(($.value(1) / $.value(2)) * 100) . "%")
 }
 
-hsPercentOf($) {
+hsPercentOf() {
     result := ($.value(1) / 100) * $.value(2)
     while (endsWith(result, "0")) {
         result := StringTrimRight(result, 1)
@@ -4027,6 +4020,7 @@ init() {
     Menu, Tray, Add
     Menu, Tray, Add, Home Page, customTrayMenu
     Menu, Tray, Add, Historical changes, customTrayMenu
+    Menu, Tray, Add, Help, customTrayMenu
     Menu, Tray, Add
     Menu, Tray, Add, Exit, customTrayMenu
     initHotStrings()
@@ -4063,6 +4057,9 @@ init() {
         else if (A_ThisMenuItem == "Historical changes") {
             Run(hs.vars.url[hs.TITLE].history)
         }
+        else if (A_ThisMenuItem == "Help") {
+            showQuickHelp(false)
+        }
         else if (A_ThisMenuItem == "Exit") {
             stop()
         }
@@ -4070,77 +4067,143 @@ init() {
 }
 
 initHotStrings() {
+    endChars := hs.const.END_CHARS_REGEX
+    mode := hs.const.replaceMode
     if (toBool(hs.config.user.enableHsAlias)) {
-        hotString("\bbbl", "be back later", 3)
-        hotString("\bbbs", "be back soon", 3)
-        hotString("\bbi(\d+)" . hs.const.END_CHARS_REGEX, "hsBackInX", 3)
-        hotString("\bbrb", "be right back", 3)
-        hotString("\bbrt", "be right there", 3)
-        hotString("\bg2g", "Good to go!", 3)
-        hotString("\bgtg", "Got to go...", 3)
-        hotString("\bidk", "I don't know.", 3)
-        hotString("\blmc", "Let me check on that...", 3)
-        hotString("\blmk", "Let me know ", 3)
-        hotString("\bnm" . hs.const.END_CHARS_REGEX, "never mind...", 3)
-        hotString("\bnmif", "Never mind, I found it.", 3)
-        hotString("\bnp" . hs.const.END_CHARS_REGEX, "no problem$1", 3)
-        hotString("\bnw", "no worries", 3)
-        hotString("\bokt", "OK, thanks...", 3)
-        hotString("\bthok", "That's OK...", 3)
-        hotString("\bthx", "thanks", 3)
-        hotString("\bty" . hs.const.END_CHARS_REGEX, "Thank you$1", 3)
-        hotString("\bvg" . hs.const.END_CHARS_REGEX, "very good$1", 3)
-        hotString("\byw" . hs.const.END_CHARS_REGEX, "You're welcome$1", 3)
-        hotString("\bwyb", "Please let me know when you are back...", 3)
+        hotString("\bbbl", "be back later", mode.REGEX)
+        hotString("\bbbs", "be back soon", mode.REGEX)
+        hotString("\bbi(\d+)" . endChars, "hsAliasBackInX", mode.REGEX)
+        hotString("\bbrb", "be right back", mode.REGEX)
+        hotString("\bbrt", "be right there", mode.REGEX)
+        hotString("\bg2g", "Good to go!", mode.REGEX)
+        hotString("\bgtg", "Got to go...", mode.REGEX)
+        hotString("\bidk", "I don't know.", mode.REGEX)
+        hotString("\blmc", "Let me check on that...", mode.REGEX)
+        hotString("\blmk", "Let me know ", mode.REGEX)
+        hotString("\bnm" . endChars, "never mind...", mode.REGEX)
+        hotString("\bnmif", "Never mind, I found it.", mode.REGEX)
+        hotString("\bnp" . endChars, "no problem$1", mode.REGEX)
+        hotString("\bnw", "no worries", mode.REGEX)
+        hotString("\bokt", "OK, thanks...", mode.REGEX)
+        hotString("\bthok", "That's OK...", mode.REGEX)
+        hotString("\bthx", "thanks", mode.REGEX)
+        hotString("\bty" . endChars, "Thank you$1", mode.REGEX)
+        hotString("\bvg" . endChars, "very good$1", mode.REGEX)
+        hotString("\byw" . endChars, "You're welcome$1", mode.REGEX)
+        hotString("\bwyb", "Please let me know when you are back...", mode.REGEX)
     }
     if (toBool(hs.config.user.enableHsAutoCorrect)) {
-        hotString("@ip", A_IPAddress1, 2)
-        hotString("(\d+)\/(\d+)%", "hsDivPercent", 3)
-        hotString("(\d+)%(\d+)" . hs.const.END_CHARS_REGEX, "hsPercentOf", 3)
-        hotString("\b1\/8" . hs.const.END_CHARS_REGEX, chr(8539), 3, "isCalculatorNotActive")
-        hotString("\b1\/6" . hs.const.END_CHARS_REGEX, chr(8537), 3, "isCalculatorNotActive")
-        hotString("\b1\/5" . hs.const.END_CHARS_REGEX, chr(8533), 3, "isCalculatorNotActive")
-        hotString("\b1\/4" . hs.const.END_CHARS_REGEX, chr(188), 3, "isCalculatorNotActive")
-        hotString("\b2\/8" . hs.const.END_CHARS_REGEX, chr(188), 3, "isCalculatorNotActive")
-        hotString("\b1\/3" . hs.const.END_CHARS_REGEX, chr(8531), 3, "isCalculatorNotActive")
-        hotString("\b2\/6" . hs.const.END_CHARS_REGEX, chr(8531), 3, "isCalculatorNotActive")
-        hotString("\b3\/8" . hs.const.END_CHARS_REGEX, chr(8540), 3, "isCalculatorNotActive")
-        hotString("\b2\/5" . hs.const.END_CHARS_REGEX, chr(8534), 3, "isCalculatorNotActive")
-        hotString("\b1\/2" . hs.const.END_CHARS_REGEX, chr(189), 3, "isCalculatorNotActive")
-        hotString("\b2\/4" . hs.const.END_CHARS_REGEX, chr(189), 3, "isCalculatorNotActive")
-        hotString("\b3\/6" . hs.const.END_CHARS_REGEX, chr(189), 3, "isCalculatorNotActive")
-        hotString("\b4\/8" . hs.const.END_CHARS_REGEX, chr(189), 3, "isCalculatorNotActive")
-        hotString("\b3\/5" . hs.const.END_CHARS_REGEX, chr(8535), 3, "isCalculatorNotActive")
-        hotString("\b5\/8" . hs.const.END_CHARS_REGEX, chr(8541), 3, "isCalculatorNotActive")
-        hotString("\b2\/3" . hs.const.END_CHARS_REGEX, chr(8532), 3, "isCalculatorNotActive")
-        hotString("\b4\/6" . hs.const.END_CHARS_REGEX, chr(8532), 3, "isCalculatorNotActive")
-        hotString("\b3\/4" . hs.const.END_CHARS_REGEX, chr(190), 3, "isCalculatorNotActive")
-        hotString("\b6\/8" . hs.const.END_CHARS_REGEX, chr(190), 3, "isCalculatorNotActive")
-        hotString("\b4\/5" . hs.const.END_CHARS_REGEX, chr(8536), 3, "isCalculatorNotActive")
-        hotString("\b5\/6" . hs.const.END_CHARS_REGEX, chr(8538), 3, "isCalculatorNotActive")
-        hotString("\b7\/8" . hs.const.END_CHARS_REGEX, chr(8542), 3, "isCalculatorNotActive")
-        hotString("cL", "c:", 2)
+        hotString("@ip", A_IPAddress1, mode.CASE)
+        hotString("(\d+)\/(\d+)%", "hsDivPercent", mode.REGEX)
+        hotString("(\d+)%(\d+)" . endChars, "hsPercentOf", mode.REGEX)
+        hotString("\b1\/8" . endChars, chr(8539), mode.REGEX, , "isCalculatorNotActive")
+        hotString("\b1\/6" . endChars, chr(8537), mode.REGEX, , "isCalculatorNotActive")
+        hotString("\b1\/5" . endChars, chr(8533), mode.REGEX, , "isCalculatorNotActive")
+        hotString("\b1\/4" . endChars, chr(188), mode.REGEX, , "isCalculatorNotActive")
+        hotString("\b2\/8" . endChars, chr(188), mode.REGEX, , "isCalculatorNotActive")
+        hotString("\b1\/3" . endChars, chr(8531), mode.REGEX, , "isCalculatorNotActive")
+        hotString("\b2\/6" . endChars, chr(8531), mode.REGEX, , "isCalculatorNotActive")
+        hotString("\b3\/8" . endChars, chr(8540), mode.REGEX, , "isCalculatorNotActive")
+        hotString("\b2\/5" . endChars, chr(8534), mode.REGEX, , "isCalculatorNotActive")
+        hotString("\b1\/2" . endChars, chr(189), mode.REGEX, , "isCalculatorNotActive")
+        hotString("\b2\/4" . endChars, chr(189), mode.REGEX, , "isCalculatorNotActive")
+        hotString("\b3\/6" . endChars, chr(189), mode.REGEX, , "isCalculatorNotActive")
+        hotString("\b4\/8" . endChars, chr(189), mode.REGEX, , "isCalculatorNotActive")
+        hotString("\b3\/5" . endChars, chr(8535), mode.REGEX, , "isCalculatorNotActive")
+        hotString("\b5\/8" . endChars, chr(8541), mode.REGEX, , "isCalculatorNotActive")
+        hotString("\b2\/3" . endChars, chr(8532), mode.REGEX, , "isCalculatorNotActive")
+        hotString("\b4\/6" . endChars, chr(8532), mode.REGEX, , "isCalculatorNotActive")
+        hotString("\b3\/4" . endChars, chr(190), mode.REGEX, , "isCalculatorNotActive")
+        hotString("\b6\/8" . endChars, chr(190), mode.REGEX, , "isCalculatorNotActive")
+        hotString("\b4\/5" . endChars, chr(8536), mode.REGEX, , "isCalculatorNotActive")
+        hotString("\b5\/6" . endChars, chr(8538), mode.REGEX, , "isCalculatorNotActive")
+        hotString("\b7\/8" . endChars, chr(8542), mode.REGEX, , "isCalculatorNotActive")
+        hotString("([a-z])L", "$1:", mode.REGEX)
     }
     if (toBool(hs.config.user.enableHsCode)) {
-        hotString("@html", "templateHtml", 2)
-        hotString("@java", "templateJava", 2)
-        hotString("@perl", "templatePerl", 2)
-        hotString("@sql", "templateSql", 2)
+        hotString("@html", "templateHtml", mode.CASE)
+        hotString("@java", "templateJava", mode.CASE)
+        hotString("@perl", "templatePerl", mode.CASE)
+        hotString("@sql", "templateSql", mode.CASE)
+        hotString("chh", "hsCommentHeaderHtml", mode.CASE)
+        hotString("chj", "hsCommentHeaderJava", mode.CASE)
+        hotString("chp", "hsCommentHeaderPerl", mode.CASE)
+        hotString("chs", "hsCommentHeaderSql", mode.CASE)
+        hotString("\b(for|if|while) ?\(", "hsCodeBlock", mode.REGEX, false)
+        hotString("\belif", "hsCodeElseIf", mode.REGEX)
+        hotString("\bfunc ?\(", "hsCodeFunction", mode.REGEX)
+        hotString("\bifel", "hsCodeIfElse", mode.REGEX)
+        hotString("\bswitch ?\(", "hsCodeSwitch", mode.REGEX, false)
+        hotString("sf.", "hsCodeStringFormat", mode.CASE)
+        hotString("sysout", "hsCodeSysOut", mode.CASE)
     }
     if (toBool(hs.config.user.enableHsDates)) {
-        hotString("\bdtms", "getDtmsString", 3)
-        hotString("\bdts", "getDtsString", 3)
-        hotString("\btms", "getTmsString", 3)
-        hotString("@date", "getDateString", 3)
-        hotString("@day", "getDayString", 2)
-        hotString("@ddd", "getDddString", 2)
-        hotString("@mmm", "getMmmString", 2)
-        hotString("@month", "getMonthString", 2)
-        hotString("@now", "getNowString", 2)
-        hotString("@time", "getTimeString", 2)
+        hotString("\bdtms", "getDtmsString", mode.REGEX)
+        hotString("\bdts", "getDtsString", mode.REGEX)
+        hotString("\btms", "getTmsString", mode.REGEX)
+        hotString("@date", "getDateString", mode.CASE)
+        hotString("@day", "getDayString", mode.CASE)
+        hotString("@ddd", "getDddString", mode.CASE)
+        hotString("@mmm", "getMmmString", mode.CASE)
+        hotString("@month", "getMonthString", mode.CASE)
+        hotString("@now", "getNowString", mode.CASE)
+        hotString("@time", "getTimeString", mode.CASE)
     }
     if (toBool(hs.config.user.enableHsDos)) {
-        hotString("\bcd ", "/d ", 3, "isActiveDos", false)
+        hotString("\bcd ", "/d ", mode.REGEX, false, "isActiveDos")
+    }
+    if (toBool(hs.config.user.enableHsHtml)) {
+        ; single
+        hotString("<!-", "hsHtmlComment", mode.REGEX, false)
+        hotString("<a" . endChars, "hsHtmlA", mode.REGEX, false)
+        hotString("<[bh]r", "/>", mode.REGEX, false)
+        hotString("<h([1-6])", "hsHtmlHeader", mode.REGEX, false)
+        hotString("<html", "hsHtmlHtml", , false)
+        hotString("<input", "hsHtmlInput", , false)
+        hotString("<link", "hsHtmlLink", , false)
+        hotString("<([o|u]l)", "hsHtmlList", mode.REGEX, false)
+        hotString("<optg", "hsHtmlOptGroup", , false)
+        hotString("<select", "hsHtmlSelect", , false)
+        hotString("<source", "hsHtmlSource", , false)
+        hotString("<style", "hsHtmlStyle", , false)
+        hotString("<table", "hsHtmlTable", , false)
+        hotString("<texta", "hsHtmlTextarea", , false)
+        hotString("<tr", "hsHtmlTr", , false)
+        hotString("<xml", " version='1.0' encoding='UTF-8'?>", , false)
+        ; reusable
+        hotString("<(b|head|i|li|p|q|th|u)" . endChars, "hsHtmlTagNoEndChar", mode.REGEX, false)
+        hotString("<(big|code|del|em|legend|pre|small|span|strong|sub|sup|td|title)", "hsHtmlTagSimple", mode.REGEX, false)
+        hotString("<(block|body|div|form|header|hgroup|script|section|tbody|tfoot|thead)", "hsHtmlTagBlock", mode.REGEX, false)
+        hotString("<(but|cap|field|foot|opti|sum)", "hsHtmlTagAbbr", mode.REGEX, false)
+        hotString("<(iframe|img)", "hsHtmlTagSrc", mode.REGEX, false)
+        hotString("<(label)", "hsHtmlTagFor", mode.REGEX, false)
+    }
+    if (toBool(hs.config.user.enableHsJira)) {
+        ; code
+        hotString("{code", "hsJiraCode")
+        hotString("{java", "hsJiraCode")
+        hotString("{js", "hsJiraCode")
+        hotString("{sql", "hsJiraCode")
+        hotString("{xml", "hsJiraCode")
+        ; color
+        hotString("{color", "hsJiraColor", , false)
+        ; noformat
+        hotString("{nof", "hsJiraNoFormat", , false)
+        ; panel
+        hotString("{bpan", "hsJiraPanel")
+        hotString("{gpan", "hsJiraPanel")
+        hotString("{pan", "hsJiraPanel")
+        hotString("{rpan", "hsJiraPanel")
+        hotString("{ypan", "hsJiraPanel")
+        ; quote
+        hotString("{quo", "hsJiraQuote", , false)
+        ; special panel
+        hotString("{info", "hsJiraSpecialPanel", , false)
+        hotString("{note", "hsJiraSpecialPanel", , false)
+        hotString("{tip", "hsJiraSpecialPanel", , false)
+        hotString("{warn", "hsJiraSpecialPanel", , false)
+        ; table
+        hotString("{table", "hsJiraTable")
     }
     if (toBool(hs.config.user.enableHsVariables)) {
         if (MY_EMAIL != "") {
@@ -4150,29 +4213,28 @@ initHotStrings() {
             hotString("@#", MY_PHONE)
         }
         if (MY_ADDRESS != "") {
-            hotString("@addr", MY_ADDRESS, 2)
+            hotString("@addr", MY_ADDRESS, mode.CASE)
         }
         if (MY_DOB != "") {
-            hotString("@dob", MY_DOB, 2)
+            hotString("@dob", MY_DOB, mode.CASE)
         }
         if (MY_NAME != "") {
-            hotString("@me", MY_NAME, 2)
+            hotString("@me", MY_NAME, mode.CASE)
         }
         if (MY_PASSWORD != "") {
-            hotString("@pw", crypt(MY_PASSWORD), 2)
+            hotString("@pw", crypt(MY_PASSWORD), mode.CASE)
         }
         if (MY_SIGNATURE != "") {
-            hotString("@sig", MY_SIGNATURE, 2)
+            hotString("@sig", MY_SIGNATURE, mode.CASE)
         }
         if (MY_WORK_EMAIL != "") {
-            hotString("@w", MY_WORK_EMAIL, 2)
+            hotString("@w", MY_WORK_EMAIL, mode.CASE)
         }
     }
 }
 
 initInternalVars() {
-    global $ := ""
-    hs.VERSION := "1.20160326.1"
+    hs.VERSION := "1.20160404.1"
     hs.TITLE := "HotScript"
     hs.BASENAME := A_ScriptDir . "\" . hs.TITLE
 
@@ -4185,10 +4247,18 @@ initInternalVars() {
             transparent: chr(8801) . chr(160)
         )}
 
+    ; mode
+    mode := {
+        (LTrim Join
+            NORMAL: 1,
+            CASE: 2,
+            REGEX: 3,
+            CALLBACK: "!CALLBACK!"
+        )}
     ; const
     hs.const := {
         (LTrim Join Comments
-            COMMENT_HEADER_LINE: " " . repeatStr("-", 70),
+            COMMENT_HEADER_LINE: repeatStr("-", 70),
             END_CHARS_REGEX: "([``~!@#$%^&*()\-_=+[\]{}\\|;:'" . chr(34) . ",.<>/?\s\t\r\n])",
             EOL_MAC: "`r",
             EOL_NIX: "`n",
@@ -4197,6 +4267,7 @@ initInternalVars() {
             LINE_SEP: repeatStr(chr(183), 157),
             MARKER: markers,
             MENU_SEP: "-",
+            replaceMode: mode,
             VIRTUAL_SPACE: chr(160)
         )}
     ; file
@@ -4225,7 +4296,7 @@ initInternalVars() {
     urls[hs.TITLE].download := homeRaw . hs.TITLE . ".ahk"
     urls[hs.TITLE].history := homeRaw . "changes.txt"
     urls[hs.TITLE].version := homeRaw . "version.txt"
-    
+
     myVars := {
         (LTrim Join
             ADDRESS: "123 Main Street",
@@ -4299,7 +4370,7 @@ isWindow(hWnd) {
 
 lineUnwrapSelected() {
     selText := getSelectedText()
-    selText := StringReplace(selText, A_Space . hs.const.EOL_WIN, A_Space, "All")
+    selText := StrReplace(selText, A_Space . hs.const.EOL_WIN, A_Space)
     pasteText(selText)
 }
 
@@ -4395,7 +4466,7 @@ loadConfig() {
     sites := loadQuickLookupSites(hs.config.default)
     if (sites == "") {
         sites =
-        ( LTrim
+        (LTrim
             &Jira
             http://jira.powerschool.com/browse/@selection@
             &Confluence
@@ -4819,7 +4890,7 @@ numberSelectedPrompt() {
 parseTemplate(template, tokens:="") {
     for name, value in tokens {
         token := "{" . name . "}"
-        template := StringReplace(template, token, value, "All")
+        template := StrReplace(template, token, value)
     }
     return template
 }
@@ -4845,7 +4916,7 @@ pasteText(text:="", delay:=250) {
         eol := getEol(text)
         if (eol == hs.const.EOL_NIX) {
             ; because templates are often from a continuation section, convert EOLs to Windows (CRLF)
-            text := StringReplace(text, hs.const.EOL_NIX, hs.const.EOL_WIN, "All")
+            text := StrReplace(text, hs.const.EOL_NIX, hs.const.EOL_WIN)
         }
         Clipboard := text
         ClipWait(1, 1)
@@ -5157,12 +5228,12 @@ restoreHiddenWindows() {
 reverse(str) {
     result := ""
     eol := getEol(str)
-    str := StringReplace(str, eol, Chr(29), "All")
+    str := StrReplace(str, eol, Chr(29))
     Loop, Parse, str
     {
         result := A_LoopField . result
     }
-    result := StringReplace(result, Chr(29), eol, "All")
+    result := StrReplace(result, Chr(29), eol)
     return result
 }
 
@@ -5194,7 +5265,7 @@ runDos(path:="") {
 
 runEditor(file:="") {
     SplitPath(hs.config.user.editor, editorName, editorPath)
-    regExe := "i)" . StringReplace(editorName, ".", "\.", "all")
+    regExe := "i)" . StrReplace(editorName, ".", "\.")
     if (WinExist("ahk_exe " . regExe)) {
         WinActivate
     }
@@ -5238,7 +5309,7 @@ runQuickLookup() {
         {
             if (A_ThisMenuItemPos * 2 == A_Index) {
                 if (A_LoopField != "Cancel") {
-                    command := StringReplace(A_LoopField, "@selection@", text, "All")
+                    command := StrReplace(A_LoopField, "@selection@", text)
                     Run(command)
                     break
                 }
@@ -5260,7 +5331,7 @@ runQuickResolution() {
 
     doQuickResolution:
         if (A_ThisMenuItem != "" && A_ThisMenuItem != "Cancel") {
-            newRes := listToArray(StringReplace(A_ThisMenuItem, "&", ""), "x")
+            newRes := listToArray(StrReplace(A_ThisMenuItem, "&", ""), "x")
             resizeToResolution(newRes[1], newRes[2])
         }
         return
@@ -5585,36 +5656,6 @@ selfReload(silent:=false) {
     }
 }
 
-sendJiraCode(type) {
-    template =
-    ( LTrim
-        {code:{type1}title={type2} snippet|{format}}
-        {code}
-    )
-    tokens := {type1:setCase(type . (type == "" ? "" : "|"), "L"), type2:(type == "" ? "Code" : type), format:hs.config.user.jiraPanels.format}
-    pasteTemplate(template, tokens, "{Enter}{Up}")
-}
-
-sendJiraPanel(panelFormat) {
-    template =
-    ( LTrim
-        {panel:title=Title|{format}}
-        {panel}
-    )
-    tokens := {format:panelFormat}
-    pasteTemplate(template, tokens, "{Enter}{Up}")
-}
-
-sendJiraSpecialPanel(type) {
-    template =
-    ( LTrim
-        {{type}:title={title} Title}
-        {{type}}
-    )
-    tokens := {type:type, title:setCase(type, "S")}
-    pasteTemplate(template, tokens, "{Enter}{Up}")
-}
-
 sendText(text, keys:="", delay:="250") {
     pasteText(text, delay)
     if (keys != "") {
@@ -5727,7 +5768,7 @@ showQuickHelp(waitforKey) {
     trimChars := "`t " . vspace
 
     hkActionHelpEnabled =
-    ( LTrim
+    (LTrim
         Action hotkeys`t`t`t
         %colLine%
         [W]-A`t`tToggle always-on-top`t
@@ -5750,7 +5791,7 @@ showQuickHelp(waitforKey) {
     hkActionHelp := (hs.config.user.enableHkAction ? hkActionHelpEnabled : hkActionHelpDisabled)
 
     hkDosHelpEnabled =
-    ( LTrim Comments
+    (LTrim Comments
         %spacer%
         DOS hotkeys`t`t`t
         %colLine%
@@ -5774,7 +5815,7 @@ showQuickHelp(waitforKey) {
     hkDosHelp := (hs.config.user.enableHkDos ? hkDosHelpEnabled : hkDosHelpDisabled)
 
 ;    hkEppHelpEnabled =
-;    ( LTrim
+;    (LTrim
 ;        EditPad Pro hotkeys`t`t`t
 ;        %colLine%
 ;        [A]-Delete`tDelete line`t`t`t
@@ -5791,7 +5832,7 @@ showQuickHelp(waitforKey) {
 
     title := hs.TITLE
     hkHotScriptHelp =
-    ( LTrim Comments
+    (LTrim Comments
         %spacer%
         %title% hotkeys`t`t`t
         %colLine%
@@ -5817,7 +5858,7 @@ showQuickHelp(waitforKey) {
     )
 
     hkMiscHelpEnabled =
-    ( LTrim
+    (LTrim
         Miscellaneous hotkeys
         %colLine%
         [CA]-A`t`tCopy Append
@@ -5837,7 +5878,7 @@ showQuickHelp(waitforKey) {
     hkMiscHelp := (hs.config.user.enableHkMisc ? hkMiscHelpEnabled : hkMiscHelpDisabled)
 
     hkTextHelpEnabled =
-    ( LTrim
+    (LTrim
         %spacer%
         Text hotkeys`t`t`t
         %colLine%
@@ -5853,7 +5894,7 @@ showQuickHelp(waitforKey) {
     hkTextHelp := (hs.config.user.enableHkText ? hkTextHelpEnabled : hkTextHelpDisabled)
 
     hkTransformHelpEnabled =
-    ( LTrim
+    (LTrim
         Transform hotkeys`t`t`t
         %colLine%
         [CS]-```t`tEscape text`t`t
@@ -5885,7 +5926,7 @@ showQuickHelp(waitforKey) {
     hkTransformHelp := (hs.config.user.enableHkTransform ? hkTransformHelpEnabled : hkTransformHelpDisabled)
 
     hkWindowHelpEnabled =
-    ( LTrim
+    (LTrim
         Window hotkeys`t`t`t
         %colLine%
         [A]-WheelDown`tPageDown`t`t
@@ -5926,7 +5967,7 @@ showQuickHelp(waitforKey) {
     hkWindowHelpDisabled := replaceEachLine(hkWindowHelpEnabled, spacer)
     hkWindowHelp := (hs.config.user.enableHkWindow ? hkWindowHelpEnabled : hkWindowHelpDisabled)
 
-    hkHeader := vpsace . "`t`t`t`t`t[ C = Ctrl  |  A = Alt  |  S = Shift  |  W = Win  |  L = Left  |  R = Right ]" . eol . eol
+    hkHeader := vspace . "`t`t`t`t`t[ C = Ctrl  |  A = Alt  |  S = Shift  |  W = Win  |  L = Left  |  R = Right ]" . eol . eol
     hkCol1 := hkActionHelp . eol . hkDosHelp
     hkCol2 := hkWindowHelp
     hkCol3 := hkTransformHelp . eol . hkTextHelp
@@ -5954,7 +5995,7 @@ showQuickHelp(waitforKey) {
     hkResult := RegexReplace(hkResult, vspace, "&nbsp;")
 
     hsAliasHelpEnabled =
-    ( LTrim
+    (LTrim
         Alias hotstrings`t`t`t
         %colLine%
         bbl`tbe back later`t`t`t
@@ -5983,32 +6024,38 @@ showQuickHelp(waitforKey) {
         %spacer%
         %spacer%
         %spacer%
+        %spacer%
+        %spacer%
+        %spacer%
+        %spacer%
+        %spacer%
     )
     hsAliasHelpDisabled := replaceEachLine(hsAliasHelpEnabled, spacer)
     hsAliasHelp := (hs.config.user.enableHsAlias ? hsAliasHelpEnabled : hsAliasHelpDisabled)
 
     hsAutoCorrectHelpEnabled =
-    ( LTrim
+    (LTrim
         %spacer%
         Auto-correct hotstrings`t`t
         %colLine%
         @ip`tCurrent IP address`t`t
         #/#`%`tdivide as percent`t`t
-        #`%#`tpercent of number`t`t
-        #/#`tCommon fractions (n/[2-6,8])`t
-        cL`tc:`t`t`t`t
-        %spacer%
-        %spacer%
-        %spacer%
-        %spacer%
+        #`%#%vspace%`tpercent of number`t`t
+        #/#%vspace%`tCommon fractions (n/[2-6,8])`t
+        [c-z]L`t[c-z]:`t`t`t`t
     )
     hsAutoCorrectHelpDisabled := replaceEachLine(hsAutoCorrectHelpEnabled, spacer)
     hsAutoCorrectHelp := (hs.config.user.enableHsAutoCorrect ? hsAutoCorrectHelpEnabled : hsAutoCorrectHelpDisabled)
 
     hsCodeHelpEnabled =
-    ( LTrim
+    (LTrim
+        %spacer%
         Code hotstrings`t`t`t
         %colLine%
+        @html`tHTML template`t`t`t
+        @java`tJava template`t`t`t
+        @perl`tPerl template`t`t`t
+        @sql`tSQL template`t`t`t
         chh`tComment header: HTML`t`t
         chj`tComment header: Java/JS`t`t
         chp`tComment header: Perl`t`t
@@ -6022,16 +6069,12 @@ showQuickHelp(waitforKey) {
         switch(`t'switch' block`t`t`t
         sysout`tSystem.out.println("");`t`t
         while(`t'while' block`t`t`t
-        @html`tHTML template`t`t`t
-        @java`tJava template`t`t`t
-        @perl`tPerl template`t`t`t
-        @sql`tSQL template`t`t`t
     )
     hsCodeHelpDisabled := replaceEachLine(hsCodeHelpEnabled, spacer)
     hsCodeHelp := (hs.config.user.enableHsCode ? hsCodeHelpEnabled : hsCodeHelpDisabled)
 
     hsDatesHelpEnabled =
-    ( LTrim
+    (LTrim
         Date/Time hotstrings`t`t
         %colLine%
         dtms`tYYYYMDD_24MMSS`t`t`t
@@ -6049,8 +6092,7 @@ showQuickHelp(waitforKey) {
     hsDatesHelp := (hs.config.user.enableHsDates ? hsDatesHelpEnabled : hsDatesHelpDisabled)
 
     hsDosHelpEnabled =
-    ( LTrim
-        %spacer%
+    (LTrim
         DOS hotstrings`t`t`t
         %colLine%
         cd`tcd /d`t`t`t`t
@@ -6059,35 +6101,36 @@ showQuickHelp(waitforKey) {
     hsDosHelp := (hs.config.user.enableHsDos ? hsDosHelpEnabled : hsDosHelpDisabled)
 
     hsHtmlHelpEnabled =
-    ( LTrim
-        HTML/XML hotstrings`t`t`t
+    (LTrim
+        %spacer%
+        HTML/XML hotstrings`t`t
         %colLine%
         <TAG`tMost HTML tags auto-complete`t
         %A_SPACE%%A_SPACE%%pointerExtend%`t(Some create child tags)`t
         %A_SPACE%%A_SPACE%%pointer% TAG is any of the following:`t
         `ta/b/big/block/body/br/but/cap`t
         `tcode/del/div/em/field/foot`t
-        `tform/h[1-6]/head/header`t
+        `tform/h[1-6]/head/header`t`t
         `thgroup/hr/html/i/iframe/img`t
         `tinput/label/legend/li/link/ol`t
         `toptg/opti/p/pre/q/script`t
         `tsection/select/small/source`t
         `tspan/strong/style/sub/sum`t
         `tsup/table/tbody/td/texta`t
-        `ttfoot/th/title/tr/u/ul`t
+        `ttfoot/th/title/tr/u/ul`t`t
         <xml`tAuto-completes XML header`t
     )
     hsHtmlHelpDisabled := replaceEachLine(hsHtmlHelpEnabled, spacer)
     hsHtmlHelp := (hs.config.user.enableHsHtml ? hsHtmlHelpEnabled : hsHtmlHelpDisabled)
 
     hsJiraHelpEnabled =
-    ( LTrim
+    (LTrim
         %spacer%
         Jira/Confluence hotstrings`t`t
         %colLine%
         `{bpan`t'panel' tags (blue)`t`t`t
-        `{color`t'color' tags`t`t`t
         `{code`t'code' tags for simple code`t`t
+        `{color`t'color' tags`t`t`t
         `{gpan`t'panel' tags (green)`t`t`t
         `{info`t'info' tags`t`t`t
         `{java`t'code' tags for Java`t`t
@@ -6103,15 +6146,12 @@ showQuickHelp(waitforKey) {
         `{warn`t'warn' tags`t`t`t
         `{xml`t'code' tags for XML`t`t
         `{ypan`t'panel' tags (yellow)`t`t`t
-        %spacer%
-        %spacer%
     )
     hsJiraHelpDisabled := replaceEachLine(hsJiraHelpEnabled, spacer)
     hsJiraHelp := (hs.config.user.enableHsJira ? hsJiraHelpEnabled : hsJiraHelpDisabled)
 
     hsVariableHelpEnabled =
-    ( LTrim
-        %spacer%
+    (LTrim
         Variable hotstrings`t`t
         %colLine%
         @@`temail address`t`t`t
@@ -6124,11 +6164,11 @@ showQuickHelp(waitforKey) {
     hsVariableHelpDisabled := replaceEachLine(hsVariableHelpEnabled, spacer)
     hsVariableHelp := (hs.config.user.enableHsVariables ? hsVariableHelpEnabled : hsVariableHelpDisabled)
 
-    hsHeader := vspace . "`t`t`t`tHotString aliases ending with " . vspace . " means any whitespace or punctuation character is required." . eol . eol
+    hsHeader := vspace . "`t`t`t`tHotStrings ending with " . vspace . " means any whitespace or punctuation character is required." . eol . eol
     hsCol1 := hsAliasHelp
-    hsCol2 := hsCodeHelp . eol . hsVariableHelp
-    hsCol3 := hsDatesHelp . eol . hsDosHelp . eol . hsAutoCorrectHelp
-    hsCol4 := hsHtmlHelp . eol . hsJiraHelp
+    hsCol2 := hsVariableHelp . eol . hsAutoCorrectHelp . eol . hsHtmlHelp
+    hsCol3 := hsDatesHelp . eol . hsCodeHelp
+    hsCol4 := hsDosHelp . eol . hsJiraHelp
 
     hsArr1 := listToArray(hsCol1)
     hsArr2 := listToArray(hsCol2)
@@ -6143,29 +6183,35 @@ showQuickHelp(waitforKey) {
     hsResult := RegexReplace(hsResult, ">", "&gt;")
     hsResult := RegexReplace(hsResult, "(with )(" . vspace . ")( means)", "$1<span class=""sep"">&nbsp;</span>$3")
     hsResult := RegexReplace(hsResult, "([A-Z][^\t\n]+ )(hot)(strings)", "<span class=""section"">$1$3</span>`t")
-    hsResult := RegexReplace(hsResult, "(\w)(" . vspace . ")(\t)", "$1<span class=""sep"">&nbsp;</span>$3")
+    hsResult := RegexReplace(hsResult, "(\w|#)(" . vspace . ")(\t)", "$1<span class=""sep"">&nbsp;</span>$3")
     hsResult := RegexReplace(hsResult, "(&lt;)(TAG)", "$1<span class=""explain"">$2</span>")
     hsResult := RegexReplace(hsResult, vspace, "&nbsp;")
 
     hsVersion := hs.VERSION
+    copyYear := SubStr(hsVersion, 3, 4)
+    homeUrl := hs.vars.url.HotScript.home
     helpHtml =
     (Ltrim Join
-        <!DOCTYPE html><meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <!DOCTYPE html>
         <html>
             <head>
+                <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
                 <meta charset="UTF-8"/>
                 <style type="text/css">
                     body {background-color:#FFFEE3;color:#333;font-size:13px;margin-top:2px;}
+                    a {color:inherit;text-decoration:none;}
+                    a:hover {color:blue;text-decoration:underline;}
+                    .bigger {font-size:18px;}
                     .explain {background-color:#E4D6EF;padding:1px;}
                     .sep {background-color:#DEA5A4;padding:0px;}
                     .mod {color:#FF6961;font-weight:bold;}
-                    .section {font-weight:bold;background-color:#C5D3E9;padding:2px 3px;border:1px solid #BBB;}
-                    .title {float:right;font-family:Serif;font-size:14px;}
+                    .section {background-color:#C5D3E9;border-radius:5px;font-weight:bold;padding:2px 3px;border:1px solid #BBB;}
+                    .title {background:#B4EEB4;border:1px solid #333;border-radius:5px;color:#000;float:right;font-family:Trebuchet MS;font-size:14px;margin:-12px -7px 0 0;padding:1px 8px;text-align:right;}
                     pre {-moz-tab-size:8;-o-tab-size:8;tab-size:8;}
                 </style>
             </head>
         <body>
-            <div class="title">HotScript v%hsVersion%</div>
+            <div class="title"><a href="%homeUrl%">HotScript</a> v%hsVersion% &nbsp; <span class="bigger">&copy;</span> 2013-%copyYear%</div>
             <pre>${help}</pre>
         </body>
         </html>
@@ -6183,13 +6229,14 @@ showQuickHelp(waitforKey) {
     Gui, 2: Add, Tab2, x0 y0 w1275 h643 bottom vhelpTab, HotKeys|HotStrings
     Gui, 2: Add, ActiveX, x0 y0 w1272 h618 vhtmlHK, HtmlFile
     while (htmlHK.ReadyState != "complete") {
-        Sleep, 50
+        Sleep, 100
     }
+    Sleep, 50
     htmlHK.write(hkContent)
     Gui, 2: Tab, 2
     Gui, 2: Add, ActiveX, x0 y0 w1272 h618 vhtmlHS, HtmlFile
     while (htmlHS.ReadyState != "complete") {
-        Sleep, 50
+        Sleep, 100
     }
     htmlHS.write(hsContent)
     Gui, 2: Tab
@@ -6211,7 +6258,7 @@ showQuickHelp(waitforKey) {
 
 showSplash(msg,timeout:=1500) {
     splashTitle := hs.TITLE . "Splash"
-    SplashImage("", "b1 cwDEA5A4 fs12", msg, "", splashTitle)
+    SplashImage("", "b1 cwFFA7A3 fs12", msg, "", splashTitle)
     centerWindow(splashTitle)
     Sleep(timeout)
     SplashImage("off")
@@ -6271,8 +6318,8 @@ stop() {
 }
 
 stripEol(str) {
-    str := StringReplace(str, hs.const.EOL_MAC , "", "All")
-    str := StringReplace(str, hs.const.EOL_NIX , "", "All")
+    str := StrReplace(str, hs.const.EOL_MAC , "")
+    str := StrReplace(str, hs.const.EOL_NIX , "")
     return str
 }
 
@@ -6389,17 +6436,6 @@ public class Template {
         template := RegExReplace(template, hs.const.EOL_NIX, hs.const.EOL_WIN)
     }
     pasteTemplate(template, "", templateKeys)
-}
-
-templateJiraTable() {
-    template =
-    (
-|| Column1 || Column2 || Column3 || Column4 || Column5 ||
-| Row1_1 | Row1_2 | Row1_3 | Row1_4 | Row1_5 |
-
-    )
-    template := RegExReplace(template, hs.const.EOL_NIX, hs.const.EOL_WIN)
-    pasteTemplate(template, "", "{Home}{Up 2}{Right 3}+{Right 7}")
 }
 
 templatePerl() {
@@ -6551,7 +6587,7 @@ templateSql() {
     if (template == "") {
         templateKeys := "{Up 2}{End}"
         template =
-        ( LTrim
+        (LTrim
             -- ----------------------------------------------------------------------
             -- This is a simple SQL template. (generated by HotScript)
             -- ----------------------------------------------------------------------
@@ -6599,8 +6635,8 @@ toggleAlwaysOnTop(hWnd:="A") {
 
     ; remove any existing markers
     WinGetTitle, newTitle, ahk_id %hWnd%
-    newTitle := StringReplace(newTitle, hs.const.MARKER.always_on_top)
-    newTitle := StringReplace(newTitle, hs.const.MARKER.click_through)
+    newTitle := StrReplace(newTitle, hs.const.MARKER.always_on_top)
+    newTitle := StrReplace(newTitle, hs.const.MARKER.click_through)
 
     ; force click-through to be turned off
     WinSet, ExStyle, -0x20, ahk_id %hWnd%
@@ -6628,8 +6664,8 @@ toggleClickThrough(hWnd:="A") {
 
     ; remove any existing markers
     WinGetTitle, newTitle, ahk_id %hWnd%
-    newTitle := StringReplace(newTitle, hs.const.MARKER.always_on_top)
-    newTitle := StringReplace(newTitle, hs.const.MARKER.click_through)
+    newTitle := StrReplace(newTitle, hs.const.MARKER.always_on_top)
+    newTitle := StrReplace(newTitle, hs.const.MARKER.click_through)
 
     if (newState == "on") {
         WinSet, Transparent, 127, ahk_id %hWnd%
@@ -6810,30 +6846,30 @@ upperCaseOracle() {
 }
 
 urlEncode(text) {
-    text := StringReplace(text, "%", "%25", "All") ; This needs to be first
-    text := StringReplace(text, """", "%22", "All")
-    text := StringReplace(text, "#", "%23", "All")
-    text := StringReplace(text, "$", "%24", "All")
-    text := StringReplace(text, "&", "%26", "All")
-    text := StringReplace(text, "'", "%27", "All")
-    text := StringReplace(text, "(", "%28", "All")
-    text := StringReplace(text, ")", "%29", "All")
-    text := StringReplace(text, "+", "%2B", "All")
-    text := StringReplace(text, ",", "%2C", "All")
-    text := StringReplace(text, "/", "%2F", "All")
-    text := StringReplace(text, ":", "%3A", "All")
-    text := StringReplace(text, ";", "%3B", "All")
-    text := StringReplace(text, "<", "%3C", "All")
-    text := StringReplace(text, "=", "%3D", "All")
-    text := StringReplace(text, ">", "%3D", "All")
-    text := StringReplace(text, "?", "%3F", "All")
-    text := StringReplace(text, "@", "%40", "All")
-    text := StringReplace(text, "`", "%60", "All")
-    text := StringReplace(text, A_Tab, A_Space, "All")
-    text := StringReplace(text, A_Space, "%20", "All")
-    text := StringReplace(text, hs.const.EOL_WIN, A_Space, "All")
-    text := StringReplace(text, hs.const.EOL_MAC, A_Space, "All")
-    text := StringReplace(text, hs.const.EOL_NIX, A_Space, "All")
+    text := StrReplace(text, "%", "%25") ; This needs to be first
+    text := StrReplace(text, """", "%22")
+    text := StrReplace(text, "#", "%23")
+    text := StrReplace(text, "$", "%24")
+    text := StrReplace(text, "&", "%26")
+    text := StrReplace(text, "'", "%27")
+    text := StrReplace(text, "(", "%28")
+    text := StrReplace(text, ")", "%29")
+    text := StrReplace(text, "+", "%2B")
+    text := StrReplace(text, ",", "%2C")
+    text := StrReplace(text, "/", "%2F")
+    text := StrReplace(text, ":", "%3A")
+    text := StrReplace(text, ";", "%3B")
+    text := StrReplace(text, "<", "%3C")
+    text := StrReplace(text, "=", "%3D")
+    text := StrReplace(text, ">", "%3D")
+    text := StrReplace(text, "?", "%3F")
+    text := StrReplace(text, "@", "%40")
+    text := StrReplace(text, "`", "%60")
+    text := StrReplace(text, A_Tab, A_Space)
+    text := StrReplace(text, A_Space, "%20")
+    text := StrReplace(text, hs.const.EOL_WIN, A_Space)
+    text := StrReplace(text, hs.const.EOL_MAC, A_Space)
+    text := StrReplace(text, hs.const.EOL_NIX, A_Space)
     return text
 }
 
