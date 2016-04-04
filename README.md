@@ -53,3 +53,28 @@ more you embrace using it, the more you will find you don't want to use Windows 
 * Create a separate folder for HotScript and move HotScript.ahk into that folder.
 * Double-click HotScript.ahk to launch it for the first time. Some setup will automatically occur.
 * Press Ctrl-Win-H to show (or hide) the help screen.
+
+## Contact
+
+If you have questions or need assistance, please send email to <a href="mailto:hotscript.help@gmail.com?Subject=Question%20about%20HotScript">hotscript.help@gmail.com</a>. 
+
+## TODO
+
+Documentation is being prepared; please check back soon.
+
+## User Comments
+
+**Paul P.**
+<div class="comment">The elegance of what you have built here is in the simplicity of being able to use it.</div>
+
+**Anonymous**
+<div class="comment">The amount of time HotScript saves me during the week is remarkable.</div>
+
+**J.P.**
+<div class="comment">I have waited for years for Microsoft to provide some of these features.</div>
+
+**KB**
+<div class="comment">I use it ALL the time.  Why wouldn't you?</div>
+
+**B**
+<div class="comment">Using a computer without HotScript is painful.</div>
