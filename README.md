@@ -65,16 +65,16 @@ Documentation is being prepared; please check back soon.
 ## User Comments
 
 **Paul P.**
-<div class="comment">The elegance of what you have built here is in the simplicity of being able to use it.</div>
+> The elegance of what you have built here is in the simplicity of being able to use it.
 
 **Anonymous**
-<div class="comment">The amount of time HotScript saves me during the week is remarkable.</div>
+> The amount of time HotScript saves me during the week is remarkable.
 
 **J.P.**
-<div class="comment">I have waited for years for Microsoft to provide some of these features.</div>
+> I have waited for years for Microsoft to provide some of these features.
 
 **KB**
-<div class="comment">I use it ALL the time.  Why wouldn't you?</div>
+> I use it ALL the time.  Why wouldn't you?
 
 **B**
-<div class="comment">Using a computer without HotScript is painful.</div>
+> Using a computer without HotScript is painful.
