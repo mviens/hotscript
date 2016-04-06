@@ -1,14 +1,18 @@
 /*
 There should be no reason to edit this file directly.
 
-To add user-defined functions, edit the file  : HotScriptFunctions.ahk
-To add user-defined hotkeys, edit the file    : HotScriptKeys.ahk
-To add user-defined hotstrings, edit the file : HotScriptStrings.ahk
-To add user-defined variables, edit the file  : HotScriptVariables.ahk
-To override default settings, copy values from: HotScriptDefault.ini to HotScriptUser.ini
+Press Ctrl-Win-H for the help screen.
+Press Win-4 to edit HotScriptKeys.ahk to add user-defined HotKeys.
+Press Win-5 to edit HotScriptStrings.ahk to add user-defined HotStrings.
+Press Win-6 to edit HotScriptVariables.ahk to add user-defined variables.
+Press Win-7 to edit HotScriptFunctions.ahk to add user-defined functions.
+Press Win-8 to edit HotScriptUser.ini
+Press Win-9 to edit HotScriptDefault.ini
+To override any default settings, copy the section header and value(s) from HotScriptDefault.ini to HotScriptUser.ini
 
-For further information, assistance or bug-reporting,
-please contact Mike Viens. (mikeviens@gmail.com)
+For further information, assistance or bug-reporting, please contact support at: hotscript.help@gmail.com
+
+HotScript is copyrighted 2013-2016.
 */
 
 #Include %A_ScriptDir%
@@ -21,7 +25,6 @@ please contact Mike Viens. (mikeviens@gmail.com)
 #Warn UseUnsetLocal, OutputDebug
 Autotrim, off
 ListLines, off
-;SendMode Input
 SetBatchLines -1
 SetKeyDelay, -1
 SetTitleMatchMode, Regex
@@ -40,7 +43,6 @@ init()
 ;Includes
 #Include *i HotScriptStrings.ahk
 #Include *i HotScriptKeys.ahk
-
 
 ;__________________________________________________
 ; Auto initialization processing stops here because when either a HotKey or HotString
@@ -901,11 +903,19 @@ hkTransformSentenceCase() {
 }
 
 hkTransformSortAscending() {
-    sortSelected()
+    sortSelected("a", false)
+}
+
+hkTransformSortAscendingNoCase() {
+    sortSelected("a", true)
 }
 
 hkTransformSortDescending() {
-    sortSelected("d")
+    sortSelected("d", false)
+}
+
+hkTransformSortDescendingNoCase() {
+    sortSelected("d", true)
 }
 
 hkTransformTagify() {
@@ -1123,9 +1133,8 @@ hsCodeBlock() {
         `) {
         %indent%%indent1%
         %indent%}
-
     )
-    sendText(template, "{Up 3}{End}{Left 3}")
+    sendText(template, "{Up 2}{End}{Left 3}")
 }
 
 hsCodeElseIf() {
@@ -1136,13 +1145,12 @@ hsCodeElseIf() {
         else if `(`) {
         %indent%%indent1%
         %indent%}
-
     )
-    sendText(template, "{Up 3}{End}{Left 3}")
+    sendText(template, "{Up 2}{End}{Left 3}")
 }
 
 hsCodeFunction() {
-    trigger := StrReplace($, "func", "function")
+    trigger := StrReplace($.value(0), "func", "function")
     indent := getIndent()
     indent1 := getIndent1(indent)
     template =
@@ -1150,9 +1158,8 @@ hsCodeFunction() {
         %trigger%`) {
         %indent%%indent1%
         %indent%}
-
     )
-    sendText(template, "{Up 3}{End}{Left 3}")
+    sendText(template, "{Up 2}{End}{Left 3}")
 }
 
 hsCodeIfElse() {
@@ -1166,9 +1173,8 @@ hsCodeIfElse() {
         %indent%else {
         %indent%%indent1%
         %indent%}
-
     )
-    sendText(template, "{Up 6}{End}{Left 3}")
+    sendText(template, "{Up 5}{End}{Left 3}")
 }
 
 hsCodeStringFormat() {
@@ -1187,9 +1193,8 @@ hsCodeSwitch() {
         %indent%%indent1%default:
         %indent%%indent1%%indent1%break;
         %indent%}
-
     )
-    sendText(template, "{Up 6}{End}{Left 3}")
+    sendText(template, "{Up 5}{End}{Left 3}")
 }
 
 hsCodeSysOut() {
@@ -1202,7 +1207,7 @@ hsCommentHeaderHtml() {
     template =
     (LTrim
         <!--%line%
-        %indent%   %A_Space%
+        %indent%%indent%
         %indent%%line%--->
     )
     sendText(template, "{Up}{End}")
@@ -1216,7 +1221,7 @@ hsCommentHeaderJava() {
         %indent% *%A_Space%
         %indent% */
     )
-    sendText(template, "{Up 2}{End}")
+    sendText(template, "{Up}{End}")
 }
 
 hsCommentHeaderPerl() {
@@ -1225,10 +1230,10 @@ hsCommentHeaderPerl() {
     template =
     (LTrim
         # %line%
-        %indent%#%A_Space%
+        %indent%#%indent%
         %indent%# %line%
     )
-    sendText(template, "{Up 2}{End}")
+    sendText(template, "{Up}{End}")
 }
 
 hsCommentHeaderSql() {
@@ -1237,10 +1242,10 @@ hsCommentHeaderSql() {
     template =
     (LTrim
         -- %line%
-        %indent%--%A_Space%
+        %indent%--%indent%
         %indent%-- %line%
     )
-    sendText(template, "{Up 2}{End}")
+    sendText(template, "{Up}{End}")
 }
 
 hsHtmlA() {
@@ -1265,7 +1270,8 @@ hsHtmlHeader() {
 }
 
 hsHtmlHtml() {
-    SendInput, ^{Left}{Left}
+    triggerLen := StrLen($.value(0))
+    SendInput, {Left %triggerLen%}
     indent := getIndent()
     indent1 := getIndent1(indent)
     template =
@@ -1288,8 +1294,9 @@ hsHtmlLink() {
 }
 
 hsHtmlList() {
+    triggerLen := StrLen($.value(0))
     tag := $.value(1)
-    SendInput, ^{Left}{Left}
+    SendInput, {Left %triggerLen%}
     indent := getIndent()
     indent1 := getIndent1(indent)
     template =
@@ -1302,7 +1309,8 @@ hsHtmlList() {
 }
 
 hsHtmlOptGroup() {
-    SendInput, ^{Left}{Left}
+    triggerLen := StrLen($.value(0))
+    SendInput, {Left %triggerLen%}
     indent := getIndent()
     indent1 := getIndent1(indent)
     template =
@@ -1315,7 +1323,8 @@ hsHtmlOptGroup() {
 }
 
 hsHtmlSelect() {
-    SendInput, ^{Left}{Left}
+    triggerLen := StrLen($.value(0))
+    SendInput, {Left %triggerLen%}
     indent := getIndent()
     indent1 := getIndent1(indent)
     template =
@@ -1332,7 +1341,8 @@ hsHtmlSource() {
 }
 
 hsHtmlStyle() {
-    SendInput, ^{Left}{Left}
+    triggerLen := StrLen($.value(0))
+    SendInput, {Left %triggerLen%}
     indent := getIndent()
     indent1 := getIndent1(indent)
     template =
@@ -1345,7 +1355,8 @@ hsHtmlStyle() {
 }
 
 hsHtmlTable() {
-    SendInput, ^{Left}{Left}
+    triggerLen := StrLen($.value(0))
+    SendInput, {Left %triggerLen%}
     indent := getIndent()
     indent1 := getIndent1(indent)
     template =
@@ -1386,8 +1397,9 @@ hsHtmlTagAbbr() {
 }
 
 hsHtmlTagBlock() {
+    triggerLen := StrLen($.value(0))
     tag := $.value(1)
-    SendInput, ^{Left}{Left}
+    SendInput, {Left %triggerLen%}
     indent := getIndent()
     indent1 := getIndent1(indent)
     template =
@@ -1417,11 +1429,13 @@ hsHtmlTagSimple() {
 }
 
 hsHtmlTagSrc() {
-    sendText(" src=""""/>", "{Left 3}")
+    tag := $.value(1)
+    sendText(" src=""""></" . tag . ">", "{Left " . (StrLen(tag) + 3) . "}")
 }
 
 hsHtmlTextarea() {
-    SendInput, ^{Left}{Left}
+    triggerLen := StrLen($.value(0))
+    SendInput, {Left %triggerLen%}
     indent := getIndent()
     indent1 := getIndent1(indent)
     template =
@@ -1434,7 +1448,8 @@ hsHtmlTextarea() {
 }
 
 hsHtmlTr() {
-    SendInput, ^{Left}{Left}
+    triggerLen := StrLen($.value(0))
+    SendInput, {Left %triggerLen%}
     indent := getIndent()
     indent1 := getIndent1(indent)
     template =
@@ -1468,10 +1483,9 @@ hsJiraCode(type) {
     (LTrim
         {code:{type1}title={type2} snippet|{format}}
         {code}
-
     )
     tokens := {type1:type1 . (type1 == "" ? "" : "|"), type2:type2, format:hs.config.user.jiraPanels.format}
-    pasteTemplate(template, tokens, "{Up}")
+    pasteTemplate(template, tokens, "{Home}")
 }
 
 hsJiraColor() {
@@ -1483,9 +1497,8 @@ hsJiraNoFormat() {
     (LTrim
         ormat}
         {noformat}
-
     )
-    sendText(template, "{Up}{End}{Home}")
+    sendText(template, "{Home}")
 }
 
 hsJiraPanel(type) {
@@ -1516,10 +1529,9 @@ hsJiraPanel(type) {
     (LTrim
         {panel:title=Title|{format}}
         {panel}
-
     )
     tokens := {format:panelFormat}
-    pasteTemplate(template, tokens, "{Up}")
+    pasteTemplate(template, tokens, "{Home}")
 }
 
 hsJiraQuote() {
@@ -1527,9 +1539,8 @@ hsJiraQuote() {
     (LTrim
         te}
         {quote}
-
     )
-    sendText(template, "{Up}{End}{Home}")
+    sendText(template, "{Home}")
 }
 
 hsJiraSpecialPanel(type) {
@@ -1540,10 +1551,9 @@ hsJiraSpecialPanel(type) {
     (LTrim
         :title={title} Title}
         {{type}}
-
     )
     tokens := {type:type, title:setCase(type, "S")}
-    pasteTemplate(template, tokens, "{Up}")
+    pasteTemplate(template, tokens, "{Home}")
 }
 
 hsJiraTable() {
@@ -1551,10 +1561,9 @@ hsJiraTable() {
     (LTrim
         || Column1 || Column2 || Column3 || Column4 || Column5 ||
         | Row1_1 | Row1_2 | Row1_3 | Row1_4 | Row1_5 |
-
     )
     template := RegExReplace(template, hs.const.EOL_NIX, hs.const.EOL_WIN)
-    pasteTemplate(template, "", "{Home}{Up 2}{Right 3}^+{Right}")
+    pasteTemplate(template, "", "{Home}{Up}{Right 3}^+{Right}")
 }
 
 ;__________________________________________________
@@ -1765,8 +1774,20 @@ compareStrAsc(a, b) {
     return compareStr(a, b, "A")
 }
 
+compareStrAscNoCase(a, b) {
+    a := setCase(a, "l")
+    b := setCase(b, "l")
+    return compareStrAsc(a, b)
+}
+
 compareStrDesc(a, b) {
     return compareStr(a, b, "D")
+}
+
+compareStrDescNoCase(a, b) {
+    a := setCase(a, "l")
+    b := setCase(b, "l")
+    return compareStrDesc(a, b)
 }
 
 compareStr(a, b, direction:="A") {
@@ -3426,8 +3447,10 @@ getDefaultHotKeyDefs(type) {
         hk["hkTransformOracleUpper"] := "^+o"
         hk["hkTransformReverseText"] := "^+r"
         hk["hkTransformSentenceCase"] := "^+s"
-        hk["hkTransformSortAscending"] := "^+a"
-        hk["hkTransformSortDescending"] := "^+d"
+        hk["hkTransformSortAscending"] := "^!+a"
+        hk["hkTransformSortAscendingNoCase"] := "^+a"
+        hk["hkTransformSortDescending"] := "^!+d"
+        hk["hkTransformSortDescendingNoCase"] := "^+d"
         hk["hkTransformTagify1"] := "!+,"
         hk["hkTransformTagify2"] := "!+."
         hk["hkTransformTitleCase"] := "$^+t"
@@ -3571,7 +3594,30 @@ getExplorerPath() {
 
 getIndent() {
     SendInput, +{Home}
+    ; TODO - before trying to getSelectedText(), test if we are at position 1 already by using Ctrl-C
+    ; if the buffer is empty, we are at pos 1, so no indent!
     result := getSelectedText()
+    if (!RegexMatch(result, "^[ \t]*$")) {
+        SendInput, +{Home}
+        result2 := getSelectedText()
+        if (StrLen(result2) > StrLen(result)) {
+            result := result2
+        }
+        tmp := result
+        result := ""
+        isBlank := true
+        Loop, Parse, tmp
+        {
+            if (isBlank) {
+                if (isBlank && RegexMatch(A_LoopField, "[ \t]")) {
+                    result .= A_LoopField
+                }
+                else {
+                    isBlank := false
+                }
+            }
+        }
+    }
     SendInput, {End}
     return result
 }
@@ -4118,7 +4164,7 @@ initHotStrings() {
         hotString("\b4\/5" . endChars, chr(8536), mode.REGEX, , "isCalculatorNotActive")
         hotString("\b5\/6" . endChars, chr(8538), mode.REGEX, , "isCalculatorNotActive")
         hotString("\b7\/8" . endChars, chr(8542), mode.REGEX, , "isCalculatorNotActive")
-        hotString("([a-z])L", "$1:", mode.REGEX)
+        hotString("\b([a-z])L", "$1:", mode.REGEX)
     }
     if (toBool(hs.config.user.enableHsCode)) {
         hotString("@html", "templateHtml", mode.CASE)
@@ -4234,7 +4280,7 @@ initHotStrings() {
 }
 
 initInternalVars() {
-    hs.VERSION := "1.20160404.1"
+    hs.VERSION := "1.20160406.1"
     hs.TITLE := "HotScript"
     hs.BASENAME := A_ScriptDir . "\" . hs.TITLE
 
@@ -5887,8 +5933,6 @@ showQuickHelp(waitforKey) {
         [A]-Up`t`tMove line up`t`t
         [CS]-Up`t`tDuplicate line`t`t
         %spacer%
-        %spacer%
-        %spacer%
     )
     hkTextHelpDisabled := replaceEachLine(hkTextHelpEnabled, spacer)
     hkTextHelp := (hs.config.user.enableHkText ? hkTextHelpEnabled : hkTextHelpDisabled)
@@ -5899,7 +5943,9 @@ showQuickHelp(waitforKey) {
         %colLine%
         [CS]-```t`tEscape text`t`t
         [CS]-A`t`tSort ascending`t`t
+        [CAS]-A`t`tSort ascending (case)`t
         [CS]-D`t`tSort descending`t`t
+        [CAS]-D`t`tSort descending (case)`t
         [CS]-E`t`tEncrypt text`t`t
         [CS]-I`t`tiNVERT cASE`t`t
         [CS]-L`t`tlower case`t`t
@@ -6117,7 +6163,7 @@ showQuickHelp(waitforKey) {
         `tsection/select/small/source`t
         `tspan/strong/style/sub/sum`t
         `tsup/table/tbody/td/texta`t
-        `ttfoot/th/title/tr/u/ul`t`t
+        `ttfoot/th/thead/title/tr/u/ul`t
         <xml`tAuto-completes XML header`t
     )
     hsHtmlHelpDisabled := replaceEachLine(hsHtmlHelpEnabled, spacer)
@@ -6205,8 +6251,8 @@ showQuickHelp(waitforKey) {
                     .explain {background-color:#E4D6EF;padding:1px;}
                     .sep {background-color:#DEA5A4;padding:0px;}
                     .mod {color:#FF6961;font-weight:bold;}
-                    .section {background-color:#C5D3E9;border-radius:5px;font-weight:bold;padding:2px 3px;border:1px solid #BBB;}
-                    .title {background:#B4EEB4;border:1px solid #333;border-radius:5px;color:#000;float:right;font-family:Trebuchet MS;font-size:14px;margin:-12px -7px 0 0;padding:1px 8px;text-align:right;}
+                    .section {background-color:#DFE9F6;border-radius:5px;font-weight:bold;padding:2px 3px;border:1px solid #99BCE8;}
+                    .title {background:#FFE7E7;border:1px solid #DF9898;border-radius:5px;color:#000;float:right;font-family:Roboto,'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:14px;margin:-12px -7px 0 0;padding:1px 8px;text-align:right;}
                     pre {-moz-tab-size:8;-o-tab-size:8;tab-size:8;}
                 </style>
             </head>
@@ -6290,11 +6336,11 @@ showVariable(value:="") {
     ControlSetText, Edit1, %msg%
 }
 
-sortSelected(direction:="") {
+sortSelected(direction:="", ignoreCase:=true) {
     direction := setCase(direction, "L")
     selText := getSelectedText()
     if (selText != "") {
-        Sort(selText, "F compareStr" . (direction == "d" ? "Desc" : "Asc"))
+        Sort(selText, "F compareStr" . (direction == "d" ? "Desc" : "Asc") . (ignoreCase ? "NoCase" : ""))
         replaceSelected(selText)
     }
 }
@@ -7069,9 +7115,8 @@ zoomStart() {
 }
 
 
-;--------------------------------------------------
+;__________________________________________________
 ;classes
-;--------------------------------------------------
 class ArrayList {
     __New(values*) {
         this.values := []

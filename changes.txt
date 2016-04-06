@@ -1,4 +1,31 @@
-Differences in 1.20160403.1
+Differences in 1.20160406.1
+===========================
+HotKeys
+    - NEW   : Added Ctrl-Alt-Shift-A to sort the selected text as case-sensitive in ascending order.
+    - NEW   : Added Ctrl-Alt-Shift-D to sort the selected text as case-sensitive in descending order.
+    - CHANGE: Changed Ctrl-Shift-A to (sort the selected text in ascending order) to be as case-insensitive.
+    - CHANGE: Changed Ctrl-Shift-D to (sort the selected text in descending order) to be as case-insensitive.
+HotStrings
+    - CHANGE: Changed the auto-correct HotString of "[a-z]L" to now be restricted to a word boundary, so that typing
+              values such as "StrLen" will no longer cause the HotString to be triggered.
+Miscellaneous
+    - CHANGE: Added missing HTML tag "thead" to HotString help screen.
+    - CHANGE: Minor code cleanup.
+Functions
+    - NEW   : Added the following new functions:
+                - compareStrAscNoCase()
+    - CHANGE: Fixed issue with hsCodeFunction(), used by the "func(" HotString, not replacing "func" with "function".
+    - CHANGE: Fixed issue with hsCommentHeaderPerl() leaving the cursor on the wrong line.
+    - CHANGE: Fixed issue with hsCommentHeaderSql() leaving the cursor on the wrong line.
+    - CHANGE: Fixed getIndent() where if a line started contained more than only whitespace, the wrong "indent" value
+              was being used.
+    - CHANGE: Numerous minor refinements to several of the hsXxxYyy() functions to produce better output, especially 
+              within editors that have varying degrees of sophistication (or a complete lack of, such as Notepad).
+    - CHANGE: Modified getIndent() to handle different editors, producing a much more reliable determination of the
+              current indentation level.
+
+
+Differences in 1.20160404.1
 ===========================
 HotKeys
     - CHANGE: Win-Pause was incorrectly wrapped by the "enableHkMisc" variable.  If this variable was disabled, the
