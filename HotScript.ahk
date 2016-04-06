@@ -3593,39 +3593,44 @@ getExplorerPath() {
 }
 
 getIndent() {
-    SendInput, +{Home}
-    ; TODO - before trying to getSelectedText(), test if we are at position 1 already by using Ctrl-C
-    ; if the buffer is empty, we are at pos 1, so no indent!
-    result := getSelectedText()
-    if (!RegexMatch(result, "^[ \t]*$")) {
+    if (isActiveDos()) {
+        result := hs.const.INDENT
+    }
+    else {
         SendInput, +{Home}
-        result2 := getSelectedText()
-        if (StrLen(result2) > StrLen(result)) {
-            result := result2
-        }
-        tmp := result
-        result := ""
-        isBlank := true
-        Loop, Parse, tmp
-        {
-            if (isBlank) {
-                if (isBlank && RegexMatch(A_LoopField, "[ \t]")) {
-                    result .= A_LoopField
-                }
-                else {
-                    isBlank := false
+        ; TODO - before trying to getSelectedText(), test if we are at position 1 already by using Ctrl-C
+        ; if the buffer is empty, we are at pos 1, so no indent!
+        result := getSelectedText()
+        if (!RegexMatch(result, "^[ \t]*$")) {
+            SendInput, +{Home}
+            result2 := getSelectedText()
+            if (StrLen(result2) > StrLen(result)) {
+                result := result2
+            }
+            tmp := result
+            result := ""
+            isBlank := true
+            Loop, Parse, tmp
+            {
+                if (isBlank) {
+                    if (isBlank && RegexMatch(A_LoopField, "[ \t]")) {
+                        result .= A_LoopField
+                    }
+                    else {
+                        isBlank := false
+                    }
                 }
             }
         }
+        SendInput, {End}
     }
-    SendInput, {End}
     return result
 }
 
 getIndent1(indent) {
     result := ""
     if (indent != "") {
-        result := (contains(indent, A_Tab) ? A_Tab : "    ")
+        result := (contains(indent, A_Tab) ? A_Tab : hs.const.INDENT)
     }
     return result
 }
@@ -4310,6 +4315,7 @@ initInternalVars() {
             EOL_NIX: "`n",
             EOL_WIN: "`r`n",
             EOL_REGEX: "(\r\n|\n|\r)",
+            INDENT: "    ",
             LINE_SEP: repeatStr(chr(183), 157),
             MARKER: markers,
             MENU_SEP: "-",
@@ -6802,7 +6808,7 @@ toString(obj, depth:=10, indent:="") {
                 keyWidth := tmpWidth
             }
         }
-        pad := indent . "    "
+        pad := indent . hs.const.INDENT
         for key, value in obj {
             result .= (depth == 10 && StrLen(result) == 0 && getSize(obj) > 1 ? hs.const.EOL_WIN : "") . pad
             if (IsObject(value) && depth > 1) {
