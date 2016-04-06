@@ -1,3 +1,10 @@
+Differences in 1.20160406.3
+===========================
+Miscellaneous
+    - CHANGE: Fixed issue with endless loop restarting/updating. The version file was updated but the internal version
+              was not, so HotScript thought there was always a newer version to be downloaded.
+
+
 Differences in 1.20160406.2
 ===========================
 Miscellaneous

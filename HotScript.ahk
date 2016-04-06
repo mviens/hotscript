@@ -4285,7 +4285,7 @@ initHotStrings() {
 }
 
 initInternalVars() {
-    hs.VERSION := "1.20160406.1"
+    hs.VERSION := "1.20160406.3"
     hs.TITLE := "HotScript"
     hs.BASENAME := A_ScriptDir . "\" . hs.TITLE
 
