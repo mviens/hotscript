@@ -1,3 +1,12 @@
+Differences in 1.20160406.2
+===========================
+Miscellaneous
+    - NEW   : Added a constant for a default indent of 4 spaces.
+Functions
+    - CHANGE: Modified getIndent() to check if the active window is a DOS window. If so, it will use the new default
+              constant value of 4 spaces, otherwise it will try to determine the indent level from the active window.
+
+
 Differences in 1.20160406.1
 ===========================
 HotKeys
