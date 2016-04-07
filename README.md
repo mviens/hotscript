@@ -49,7 +49,7 @@ more you embrace using it, the more you will find you don't want to use Windows 
 ## Installation
 
 * Download and install <a href="https://autohotkey.com/download/ahk-install.exe">AutoHotKey</a>.
-* Download <a href="https://github.com/mviens/hotscript/raw/master/HotScript.ahk">HotScript.ahk</a>.  (Right-click this link and choose "Save as")
+* Download <a href="https://github.com/mviens/hotscript/raw/release/HotScript.ahk">HotScript.ahk</a>.  (Right-click this link and choose "Save as")
 * Create a separate folder for HotScript and move HotScript.ahk (the file downloaded above) into that folder.
 * Double-click HotScript.ahk to launch it for the first time. Some setup will automatically occur.
 * Press Ctrl-Win-H to show (or hide) the help screen.
