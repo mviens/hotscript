@@ -1,3 +1,47 @@
+Differences in 1.20160618.1
+===========================
+HotKeys
+    - NEW   : All HotKeys are now defined using hotKey() instead of the manner expected by AHK.
+    - NEW   : Added Win-/ to display information about the current window.
+    - CHANGE: Fixed issue with Alt-Shift-, and Alt-Shift-. not working.
+    - CHANGE: Added 768x1024 to the Quick Resolution options.
+    - CHANGE: Added a custom option to the Quick Resolution.
+Miscellaneous
+    - NEW   : Modified auto-update to download to a temporary filename instead of HotScript.ahk and to test the
+              integrity of the file. This was necessary because occassionally GitHub may be unavailable and the
+              downloaded file would actually be GitHub's HTML error page.
+    - NEW   : Added new configuration value to save the last date that a new version was checked for. This allows
+              HotScript to now only search for new version once per day instead of every reload.
+    - CHANGE: Increased MaxHotkeysPerInterval (currently every 2 seconds) from 200 to 500.
+    - CHANGE: Fixed issue with enableHsVariables not being saved properly.
+    - CHANGE: Fixed issue with some configuration values being saved to HotScriptUser.ini when they should not.
+    - CHANGE: Refactored the code for creating the help screen to only generate the content once, which should
+              allow the screen to not only be displayed faster, but also may fix the issue with the help screen
+              randomly appearing as blank.
+    - CHANGE: Miscellaneous code cleanup.
+    - REMOVE: Removed obsolete configuration values for "inputBoxFieldFont" and "inputBoxOptions".
+Functions
+    - NEW   : Added the following new functions:
+                - centerControls()
+                - clipboardAppend()
+                - debugVar()
+                - hotKey()
+                - showWindowInfo()
+    - CHANGE: Refactored ask() to support multi-line input as well as regular or monospace font.
+    - CHANGE: Refactored registerHotkey() into hotKey(), with better support for conditions and parameters.
+    - CHANGE: Modified centerWindow() to be able to specify the monitor number for which to center the window.
+    - CHANGE: Modified checkVersions() only execute once per day.
+    - CHANGE: Added an "options" parameter to FileRead().
+    - CHANGE: Fixed issue with getIndent1() sometimes returning an empty string. It now will always return some value.
+    - CHANGE: Added an parameter to resizeWindow() to indicate if the window should be centered after resizing it.
+    - CHANGE: Refactored toString() to eliminate the depth restriction for objects and to indicate if a value is a
+              function or label.
+    - REMOVE: Removed the wrapper function StringReplace(), because AHK has a built-in function called StrReplace().
+    - REMOVE: Removed old migration code for version 20131211.2.
+    - REMOVE: Removed isWindow().
+    - REMOVE: Removed resizeToResolution(). It was redundant to resizeWindow().
+
+
 Differences in 1.20160406.3
 ===========================
 Miscellaneous
@@ -45,8 +89,8 @@ Differences in 1.20160404.1
 ===========================
 HotKeys
     - CHANGE: Win-Pause was incorrectly wrapped by the "enableHkMisc" variable.  If this variable was disabled, the
-              Win-Pause key (which pauses HotScript) would not be enabled. This is the only hotkey that is hard-coded and
-              cannot be user-modified. While the Win-Pause key may be overridden but some other function, it is not
+              Win-Pause key (which pauses HotScript) would not be enabled. This is the only hotkey that is hard-coded
+              and cannot be user-modified. While the Win-Pause key may be overridden but some other function, it is not
               (currently) possible to reassign HotScript's pause function to another key combination due to the
               restrictions of AHK's "Suspend" command.
 HotStrings
@@ -60,9 +104,9 @@ Miscellaneous
               recommend comverting your existing user-defined HotStrings to use this new method. When using hotScript(),
               addHotString() no longer needs to be called to update the metrics.
     - CHANGE: Rearranged the help screen for HotStrings.
-    - CHANGE: Trying to fix a bug when showing the help screen. Randomly the screen will show without the text displayed.
-              If you click and drag with the mouse, the text will show. Still working on this issue, but it seems
-              "better".
+    - CHANGE: Trying to fix a bug when showing the help screen. Randomly the screen will show without the text
+              displayed. If you click and drag with the mouse, the text will show. Still working on this issue, but it
+              seems "better".
 Variables
     - NEW   : Added "replaceMode" to "hs.const" object.
     - CHANGE: Made the $ variable to be truly global.  Do NOT use this variable name for your own values.
@@ -391,3 +435,8 @@ Differences in 20131211.2 through 1.20150821.2
 - Added a 4th (optional) parameter to pasteTemplate() for how long to delay
 - Added getVarType()
 - Pasting a large amount of text (> 4K) to a DOS window now gives a warning
+
+
+Differences in 20130514.1 through 20131211.1
+============================================
+- Prototype versions; changes were not recorded.
