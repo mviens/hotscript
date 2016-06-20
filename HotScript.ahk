@@ -1715,6 +1715,7 @@ checkVersions() {
             doUpdate := false
             if (hs.config.user.enableAutoUpdate) {
                 doUpdate := true
+                showSplash("Updating AutoHotKey to version: " . ahkAvailable, 2000)
             }
             else {
                 msg =
@@ -1755,6 +1756,7 @@ checkVersions() {
             doUpdate := false
             if (hs.config.user.enableAutoUpdate) {
                 doUpdate := true
+                showSplash("Updating " . hs.TITLE . " to version: " . hsAvailable, 2000)
             }
             else {
                 msg := "
@@ -1775,14 +1777,16 @@ checkVersions() {
             if (doUpdate) {
                 ver := RegexReplace(ahkAvailable, "\.", "")
                 dlFile := hs.vars.url[hs.TITLE].download
-                fullPath := A_ScriptDir . "\" . hs.TITLE . ".ahk"
-                newPath := fullPath . ".new"
+                newPath := A_ScriptFullPath . ".new"
                 UrlDownloadToFile, % dlFile, % newPath
                 if (ErrorLevel == 0) {
                     header := FileRead(newPath, "*m1024")
                     if (contains(header, "There should be no reason to edit this file directly.")) {
-                        FileMove, %newPath%, %fullPath%
+                        FileMove, %newPath%, %A_ScriptFullPath%
                         setLastUpdateCheck(today)
+                        output := "last: " . hs.VERSION . "`nnew: " . hsAvailable . "`n"
+                        FileDelete, % hs.file.UPDATE
+                        FileAppend, %output%, % hs.file.UPDATE
                         selfReload()
                     }
                     else {
@@ -4178,6 +4182,27 @@ init() {
         userFunc := Func("userInit")
         userFunc.()
     }
+    if (FileExist(hs.file.UPDATE) != "") {
+        FileRead, hsUpdate, % hs.file.UPDATE
+        versionRegex := "(\d\.\d{8}\.\d+)"
+        RegExMatch(hsUpdate, "last: " . versionRegex, lastVer)
+        RegExMatch(hsUpdate, "new: " . versionRegex, newVer)
+        msg := "
+            (LTrim
+                A new version of " . hs.TITLE . " has been installed.
+
+                " . A_Tab . "Previous`t: " . lastVer1 . "
+                " . A_Tab . "Current`t: " . newVer1 . "
+
+                Would you like to see the list changes?
+            )"
+        MsgBox, 36, % hs.TITLE . ": New version installed", % msg, 30
+        IfMsgBox, Yes
+        {
+            Run(hs.vars.url[hs.TITLE].history)
+        }
+        FileDelete, % hs.file.UPDATE
+    }
     return
 
     customTrayMenu:
@@ -4375,7 +4400,7 @@ initHotStrings() {
 }
 
 initInternalVars() {
-    hs.VERSION := "1.20160618.1"
+    hs.VERSION := "1.20160619.1"
     hs.TITLE := "HotScript"
     hs.BASENAME := A_ScriptDir . "\" . hs.TITLE
 
@@ -4417,6 +4442,7 @@ initInternalVars() {
         (LTrim Join
             CONFIG_DEFAULT: hs.BASENAME . "Default.ini",
             CONFIG_USER: hs.BASENAME . "User.ini",
+            UPDATE: hs.BASENAME . "Update.txt",
             USER_FUNCTIONS: hs.BASENAME . "Functions.ahk",
             USER_KEYS: hs.BASENAME . "Keys.ahk",
             USER_STRINGS: hs.BASENAME . "Strings.ahk",
@@ -5666,7 +5692,7 @@ saveHotKeyDefs(config, defaultConfig:=false) {
 
 saveOrDeleteSetting(section, value, isBoolean:=false) {
     isBoolean := toBool(isBoolean)
-    isSame = (isBoolean ? boolToStr(hs.config.default[value]) != boolToStr(hs.config.user[value]) : hs.config.default[value] != hs.config.user[value])
+    isSame := (isBoolean ? boolToStr(hs.config.default[value]) == boolToStr(hs.config.user[value]) : hs.config.default[value] == hs.config.user[value])
     if (!isSame) {
         IniWrite(hs.config.user.file, section, value, (isBoolean ? boolToStr(hs.config.user[value]) : hs.config.user[value]))
     }

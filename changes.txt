@@ -1,3 +1,14 @@
+Differences in 1.20160619.1
+===========================
+Miscellaneous
+    - NEW   : Added brief (2 second) notification that HotScript is being upgraded to a new version. This is only
+              applicable if "enableAutoUpdate" is set to true. This will take effect for versions later than this one.
+    - NEW   : After upgrading to a new version of HotScript, a dialog will be displayed asking if the list of
+              changes should be displayed. This is only applicable if "enableVersionCheck" is set to true. This will
+              take effect for versions later than this one.
+    - CHANGE: Fixed issue broken in 1.20160618.1 where user configuration values would be incorrectly removed from
+              HotScriptUser.ini.
+
 Differences in 1.20160618.1
 ===========================
 HotKeys
@@ -79,7 +90,7 @@ Functions
     - CHANGE: Fixed issue with hsCommentHeaderSql() leaving the cursor on the wrong line.
     - CHANGE: Fixed getIndent() where if a line started contained more than only whitespace, the wrong "indent" value
               was being used.
-    - CHANGE: Numerous minor refinements to several of the hsXxxYyy() functions to produce better output, especially 
+    - CHANGE: Numerous minor refinements to several of the hsXxxYyy() functions to produce better output, especially
               within editors that have varying degrees of sophistication (or a complete lack of, such as Notepad).
     - CHANGE: Modified getIndent() to handle different editors, producing a much more reliable determination of the
               current indentation level.
@@ -101,8 +112,8 @@ Miscellaneous
     - CHANGE: Refactored all internal HotStrings to use hotString() instead of the mechanism used by AHK. This will
               help with some future changes as well as reducing the amount of code. It should now be possible to define
               any HotString using hotString(), which can have much more flexibility than offered by AHK. I strongly
-              recommend comverting your existing user-defined HotStrings to use this new method. When using hotScript(),
-              addHotString() no longer needs to be called to update the metrics.
+              recommend comverting your existing user-defined HotStrings to use this new method. When using
+              hotString(), addHotString() no longer needs to be called to update the metrics.
     - CHANGE: Rearranged the help screen for HotStrings.
     - CHANGE: Trying to fix a bug when showing the help screen. Randomly the screen will show without the text
               displayed. If you click and drag with the mouse, the text will show. Still working on this issue, but it
@@ -182,7 +193,8 @@ HotKeys
     - CHANGE: Changed Preview Clipboard (Win-V) to indicate if the data is complex and therefore cannot be previewed.
     - CHANGE: Added back previous error checking when running Snipping Tool (Win-PrintScreen) for Windows 2008 but also
               added checking for Windows 2012.
-    - REMOVE: Deleted the hkCustom HotKey group (and configuration setting), moving the only entry into the hkText group.
+    - REMOVE: Deleted the hkCustom HotKey group (and configuration setting), moving the only entry into the hkText
+              group.
 HotStrings
     - NEW   : Added new fractions for 1/6, 1/5, 2/8, 2/6, 2/5, 2/4, 3/6, 4/8, 3/5, 4/6, 6/8, 4/5 and 5/6.
     - CHANGE: Changed trigger for fractions to start with some type of separator ("3 1/2" instead of "31/2").
@@ -225,8 +237,8 @@ Functions
                 - moveToEdge()
                 - pad()
                 - parseTemplate()
-    - NEW   : Added support for user-defined initialization function called userInit(). Because of how AutoHotKey works,
-              do not define HotKeys or HotStrings within the userInit() function. These should be placed in
+    - NEW   : Added support for user-defined initialization function called userInit(). Because of how AutoHotKey
+              works, do not define HotKeys or HotStrings within the userInit() function. These should be placed in
               HotScriptKeys.ahk or HotScriptStrings.ahk. Failure to do so will almost certainly cause significant
               parts of HotScript to stop functioning.
     - CHANGE: Modified toBool() to return true if the value is a number and greater than zero.
@@ -236,10 +248,10 @@ Functions
     - CHANGE: Improved output of toString().
     - CHANGE: Enhanced output of templateHtml().
     - CHANGE: Modified resizeTo() for Windows 10. This affects all window movement HotKeys. Windows 10 puts transparent
-              borders around non-maxmimied windows along the left, right and bottom of a window. When these windows line
-              up next to each other, "gaps" appear which show whatever is underneath the windows. I found this quite
-              annoying, so the math was changed for Windows 10 to accommodate these gaps. The coordinates are adjusted
-              as follows:  X -6, Y -1, Width +16, Height +9.
+              borders around non-maxmimied windows along the left, right and bottom of a window. When these windows
+              line up next to each other, "gaps" appear which show whatever is underneath the windows. I found this
+              quite annoying, so the math was changed for Windows 10 to accommodate these gaps. The coordinates are
+              adjusted as follows:  X -6, Y -1, Width +16, Height +9.
 
 
 Differences in 1.20151030.2
