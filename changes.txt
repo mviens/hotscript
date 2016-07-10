@@ -1,3 +1,44 @@
+Differences in 1.20160710.1
+===========================
+HotKeys
+    - NEW   : Added new window resizing dimensions: 1x3, 2x3, 3x1, 3x2, 3x4, 4x3, and 4x4.
+    - NEW   : Added new window resizing options for resize to max height or max width. With multiple monitors, these
+              functions will toggle between resizing between the current monitor and all monitors. The HotKeys are
+              Shift-Win-Left-Right for resizing to max width and Shift-Win-Up-Down for resixzing to max height. It is
+              necessary to press both arrow keys SIMULTANEOUSLY or this HotKey will not be triggered. This is different
+              than the existing HotKeys resizing to 2x2, where you may press Shift-Win-Arrow1 then Arrow2 separately.
+    - NEW   : Added Ctrl-MouseWheelUp and Ctrl-MouseWheelDown to scroll horizontally left/right, respectively.
+    - NEW   : Added Ctrl-D to delete from the current cursor position to the next word. It is important to note that
+              different applications treat Ctrl-Shift-RightArrow somewhat differently. As much as possible, consistency
+              was implemented to overcome this. To see some of the differences between applications, see the comments
+              in hkTextDeleteWord().
+    - CHANGE: Fixed issue with Ctrl-Delete where it was not issuing the correct keystrokes to delete the text.
+Functions
+    - NEW   : Added the following new functions:
+                - extractLocationAndResize()
+                - getSelf()
+                - getStackTrace()
+                - horizontalScroll()
+                - isActiveCalculator()
+                - isWord()
+    - CHANGE: Modified getVarType() to better distinguish between a string and a function.
+    - CHANGE: Modified runTarget() to wait for the application for 1 second instead of indefinitely.
+    - CHANGE: Modified toString() to more accurately display the name of a function. Also fixed a small bug where
+              labels were not being processed correctly.
+    - CHANGE: Renamed isCalculatorNotActive() to isNotActiveCalculator().
+    - REMOVE: Removed resizeTo(). It was replaced with extractLocationAndResize().
+Miscellaneous
+    - NEW   : Added Ctrl-Delete (Delete to end-of-line) to help screen. This HotKey had been implemented for quite a
+              while, but was erroneously omitted from the help screen.
+    - CHANGE: Modified wait time of ClipWait() from 0.5 seconds to 0.05 seconds. This increases the speed of several
+              operations like swapping selection with the clipboard, appending to the clipboard, getting the selected
+              text and pasting text. These same operations are used by other functions as well as some HotKeys.
+    - CHANGE: Throughout HotScript, when searching for named applications, they are no longer case-sensitive.
+    - CHANGE: The help screen is now created (internally) only once instead of everytime it is displayed.
+    - CHANGE: The help screen will now be displayed on the active monitor instead of only the primary monitor.
+    - CHANGE: Minor code cleanup and changes for consistency.
+
+
 Differences in 1.20160619.1
 ===========================
 Miscellaneous
