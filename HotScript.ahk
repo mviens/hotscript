@@ -2131,7 +2131,7 @@ checkVersions() {
 
                         Would you like to download the new version and install it?
                     )"
-                MsgBox, 36, % hs.TITLE . ": New " . hs.TITLE . " version available", % msg, 30
+                MsgBox, 36, % hs.TITLE . ": New version available", % msg, 30
                 IfMsgBox, Yes
                 {
                     doUpdate := true
@@ -2145,7 +2145,7 @@ checkVersions() {
                 if (ErrorLevel == 0) {
                     header := FileRead(newPath, "*m1024")
                     if (contains(header, "There should be no reason to edit this file directly.")) {
-                        FileMove, %newPath%, %A_ScriptFullPath%
+                        FileMove, %newPath%, %A_ScriptFullPath%, true
                         setLastUpdateCheck(today)
                         output := "last: " . hs.VERSION . "`nnew: " . hsAvailable . "`n"
                         FileDelete, % hs.file.UPDATE
@@ -5063,7 +5063,7 @@ initHotStrings() {
 }
 
 initInternalVars() {
-    hs.VERSION := "1.20160710.1"
+    hs.VERSION := "1.20160710.2"
     hs.TITLE := "HotScript"
     hs.BASENAME := A_ScriptDir . "\" . hs.TITLE
 

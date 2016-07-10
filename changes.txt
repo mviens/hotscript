@@ -1,3 +1,9 @@
+Differences in 1.20160710.2
+===========================
+Miscellaneous
+    - CHANGE: Fixed issue with auto-update not working correctly.
+
+
 Differences in 1.20160710.1
 ===========================
 HotKeys
