@@ -56,7 +56,7 @@ init()
 
 ;__________________________________________________
 ;wrapper functions
-ClipWait(seconds:=0.5, mode:="") {
+ClipWait(seconds:=0.05, mode:="") {
     ClipWait, %seconds%, %mode%
 }
 
@@ -481,7 +481,7 @@ hkActionToggleDesktopIcons() {
 }
 
 hkActionWindowsExplorer() {
-    exeStr := "ahk_exe explorer.exe"
+    exeStr := "ahk_exe i)explorer.exe"
     if (WinExist(exeStr) && !WinActive(exeStr)) {
         WinActivate
     }
@@ -573,10 +573,6 @@ hkEppDeleteToEol() {
     SendInput, ^+{Delete}
 }
 
-hkEppDeleteWord() {
-    SendInput, ^{Delete}
-}
-
 hkEppGoToLine() {
     SendInput, !g
 }
@@ -601,12 +597,12 @@ hkHotScriptEditHotScript() {
     runEditor(A_ScriptFullPath)
 }
 
-hkHotScriptEditUserIni() {
-    runEditor(hs.config.user.file)
-}
-
 hkHotScriptEditUserFunctions() {
     runEditor(hs.file.USER_FUNCTIONS)
+}
+
+hkHotScriptEditUserIni() {
+    runEditor(hs.config.user.file)
 }
 
 hkHotScriptEditUserKeys() {
@@ -647,7 +643,7 @@ hkHotScriptReload() {
 
 hkHotScriptRunDebugView() {
     exe := "DbgView.exe"
-    exeStr := "ahk_exe " . exe
+    exeStr := "ahk_exe i)" . exe
     if (WinExist(exeStr) && !WinActive(exeStr)) {
         WinActivate
     }
@@ -675,7 +671,6 @@ hkHotScriptRunDebugView() {
             Run(dvExe)
         }
     }
-
 }
 
 hkHotScriptShowVariable() {
@@ -792,7 +787,39 @@ hkTextDeleteToEol() {
         hkDosDeleteToEol()
     }
     else {
+        SendInput, +{End}{Delete}
+    }
+}
+
+hkTextDeleteWord() {
+    if (WinActive("ahk_exe i)EditPadPro\d*\.exe")) {
         SendInput, ^{Delete}
+    }
+    else if (WinActive("ahk_exe i)p4v.exe")) {
+        SendInput, ^d
+    }
+    else {
+        text := getSelectedText()
+        if (text == "") {
+            ; this has unusual behavior... Some symbols are treated as "word" characters instead of "breaking" characters,
+            ; which means that they will be selected and deleted, unless they are the ending character(s).
+            ; Notepad   :     ` ~ @ # ^ & * ) _ = ] ; : ' " , . < > /
+            ; Notepad++ :     _
+            ; EditPad   :     _
+            ; Word      :     '
+            ; IE        :     '
+            ; Chrome    :     _ : '
+            ; Firefox   :     all symbols except ` and ^ are selected, but this will not be an issue because of the handling below
+            SendInput, ^+{Right}
+            text := getSelectedText()
+            while (text != "" && !isWord(SubStr(text, 0))) {
+                text := SubStr(text, 1, -1)
+                SendInput, +{Left}
+            }
+        }
+        if (text != "") {
+            SendInput, {Delete}
+        }
     }
 }
 
@@ -977,6 +1004,14 @@ hkWindowHide() {
     hideWindow()
 }
 
+hkWindowHorizontalScrollLeft() {
+    horizontalScroll("left")
+}
+
+hkWindowHorizontalScrollRight() {
+    horizontalScroll("right")
+}
+
 hkWindowIncreaseTransparency() {
     setTransparency(true)
 }
@@ -1021,54 +1056,382 @@ hkWindowResize() {
     runQuickResolution()
 }
 
-hkWindowResizeToAnchor() {
-    direction := ""
-    if (GetKeyState("up", "p")) {
-        direction .= "T"
-    }
-    else if (GetKeyState("down", "p")) {
-        direction .= "B"
-    }
-    if (GetKeyState("left", "p")) {
-        direction .= "L"
-    }
-    else if (GetKeyState("right", "p")) {
-        direction .= "R"
-    }
-    resizeTo(direction)
+hkWindowResizeTo1x2_1() {
+    extractLocationAndResize()
 }
 
-hkWindowResizeToCompass() {
-    direction := ""
-    key := setCase(A_ThisHotKey, "L")
-    if (containsIgnoreCase(key, "NumPad1", "NumPadEnd")) {
-        direction := "SW"
+hkWindowResizeTo1x2_2() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo1x3_1() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo1x3_2() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo1x3_3() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo2x1_1() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo2x1_2() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo2x2_1() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo2x2_2() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo2x2_3() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo2x2_4() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo2x3_1() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo2x3_2() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo2x3_3() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo2x3_4() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo2x3_5() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo2x3_6() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo3x1_1() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo3x1_2() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo3x1_3() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo3x2_1() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo3x2_2() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo3x2_3() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo3x2_4() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo3x2_5() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo3x2_6() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo3x3_1() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo3x3_2() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo3x3_3() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo3x3_4() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo3x3_5() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo3x3_6() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo3x3_7() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo3x3_8() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo3x3_9() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo3x4_1() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo3x4_2() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo3x4_3() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo3x4_4() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo3x4_5() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo3x4_6() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo3x4_7() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo3x4_8() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo3x4_9() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo3x4_10() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo3x4_11() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo3x4_12() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo4x3_1() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo4x3_2() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo4x3_3() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo4x3_4() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo4x3_5() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo4x3_6() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo4x3_7() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo4x3_8() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo4x3_9() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo4x3_10() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo4x3_11() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo4x3_12() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo4x4_1() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo4x4_2() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo4x4_3() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo4x4_4() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo4x4_5() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo4x4_6() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo4x4_7() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo4x4_8() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo4x4_9() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo4x4_10() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo4x4_11() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo4x4_12() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo4x4_13() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo4x4_14() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo4x4_15() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo4x4_16() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeToAnchor() {
+    static TOP := 1
+    static BOTTOM := 2
+    static LEFT := 1
+    static RIGHT := 2
+    static BOTH := 3
+    static countTB := 0
+    static countLR := 0
+    isUp := GetKeyState("up", "p")
+    isDown := GetKeyState("down", "p")
+    isLeft := GetKeyState("left", "p")
+    isRight := GetKeyState("right", "p")
+    direction := (isUp ? "T" : "") . (isDown ? "B" : "") . (isLeft ? "L" : "") . (isRight ? "R" : "")
+    if (direction == "B") {
+        hkWindowResizeTo1x2_1()
     }
-    else if (containsIgnoreCase(key, "NumPad2", "NumPadDown")) {
-        direction := "S"
+    else if (direction == "T") {
+        hkWindowResizeTo1x2_2()
     }
-    else if (containsIgnoreCase(key, "NumPad3", "NumPadPgDn")) {
-        direction := "SE"
+    else if (direction == "L") {
+        hkWindowResizeTo2x1_1()
     }
-    else if (containsIgnoreCase(key, "NumPad4", "NumPadLeft")) {
-        direction := "W"
+    else if (direction == "R") {
+        hkWindowResizeTo2x1_2()
     }
-    else if (containsIgnoreCase(key, "NumPad5", "NumPadClear")) {
-        direction := "C"
+    else if (direction == "BL") {
+        hkWindowResizeTo2x2_1()
     }
-    else if (containsIgnoreCase(key, "NumPad6", "NumPadRight")) {
-        direction := "E"
+    else if (direction == "BR") {
+        hkWindowResizeTo2x2_2()
     }
-    else if (containsIgnoreCase(key, "NumPad7", "NumPadHome")) {
-        direction := "NW"
+    else if (direction == "TL") {
+        hkWindowResizeTo2x2_3()
     }
-    else if (containsIgnoreCase(key, "NumPad8", "NumPadUp")) {
-        direction := "N"
+    else if (direction == "TR") {
+        hkWindowResizeTo2x2_4()
     }
-    else if (containsIgnoreCase(key, "NumPad9", "NumPadPgUp")) {
-        direction := "NE"
+    else if (direction == "TB") {
+        if (contains(A_ThisHotKey, "up")) {
+            countTB |= TOP
+        }
+        if (contains(A_ThisHotKey, "down")) {
+            countTB |= BOTTOM
+        }
+        if (countTB == BOTH) {
+            hkWindowResizeToHeight()
+        }
+        SetTimer, clearCount, 500
     }
-    resizeTo(direction)
+    else if (direction == "LR") {
+        if (contains(A_ThisHotKey, "left")) {
+            countLR |= LEFT
+        }
+        if (contains(A_ThisHotKey, "right")) {
+            countLR |= RIGHT
+        }
+        if (countLR == BOTH) {
+            hkWindowResizeToWidth()
+        }
+        SetTimer, clearCount, 500
+    }
+    return
+    
+    clearCount:
+        countTB := 0
+        countLR := 0
+        SetTimer, clearCount, off
+        return
+}
+
+hkWindowResizeToHeight() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeToWidth() {
+    extractLocationAndResize()
 }
 
 hkWindowRestoreHidden() {
@@ -3111,7 +3474,7 @@ createUserFiles() {
 
             By calling a user-defined function, very advanced functionality or output may be created.
 
-            Some examples within HotScript are: hkWindowResizeToCompass() or hkTextDeleteToEol()
+            Some examples within HotScript are: hkWindowResizeToAnchor(), hkTextDeleteToEol() or hkTextDeleteWord()
             */
 
         )
@@ -3254,25 +3617,197 @@ endsWith(str, value, caseInsensitive:="") {
     return (tmp == value)
 }
 
-findOnPath(filename) {
-    target := ""
-    if (FileExist(filename) != "") {
-        target := filename
-    }
-    else {
-        SplitPath(filename, findName)
-        paths := EnvGet("Path")
-        StringSplit, pathArray, paths, `;
-        Loop, % pathArray0
-        {
-            file := StrReplace(pathArray%A_Index% . "\", "\\", "\") . findName
-            if (FileExist(file) != "") {
-                target := file
-                break
-            }
+extractLocationAndResize() {
+    curMon := hs.vars.monitors[getActiveMonitor()]
+    self := getSelf(1)
+    if (RegexMatch(self, "hkWindowResizeTo(\dx\d)_(\d{1,2})", match)) {
+        ; TODO - this should also be for Start Menu, SysTray, and maybe others...
+        ; TODO - need to adjust for Windows 10 calculator, too - Brady1 pushes it too far down
+        if (isActiveCalculator()) {
+            showSplash("Current window cannot be resized.", 2000)
+            return
+        }
+        dimension := match1
+        position := match2
+        if (dimension == "3x3" && GetKeyState("shift", "p")) {
+            ; necessary because AHK does not register Alt-Win-NumPad keys but instead it fires as though Win-NumPad key was pressed with the NumLock being toggled
+            dimension := "3x2"
+        }
+        RegexMatch(dimension, "(\d)x(\d)", dimCount)
+        widthCount := dimCount1
+        heightCount := dimCount2
+        height50 := (curMon.workHeight / 2)
+        height33 := (curMon.workHeight / 3)
+        height25 := (curMon.workHeight / 4)
+        width50 := (curMon.workWidth / 2)
+        width33 := (curMon.workWidth / 3)
+        width25 := (curMon.workWidth / 4)
+        if (dimension == "1x2") {
+            ; 100% width, 50% height
+            newX := curMon.workLeft
+            newY := curMon.workTop + (height50 * (heightCount - position))
+            newH := height50
+            newW := curMon.workWidth
+        }
+        else if (dimension == "1x3") {
+            ; 100% width, 33% height
+            newX := curMon.workLeft
+            newY := (curMon.workTop + (height33 * (heightCount - position)))
+            newH := height33
+            newW := curMon.workWidth
+        }
+        else if (dimension == "2x1") {
+            ; 50% width, 100% height
+            newX := curMon.workLeft + (width50 * (position - 1))
+            newY := curMon.workTop
+            newH := curMon.workHeight
+            newW := width50
+        }
+        else if (dimension == "2x2") {
+            ; 50% width, 50% height
+            newX := curMon.workLeft + (width50 * Abs(1 - (Mod(position, widthCount))))
+            newY := curMon.workTop + (height50 * (position < 3 ? 1 : 0))
+            newH := height50
+            newW := width50
+        }
+        else if (dimension == "2x3") {
+            ; 50% width, 33% height
+            newX := curMon.workLeft + (width50 * (1 - Mod(position, widthCount)))
+            newY := curMon.workTop + (height33 * (position < 3 ? 2 : position < 5 ? 1 : 0))
+            newH := height33
+            newW := width50
+        }
+        else if (dimension == "3x1") {
+            ; 33% width, 100% height
+            newX := curMon.workLeft + (width33 * (position - 1))
+            newY := curMon.workTop
+            newH := curMon.workHeight
+            newW := width33
+        }
+        else if (dimension == "3x2") {
+            ; 33% width, 50% height
+            xMap := {0:2, 1:0, 2:1}
+            newX := curMon.workLeft + (width33 * xMap[Mod(position, widthCount)])
+            newY := curMon.workTop + (height50 * (position < 4 ? 1 : 0))
+            newH := height50
+            newW := width33
+        }
+        else if (dimension == "3x3") {
+            ; 33% width, 33% height
+            xMap := {0:2, 1:0, 2:1}
+            newX := curMon.workLeft + (width33 * xMap[Mod(position, widthCount)])
+            newY := curMon.workTop + (height33 * (position < 4 ? 2 : position < 7 ? 1 : 0))
+            newH := height33
+            newW := width33
+        }
+        else if (dimension == "3x4") {
+            ; 33% width, 25% height
+            xMap := {0:2, 1:0, 2:1}
+            newX := curMon.workLeft + (width33 * xMap[Mod(position, widthCount)])
+            newY := curMon.workTop + (height25 * (position < 4 ? 3 : position < 7 ? 2 : position < 10 ? 1 : 0))
+            newH := height25
+            newW := width33
+        }
+        else if (dimension == "4x3") {
+            ; 25% width, 33% height
+            xMap := {0:3, 1:0, 2:1, 3:2}
+            newX := curMon.workLeft + (width25 * xMap[Mod(position, widthCount)])
+            newY := curMon.workTop + (height33 * (position < 5 ? 2 : position < 9 ? 1 : 0))
+            newH := height33
+            newW := width25
+        }
+        else if (dimension == "4x4") {
+            ; 25% width, 25% height
+            xMap := {0:3, 1:0, 2:1, 3:2}
+            newX := curMon.workLeft + (width25 * xMap[Mod(position, widthCount)])
+            newY := curMon.workTop + (height25 * (position < 5 ? 3 : position < 9 ? 2 : position < 13 ? 1 : 0))
+            newH := height25
+            newW := width25
+        }
+        else {
+            message("Cannot resize window - unknown caller: " . self)
+            return
+        }
+        ; Windows 10 adjustments
+        if (startsWith(A_OSVersion, "10")) {
+            newX += -6
+            newY += -1
+            newW += 16
+            newH += 9
         }
     }
-    return target
+    else {
+        GAP := 20
+        WinGetPos, x, y, w, h, A
+        if (self == "hkWindowResizeToHeight") {
+            newX := x
+            newW := w
+            if (Abs(w - curMon.workWidth) <= GAP) {
+                top := ""
+                height := ""
+                Loop, % hs.vars.monitors.count
+                {
+                    mon := hs.vars.monitors[A_Index]
+                    if (top == "" || mon.workTop < top) {
+                        top := mon.workTop 
+                    }
+                    if (height == "" || mon.workBottom > height) {
+                        height := mon.workBottom
+                    }
+                }
+                newY := top
+                newH := height
+            }
+            else {
+                newY := curMon.workTop
+                newH := curMon.workBottom
+            }
+            ; Windows 10 adjustments
+            if (startsWith(A_OSVersion, "10")) {
+                newY += -1
+                newH += 9
+            }
+        }
+        else if (self == "hkWindowResizeToWidth") {
+            newY := y
+            newH := h
+            if (Abs(w - curMon.workWidth) <= GAP) {
+                left := ""
+                width := ""
+                Loop, % hs.vars.monitors.count
+                {
+                    mon := hs.vars.monitors[A_Index]
+                    if (left == "" || mon.workLeft < left) {
+                        left := mon.workLeft
+                    }
+                    if (width == "" || mon.workRight > width) {
+                        width := mon.workRight
+                    }
+                }
+                newX := left
+                newW := width
+            }
+            else {
+                newX := curMon.workLeft
+                newW := curMon.workWidth
+            }
+            ; Windows 10 adjustments
+            if (startsWith(A_OSVersion, "10")) {
+                newX += -6
+                newW += 16
+            }
+        }
+        else {
+            message("Cannot resize window - unknown caller: " . self)
+            return
+        }
+    }
+    hWnd := WinExist("A")
+    WinGet, minMaxState, MinMax, ahk_id %hWnd%
+    if (minMaxState == 1) {
+        WinRestore, ahk_id %hWnd%
+    }
+    WinMove, ahk_id %hWnd%,, %newX%, %newY%, %newW%, %newH%
 }
 
 escapeText(text:="") {
@@ -3293,6 +3828,27 @@ escapeText(text:="") {
     if (!isSelected) {
         return text
     }
+}
+
+findOnPath(filename) {
+    target := ""
+    if (FileExist(filename) != "") {
+        target := filename
+    }
+    else {
+        SplitPath(filename, findName)
+        paths := EnvGet("Path")
+        StringSplit, pathArray, paths, `;
+        Loop, % pathArray0
+        {
+            file := StrReplace(pathArray%A_Index% . "\", "\\", "\") . findName
+            if (FileExist(file) != "") {
+                target := file
+                break
+            }
+        }
+    }
+    return target
 }
 
 findOrRunByExe(name) {
@@ -3444,7 +4000,6 @@ getDefaultHotKeyDefs(type) {
         hk["hkDosType"] := "!t"
     }
     else if (type == "hkEpp") {
-        hk["hkEppDeleteWord"] := "^d"
         hk["hkEppGoToLine"] := "^g"
         hk["hkEppNextFile"] := "xbutton2"
         hk["hkEppPrevFile"] := "xbutton1"
@@ -3490,6 +4045,7 @@ getDefaultHotKeyDefs(type) {
     else if (type == "hkText") {
         hk["hkTextDeleteCurrentLine"] := "!delete"
         hk["hkTextDeleteToEol"] := "^delete"
+        hk["hkTextDeleteWord"] := "$^d"
         hk["hkTextDuplicateCurrentLine"] := "^+up"
         hk["hkTextMoveCurrentLineDown"] := "!down"
         hk["hkTextMoveCurrentLineUp"] := "!up"
@@ -3542,6 +4098,8 @@ getDefaultHotKeyDefs(type) {
         hk["hkWindowDecreaseTransparency-2"] := "#numpadsub"
         hk["hkWindowDecreaseTransparency-3"] := "#wheeldown"
         hk["hkWindowHide"] := "#delete"
+        hk["hkWindowHorizontalScrollLeft"] := "^wheelup"
+        hk["hkWindowHorizontalScrollRight"] := "^wheeldown"
         hk["hkWindowIncreaseTransparency-1"] := "#="
         hk["hkWindowIncreaseTransparency-2"] := "#numpadadd"
         hk["hkWindowIncreaseTransparency-3"] := "#wheelup"
@@ -3560,24 +4118,100 @@ getDefaultHotKeyDefs(type) {
         hk["hkWindowResizeToAnchor-2"] := "+#left"
         hk["hkWindowResizeToAnchor-3"] := "+#right"
         hk["hkWindowResizeToAnchor-4"] := "+#up"
-        hk["hkWindowResizeToCompass-1"] := "#numpad1"
-        hk["hkWindowResizeToCompass-2"] := "#numpad2"
-        hk["hkWindowResizeToCompass-3"] := "#numpad3"
-        hk["hkWindowResizeToCompass-4"] := "#numpad4"
-        hk["hkWindowResizeToCompass-5"] := "#numpad5"
-        hk["hkWindowResizeToCompass-6"] := "#numpad6"
-        hk["hkWindowResizeToCompass-7"] := "#numpad7"
-        hk["hkWindowResizeToCompass-8"] := "#numpad8"
-        hk["hkWindowResizeToCompass-9"] := "#numpad9"
-        hk["hkWindowResizeToCompass-10"] := "#numpadend"
-        hk["hkWindowResizeToCompass-11"] := "#numpaddown"
-        hk["hkWindowResizeToCompass-12"] := "#numpadpgdn"
-        hk["hkWindowResizeToCompass-13"] := "#numpadleft"
-        hk["hkWindowResizeToCompass-14"] := "#numpadclear"
-        hk["hkWindowResizeToCompass-15"] := "#numpadright"
-        hk["hkWindowResizeToCompass-16"] := "#numpadhome"
-        hk["hkWindowResizeToCompass-17"] := "#numpadup"
-        hk["hkWindowResizeToCompass-18"] := "#numpadpgup"
+        hk["hkWindowResizeTo1x3_1-1"] := "^#numpad0"
+        hk["hkWindowResizeTo1x3_1-2"] := "^#numpadins"
+        hk["hkWindowResizeTo1x3_2-1"] := "^#numpad4"
+        hk["hkWindowResizeTo1x3_2-2"] := "^#numpadleft"
+        hk["hkWindowResizeTo1x3_3-1"] := "^#numpad7"
+        hk["hkWindowResizeTo1x3_3-2"] := "^#numpadhome"
+        hk["hkWindowResizeTo2x3_1-1"] := "!#numpad1"
+        hk["hkWindowResizeTo2x3_1-2"] := "!#numpadend"
+        hk["hkWindowResizeTo2x3_2-1"] := "!#numpad2"
+        hk["hkWindowResizeTo2x3_2-2"] := "!#numpaddown"
+        hk["hkWindowResizeTo2x3_3-1"] := "!#numpad4"
+        hk["hkWindowResizeTo2x3_3-2"] := "!#numpadleft"
+        hk["hkWindowResizeTo2x3_4-1"] := "!#numpad5"
+        hk["hkWindowResizeTo2x3_4-2"] := "!#numpadclear"
+        hk["hkWindowResizeTo2x3_5-1"] := "!#numpad7"
+        hk["hkWindowResizeTo2x3_5-2"] := "!#numpadhome"
+        hk["hkWindowResizeTo2x3_6-1"] := "!#numpad8"
+        hk["hkWindowResizeTo2x3_6-2"] := "!#numpadup"
+        hk["hkWindowResizeTo3x1_1-1"] := "^#numpad1"
+        hk["hkWindowResizeTo3x1_1-2"] := "^#numpadend"
+        hk["hkWindowResizeTo3x1_2-1"] := "^#numpad2"
+        hk["hkWindowResizeTo3x1_2-2"] := "^#numpaddown"
+        hk["hkWindowResizeTo3x1_3-1"] := "^#numpad3"
+        hk["hkWindowResizeTo3x1_3-2"] := "^#numpadpgdn"
+        hk["hkWindowResizeTo3x2_1-1"] := "+#numpad1"
+        hk["hkWindowResizeTo3x2_1-2"] := "+#numpadend"
+        hk["hkWindowResizeTo3x2_2-1"] := "+#numpad2"
+        hk["hkWindowResizeTo3x2_2-2"] := "+#numpaddown"
+        hk["hkWindowResizeTo3x2_3-1"] := "+#numpad3"
+        hk["hkWindowResizeTo3x2_3-2"] := "+#numpadpgdn"
+        hk["hkWindowResizeTo3x2_4-1"] := "+#numpad4"
+        hk["hkWindowResizeTo3x2_4-2"] := "+#numpadleft"
+        hk["hkWindowResizeTo3x2_5-1"] := "+#numpad5"
+        hk["hkWindowResizeTo3x2_5-2"] := "+#numpadclear"
+        hk["hkWindowResizeTo3x2_6-1"] := "+#numpad6"
+        hk["hkWindowResizeTo3x2_6-2"] := "+#numpadright"
+        hk["hkWindowResizeTo3x3_1-1"] := "#numpad1"
+        hk["hkWindowResizeTo3x3_1-2"] := "#numpadend"
+        hk["hkWindowResizeTo3x3_2-1"] := "#numpad2"
+        hk["hkWindowResizeTo3x3_2-2"] := "#numpaddown"
+        hk["hkWindowResizeTo3x3_3-1"] := "#numpad3"
+        hk["hkWindowResizeTo3x3_3-2"] := "#numpadpgdn"
+        hk["hkWindowResizeTo3x3_4-1"] := "#numpad4"
+        hk["hkWindowResizeTo3x3_4-2"] := "#numpadleft"
+        hk["hkWindowResizeTo3x3_5-1"] := "#numpad5"
+        hk["hkWindowResizeTo3x3_5-2"] := "#numpadclear"
+        hk["hkWindowResizeTo3x3_6-1"] := "#numpad6"
+        hk["hkWindowResizeTo3x3_6-2"] := "#numpadright"
+        hk["hkWindowResizeTo3x3_7-1"] := "#numpad7"
+        hk["hkWindowResizeTo3x3_7-2"] := "#numpadhome"
+        hk["hkWindowResizeTo3x3_8-1"] := "#numpad8"
+        hk["hkWindowResizeTo3x3_8-2"] := "#numpadup"
+        hk["hkWindowResizeTo3x3_9-1"] := "#numpad9"
+        hk["hkWindowResizeTo3x3_9-2"] := "#numpadpgup"
+        hk["hkWindowResizeTo3x4_1"] := "#f9"
+        hk["hkWindowResizeTo3x4_2"] := "#f10"
+        hk["hkWindowResizeTo3x4_3"] := "#f11"
+        hk["hkWindowResizeTo3x4_4"] := "!#f9"
+        hk["hkWindowResizeTo3x4_5"] := "!#f10"
+        hk["hkWindowResizeTo3x4_6"] := "!#f11"
+        hk["hkWindowResizeTo3x4_7"] := "^#f9"
+        hk["hkWindowResizeTo3x4_8"] := "^#f10"
+        hk["hkWindowResizeTo3x4_9"] := "^#f11"
+        hk["hkWindowResizeTo3x4_10"] := "+#f9"
+        hk["hkWindowResizeTo3x4_11"] := "+#f10"
+        hk["hkWindowResizeTo3x4_12"] := "+#f11"
+        hk["hkWindowResizeTo4x3_1"] := "#f5"
+        hk["hkWindowResizeTo4x3_2"] := "#f6"
+        hk["hkWindowResizeTo4x3_3"] := "#f7"
+        hk["hkWindowResizeTo4x3_4"] := "#f8"
+        hk["hkWindowResizeTo4x3_5"] := "!#f5"
+        hk["hkWindowResizeTo4x3_6"] := "!#f6"
+        hk["hkWindowResizeTo4x3_7"] := "!#f7"
+        hk["hkWindowResizeTo4x3_8"] := "!#f8"
+        hk["hkWindowResizeTo4x3_9"] := "^#f5"
+        hk["hkWindowResizeTo4x3_10"] := "^#f6"
+        hk["hkWindowResizeTo4x3_11"] := "^#f7"
+        hk["hkWindowResizeTo4x3_12"] := "^#f8"
+        hk["hkWindowResizeTo4x4_1"] := "#f1"
+        hk["hkWindowResizeTo4x4_2"] := "#f2"
+        hk["hkWindowResizeTo4x4_3"] := "#f3"
+        hk["hkWindowResizeTo4x4_4"] := "#f4"
+        hk["hkWindowResizeTo4x4_5"] := "!#f1"
+        hk["hkWindowResizeTo4x4_6"] := "!#f2"
+        hk["hkWindowResizeTo4x4_7"] := "!#f3"
+        hk["hkWindowResizeTo4x4_8"] := "!#f4"
+        hk["hkWindowResizeTo4x4_9"] := "^#f1"
+        hk["hkWindowResizeTo4x4_10"] := "^#f2"
+        hk["hkWindowResizeTo4x4_11"] := "^#f3"
+        hk["hkWindowResizeTo4x4_12"] := "^#f4"
+        hk["hkWindowResizeTo4x4_13"] := "+#f1"
+        hk["hkWindowResizeTo4x4_14"] := "+#f2"
+        hk["hkWindowResizeTo4x4_15"] := "+#f3"
+        hk["hkWindowResizeTo4x4_16"] := "+#f4"
         hk["hkWindowRestoreHidden"] := "#insert"
         hk["hkWindowRight-1"] := "wheelright"
         hk["hkWindowRight-2"] := "#right"
@@ -3734,6 +4368,12 @@ getSelectedTextOrPrompt(title) {
     return selText
 }
 
+getSelf(offset:="") {
+    offset := -2 - (is(offset, "number") ? abs(offset) : 0)
+    e := Exception(".", offset)
+    return e.what
+}
+
 getSize(value) {
     size := 0
     if (IsObject(value)) {
@@ -3745,6 +4385,20 @@ getSize(value) {
         size := is(value, "number") ? value : StrLen(value)
     }
     return size
+}
+
+getStackTrace() {
+    stack := []
+    idx := 0
+    n := (A_AhkVersion < "2" ? 1 : 2)
+    Loop {
+        e := Exception(".", offset := -(A_Index + n))
+        if (e.What == offset) {
+            break
+        }
+        stack[++idx] := {"file": e.file, "line": e.Line, "caller": e.What, "offset": offset + n}
+    }
+    return stack
 }
 
 getTimeString() {
@@ -3797,13 +4451,13 @@ getVar(name) {
 }
 
 getVarType(obj) {
-    if (isFunc(obj)) {
-        result := "Function"
+    if (IsFunc(obj)) {
+        result := (IsObject(obj) ? "Function" : "String")
     }
-    else if (isLabel(obj)) {
+    else if (IsLabel(obj)) {
         result := "Label"
     }
-    else if (isObject(obj)) {
+    else if (IsObject(obj)) {
         result := "Object"
     }
     else {
@@ -3848,6 +4502,14 @@ hideWindow(title:="A") {
     GroupActivate("AllWindows")
 }
 
+horizontalScroll(direction:="left") {
+    direction := (setCase(direction, "U") == "RIGHT" ? 1 : 0)
+    ControlGetFocus, ctrl, A
+    Loop, 8 {
+        SendMessage, 0x114, %direction%, 0, %ctrl%, A
+    }
+}
+
 hotKey(hotKeyStr, action, condition:="", params*) {
     if (hotKeyStr != "") {
         if (action == "") {
@@ -3857,7 +4519,7 @@ hotKey(hotKeyStr, action, condition:="", params*) {
             hs.hotkeys.params.delete(hotKeyStr)
             return
         }
-        else if (isFunc(action)) {
+        else if (IsFunc(action)) {
             hs.hotkeys.functions[hotKeyStr] := Func(action)
             if (params.MaxIndex != "") {
                 hs.hotkeys.params[hotKeyStr] := params
@@ -3868,7 +4530,7 @@ hotKey(hotKeyStr, action, condition:="", params*) {
         }
         isAhkCondition := false
         if (condition != "") {
-            if (isFunc(condition)) {
+            if (IsFunc(condition)) {
                 hs.hotkeys.conditions[hotKeyStr] := Func(condition)
                 ; checking will occur in hotKeyAction()
             }
@@ -3892,7 +4554,7 @@ hotKey(hotKeyStr, action, condition:="", params*) {
 
 hotKeyAction() {
     conditionFunc := hs.hotkeys.conditions[A_ThisHotkey]
-    if (isObject(conditionFunc)) {
+    if (IsObject(conditionFunc)) {
         result := conditionFunc.Call(A_ThisHotkey)
         if (!result) {
             return
@@ -3901,10 +4563,10 @@ hotKeyAction() {
     addHotKey()
     func := hs.hotkeys.functions[A_ThisHotkey]
     action := hs.hotkeys.actions[A_ThisHotkey]
-    if (isObject(func)) {
+    if (IsObject(func)) {
         func.Call(hs.hotkeys.params[A_ThisHotkey]*)
     }
-    else if (isLabel(action)) {
+    else if (IsLabel(action)) {
         GoSub, % action
     }
     else if (action != "") {
@@ -4178,7 +4840,7 @@ init() {
             MsgBox, 48,, %msg%
         }
     }
-    if (isFunc("userInit")) {
+    if (IsFunc("userInit")) {
         userFunc := Func("userInit")
         userFunc.()
     }
@@ -4203,6 +4865,7 @@ init() {
         }
         FileDelete, % hs.file.UPDATE
     }
+    initQuickHelp()
     return
 
     customTrayMenu:
@@ -4262,28 +4925,28 @@ initHotStrings() {
         hotString("@ip", A_IPAddress1, mode.CASE)
         hotString("(\d+)\/(\d+)%", "hsDivPercent", mode.REGEX)
         hotString("(\d+)%(\d+)" . endChars, "hsPercentOf", mode.REGEX)
-        hotString("\b1\/8" . endChars, chr(8539), mode.REGEX,, "isCalculatorNotActive")
-        hotString("\b1\/6" . endChars, chr(8537), mode.REGEX,, "isCalculatorNotActive")
-        hotString("\b1\/5" . endChars, chr(8533), mode.REGEX,, "isCalculatorNotActive")
-        hotString("\b1\/4" . endChars, chr(188), mode.REGEX,, "isCalculatorNotActive")
-        hotString("\b2\/8" . endChars, chr(188), mode.REGEX,, "isCalculatorNotActive")
-        hotString("\b1\/3" . endChars, chr(8531), mode.REGEX,, "isCalculatorNotActive")
-        hotString("\b2\/6" . endChars, chr(8531), mode.REGEX,, "isCalculatorNotActive")
-        hotString("\b3\/8" . endChars, chr(8540), mode.REGEX,, "isCalculatorNotActive")
-        hotString("\b2\/5" . endChars, chr(8534), mode.REGEX,, "isCalculatorNotActive")
-        hotString("\b1\/2" . endChars, chr(189), mode.REGEX,, "isCalculatorNotActive")
-        hotString("\b2\/4" . endChars, chr(189), mode.REGEX,, "isCalculatorNotActive")
-        hotString("\b3\/6" . endChars, chr(189), mode.REGEX,, "isCalculatorNotActive")
-        hotString("\b4\/8" . endChars, chr(189), mode.REGEX,, "isCalculatorNotActive")
-        hotString("\b3\/5" . endChars, chr(8535), mode.REGEX,, "isCalculatorNotActive")
-        hotString("\b5\/8" . endChars, chr(8541), mode.REGEX,, "isCalculatorNotActive")
-        hotString("\b2\/3" . endChars, chr(8532), mode.REGEX,, "isCalculatorNotActive")
-        hotString("\b4\/6" . endChars, chr(8532), mode.REGEX,, "isCalculatorNotActive")
-        hotString("\b3\/4" . endChars, chr(190), mode.REGEX,, "isCalculatorNotActive")
-        hotString("\b6\/8" . endChars, chr(190), mode.REGEX,, "isCalculatorNotActive")
-        hotString("\b4\/5" . endChars, chr(8536), mode.REGEX,, "isCalculatorNotActive")
-        hotString("\b5\/6" . endChars, chr(8538), mode.REGEX,, "isCalculatorNotActive")
-        hotString("\b7\/8" . endChars, chr(8542), mode.REGEX,, "isCalculatorNotActive")
+        hotString("\b1\/8" . endChars, chr(8539), mode.REGEX,, "isNotActiveCalculator")
+        hotString("\b1\/6" . endChars, chr(8537), mode.REGEX,, "isNotActiveCalculator")
+        hotString("\b1\/5" . endChars, chr(8533), mode.REGEX,, "isNotActiveCalculator")
+        hotString("\b1\/4" . endChars, chr(188), mode.REGEX,, "isNotActiveCalculator")
+        hotString("\b2\/8" . endChars, chr(188), mode.REGEX,, "isNotActiveCalculator")
+        hotString("\b1\/3" . endChars, chr(8531), mode.REGEX,, "isNotActiveCalculator")
+        hotString("\b2\/6" . endChars, chr(8531), mode.REGEX,, "isNotActiveCalculator")
+        hotString("\b3\/8" . endChars, chr(8540), mode.REGEX,, "isNotActiveCalculator")
+        hotString("\b2\/5" . endChars, chr(8534), mode.REGEX,, "isNotActiveCalculator")
+        hotString("\b1\/2" . endChars, chr(189), mode.REGEX,, "isNotActiveCalculator")
+        hotString("\b2\/4" . endChars, chr(189), mode.REGEX,, "isNotActiveCalculator")
+        hotString("\b3\/6" . endChars, chr(189), mode.REGEX,, "isNotActiveCalculator")
+        hotString("\b4\/8" . endChars, chr(189), mode.REGEX,, "isNotActiveCalculator")
+        hotString("\b3\/5" . endChars, chr(8535), mode.REGEX,, "isNotActiveCalculator")
+        hotString("\b5\/8" . endChars, chr(8541), mode.REGEX,, "isNotActiveCalculator")
+        hotString("\b2\/3" . endChars, chr(8532), mode.REGEX,, "isNotActiveCalculator")
+        hotString("\b4\/6" . endChars, chr(8532), mode.REGEX,, "isNotActiveCalculator")
+        hotString("\b3\/4" . endChars, chr(190), mode.REGEX,, "isNotActiveCalculator")
+        hotString("\b6\/8" . endChars, chr(190), mode.REGEX,, "isNotActiveCalculator")
+        hotString("\b4\/5" . endChars, chr(8536), mode.REGEX,, "isNotActiveCalculator")
+        hotString("\b5\/6" . endChars, chr(8538), mode.REGEX,, "isNotActiveCalculator")
+        hotString("\b7\/8" . endChars, chr(8542), mode.REGEX,, "isNotActiveCalculator")
         hotString("\b([a-z])L", "$1:", mode.REGEX)
     }
     if (toBool(hs.config.user.enableHsCode)) {
@@ -4400,7 +5063,7 @@ initHotStrings() {
 }
 
 initInternalVars() {
-    hs.VERSION := "1.20160619.1"
+    hs.VERSION := "1.20160710.1"
     hs.TITLE := "HotScript"
     hs.BASENAME := A_ScriptDir . "\" . hs.TITLE
 
@@ -4448,6 +5111,10 @@ initInternalVars() {
             USER_STRINGS: hs.BASENAME . "Strings.ahk",
             USER_VARIABLES: hs.BASENAME . "Variables.ahk"
         )}
+    ; help
+    hs.help := {}
+    hs.help.width := 1275
+    hs.help.height := 698
     ; hotkeys
     hs.hotkeys := {}
     hs.hotkeys.actions := {}
@@ -4476,7 +5143,7 @@ initInternalVars() {
             DOB: "01/01/1980",
             EMAIL: "firstlast@mail.com",
             NAME: "First Last",
-            PASSWORD: "ÑÁ¥¥ö±óå¾",
+            PASSWORD: chr(209) . chr(193) . chr(165) . chr(165) . chr(246) . chr(177) . chr(243) . chr(229) . chr(190),
             PHONE: "789-456-0123",
             SIGNATURE: quote . "Sincerely,``n" . quote . " . MY_NAME",
             WORK_EMAIL: "firstlast@work.com"
@@ -4499,6 +5166,532 @@ initInternalVars() {
     hs.config.user.file := hs.file.CONFIG_USER
 }
 
+initQuickHelp() {
+    help := {}
+    vspace := hs.const.VIRTUAL_SPACE
+    colLine := repeatStr(chr(8212), 37) . A_Tab
+    eol := hs.const.EOL_NIX
+    pointer := chr(9492) . chr(9472) . chr(9658)
+    pointerExtend := chr(9474)
+    spacer := vspace . "`t`t`t`t`t"
+    trimChars := "`t " . vspace
+
+    hkActionHelpEnabled =
+    (LTrim
+        Action hotkeys`t`t`t
+        %colLine%
+        [W]-A`t`tToggle always-on-top`t
+        [CW]-A`t`tToggle click-through`t
+        [W]-C`t`tRun Calculator`t`t
+        [W]-D`t`tRun DOS`t`t`t
+        [AW]-D`t`tRun DOS from Explorer`t
+        [W]-E`t`tRun editor`t`t
+        [W]-G`t`tGoogle (or goto)`t
+        [W]-M`t`tCharacter Map`t`t
+        [W]-Q`t`tQuick Lookup`t`t
+        [W]-S`t`tRun Windows Services`t
+        [AW]-S`t`tExplore 'Startup'`t
+        [W]-X`t`tRun Windows Explorer`t
+        [W]-PrintScreen`tRun Snipping tool`t
+        [LC]-[RC]`tRun Control Panel`t
+        [A]-Apps`t`tToggle desktop icons`t
+    )
+    hkActionHelpDisabled := replaceEachLine(hkActionHelpEnabled, spacer)
+    hkActionHelp := (hs.config.user.enableHkAction ? hkActionHelpEnabled : hkActionHelpDisabled)
+
+    hkDosHelpEnabled =
+    (LTrim Comments
+        %spacer%
+        DOS hotkeys`t`t`t
+        %colLine%
+        [A]-C`t`t"copy "`t`t`t
+        [A]-D`t`tPUSHD to Downloads`t
+        [C]-Delete`tDelete to EOL`t`t
+        [C]-End`t`tScroll to bottom`t
+        [C]-Home`t`tScroll to top`t`t
+        [A]-M`t`t"move "`t`t`t
+        [A]-P`t`t"pushd "`t`t
+        [C]-P`t`tPOP to last dir`t`t
+        [C]-PgDn`t`tScroll down 1 page`t
+        [C]-PgUp`t`tScroll up 1 page`t
+        [A]-R`t`tCD to root dir`t`t
+        [A]-T`t`t"type "`t`t`t
+        [A]-Up   [A]-.`tCD to parent dir`t
+        [C]-V`t`tPaste clipboard`t`t
+        [A]-X`t`tRun 'exit'`t`t
+        %spacer%
+        %spacer%
+        %spacer%
+        %spacer%
+        %spacer%
+        %spacer%
+    )
+    hkDosHelpDisabled := replaceEachLine(hkDosHelpEnabled, spacer)
+    hkDosHelp := (hs.config.user.enableHkDos ? hkDosHelpEnabled : hkDosHelpDisabled)
+
+;    hkEppHelpEnabled =
+;    (LTrim
+;        EditPad Pro hotkeys`t`t`t
+;        %colLine%
+;        [A]-Delete`tDelete line`t`t`t
+;        [A]-Down`tMove line down`t`t`t
+;        [A]-Up`t`tMove line up`t`t`t
+;        [C]-Delete`tDelete to EOL`t`t`t
+;        [C]-G`t`tGo to line`t`t`t
+;        XButton1`tPrevious file`t`t`t
+;        XButton2`tNext file`t`t`t
+;    )
+;    hkEppHelpDisabled := replaceEachLine(hkEppHelpEnabled, spacer)
+;    hkEppHelp := (hs.config.user.enableHkEpp ? hkEppHelpEnabled : hkEppHelpDisabled)
+
+    title := hs.TITLE
+    hkHotScriptHelp =
+    (LTrim Comments
+        %spacer%
+        %title% hotkeys`t`t`t
+        %colLine%
+        [AW]-H`t`tExplore '%title%'`t
+        [CW]-H`t`tToggle quick help`t
+        [W]-H`t`tShow quick help`t`t
+        [W]-1`t`tRun AHK help`t`t
+        [W]-2`t`tReload %title%`t
+        [W]-3`t`tEdit %title%`t`t
+        [W]-4`t`tEdit user keys`t`t
+        [W]-5`t`tEdit user strings`t
+        [W]-6`t`tEdit user variables`t
+        [W]-7`t`tEdit user functions`t
+        [W]-8`t`tEdit user INI`t`t
+        [W]-9`t`tEdit default INI`t
+        [W]-0`t`t%title% home page`t`t
+        [CW]-F12`t`tShow variable`t`t
+        [W]-F12`t`tExit %title%`t`t
+        [W]-Pause`tPause %title%`t`t
+        [W]-```t`tRun DebugView`t`t
+        %spacer%
+        %spacer%
+        %spacer%
+        %spacer%
+        %spacer%
+        %spacer%
+        %spacer%
+    )
+
+    hkMiscHelpEnabled =
+    (LTrim
+        Miscellaneous hotkeys`t`t
+        %colLine%
+        [CA]-A`t`tCopy Append`t`t
+        [CA]-C`t`tSwap to clipboard`t`t
+        [CA]-D`t`tCreate directory`t`t
+        [CA]-F`t`tCreate file`t`t
+        [CA]-V`t`tPaste as text`t`t
+        [CA]-X`t`tCut Append`t`t
+        [W]-Enter`tPastes 'enter'`t`t
+        [W]-Tab`t`tPastes 'tab'`t`t
+        [W]-V`t`tPreview clipboard`t`t
+        [W]-Z`t`tShow zoom window`t`t
+        [AW]-ARROW`tMove mouse 1px`t`t
+        [CAW]-ARROW`tDrag mouse 1px`t`t
+    )
+    hkMiscHelpDisabled := replaceEachLine(hkMiscHelpEnabled, spacer)
+    hkMiscHelp := (hs.config.user.enableHkMisc ? hkMiscHelpEnabled : hkMiscHelpDisabled)
+
+    hkTextHelpEnabled =
+    (LTrim
+        %spacer%
+        Text hotkeys`t`t`t
+        %colLine%
+        [C]-D`t`tDelete word`t`t
+        [A]-Delete`tDelete line`t`t
+        [C]-Delete`tDelete to EOL`t`t
+        [A]-Down`t`tMove line down`t`t
+        [A]-Up`t`tMove line up`t`t
+        [CS]-Up`t`tDuplicate line`t`t
+        %spacer%
+        %spacer%
+        %spacer%
+        %spacer%
+    )
+    hkTextHelpDisabled := replaceEachLine(hkTextHelpEnabled, spacer)
+    hkTextHelp := (hs.config.user.enableHkText ? hkTextHelpEnabled : hkTextHelpDisabled)
+
+    hkTransformHelpEnabled =
+    (LTrim
+        Transform hotkeys`t`t`t
+        %colLine%
+        [CS]-```t`tEscape text for AHK`t
+        [CS]-A`t`tSort ascending`t`t
+        [CAS]-A`t`tSort ascending (case)`t
+        [CS]-D`t`tSort descending`t`t
+        [CAS]-D`t`tSort descending (case)`t
+        [CS]-E`t`tEncrypt text`t`t
+        [CS]-I`t`tiNVERT cASE`t`t
+        [CS]-L`t`tlower case`t`t
+        [CA]-N`t`tAuto-Denumber`t`t
+        [CAS]-N`t`tAuto-number (prompt)`t
+        [CS]-N`t`tAuto-number (1)`t`t
+        [CS]-O`t`tOracle words to UPPER`t
+        [CS]-R`t`tReverse text`t`t
+        [CS]-S`t`tSentence case`t`t
+        [CS]-T`t`tTitle Case`t`t
+        [CS]-U`t`tUPPER case`t`t
+        [CA]-W`t`tUnwrap wrapped text`t
+        [CS]-W`t`tWrap text at width`t
+        [AS]-KEY`t`tTagify text`t`t
+        %A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%%pointer% KEY is: < >`t`t`t
+        [CA]-KEY`t`tWrap in SYMBOLS`t`t
+        [AW]-KEY`t`tWrap each in SYMBOLS`t
+        %A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%%pointer% KEY is: [ ] '`t`t`t
+        [CS]-KEY`t`tWrap in SYMBOLS`t`t
+        [SW]-KEY`t`tWrap each in SYMBOLS`t
+        %A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%%pointer% KEY is: ( ) { } " < >`t`t
+    )
+    hkTransformHelpDisabled := replaceEachLine(hkTransformHelpEnabled, spacer)
+    hkTransformHelp := (hs.config.user.enableHkTransform ? hkTransformHelpEnabled : hkTransformHelpDisabled)
+
+    hkWindowHelpEnabled =
+    (LTrim Comments
+        Window hotkeys`t`t`t
+        %colLine%
+        [A]-MW&#x21e7;`t`tPageUp`t`t`t
+        [A]-MW&#x21e9;`t`tPageDown`t`t
+        [C]-MW&#x21e7;`t`tScroll left`t`t
+        [C]-MW&#x21e9;`t`tScroll right`t`t
+        [W]-+   [W]-MW&#x21e7;`tIncrease transparency`t
+        [W]--   [W]-MW&#x21e9;`tDecrease transparency`t
+        [W]-/`t`tShow window info`t
+        [W]-Delete`tHide active window`t
+        [W]-Down`t`tMinimize the window`t
+        [W]-Insert`tShow hidden windows`t
+        [W]-Home`t`tCenter current window`t
+        [W]-Left   MW&#x21e6;`tMove to prev monitor`t
+        [CW]-M`t`tToggle minimized`t
+        [CW]-R`t`tQuick Resolutions`t
+        [W]-Right  MW&#x21e8;`tMove to next monitor`t
+        [W]-T`t`tToggle transparency`t
+        [W]-Up`t`tMaximize the window`t
+        [CW]-ARROW`tMove to edge`t`t
+        [SW]-ARROW`tResize to 1x2 or 2x1`t
+        [CW]-NP[047]`tResize to 1x3`t`t
+        [SW]-Down-Left`tResize to 2x2 (SW)`t
+        [SW]-Down-Right`tResize to 2x2 (SE)`t
+        [SW]-Up-Left`tResize to 2x2 (NW)`t
+        [SW]-Up-Right`tResize to 2x2 (NE)`t
+        [AW]-NP[124578]`tResize to 2x3`t`t
+        [CW]-NP[1-3]`tResize to 3x1`t`t
+        [SW]-NP[1-6]`tResize to 3x2`t`t
+        [W]-NP[1-9]`tResize to 3x3`t`t
+        [*W]-[F9-F11]`tResize to 3x4`t`t
+        [*W]-[F5-F8]`tResize to 4x3`t`t
+        [*W]-[F1-F4]`tResize to 4x4`t`t
+        [SW]-Up-Down`tResize to max height`t
+        [SW]-Left-Right`tResize to max width`t
+        %spacer%
+        %vspace%*  = Additional Modifier Key`t`t
+        %vspace%     Shift: Level 4`t`t`t
+        %vspace%     Ctrl : Level 3`t`t`t
+        %vspace%     Alt  : Level 2`t`t`t
+        %vspace%     None : Level 1`t`t`t
+    )
+    hkWindowHelpDisabled := replaceEachLine(hkWindowHelpEnabled, spacer)
+    hkWindowHelp := (hs.config.user.enableHkWindow ? hkWindowHelpEnabled : hkWindowHelpDisabled)
+
+    hkHeader := vspace . " C = Ctrl  |  A = Alt  |  S = Shift  |  W = Win  |  L = Left  |  R = Right  |  MW = MouseWheel  |  NP = NumPad" . eol . eol
+    hkCol1 := hkActionHelp . eol . hkDosHelp
+    hkCol2 := hkWindowHelp
+    hkCol3 := hkTransformHelp . eol . hkTextHelp
+    hkCol4 := hkMiscHelp . eol . hkHotScriptHelp
+;    hkCol5 := hkEppHelp
+
+    hkArr1 := listToArray(hkCol1)
+    hkArr2 := listToArray(hkCol2)
+    hkArr3 := listToArray(hkCol3)
+    hkArr4 := listToArray(hkCol4)
+;    hkArr5 := listToArray(hkCol5)
+
+    hkResult := hkHeader
+    for key, value in hkArr1
+    {
+        ;hkResult .= LTrim(RTrim(value . hkArr2[key] . hkArr3[key] . hkArr4[key] . hkArr5[key], trimChars)) . eol
+        hkResult .= LTrim(RTrim(value . hkArr2[key] . hkArr3[key] . hkArr4[key], trimChars)) . eol
+    }
+    hkResult := RegexReplace(hkResult, "<", "&lt;")
+    hkResult := RegexReplace(hkResult, ">", "&gt;")
+    hkResult := RegexReplace(hkResult, "(-)(KEY)", "$1<span class=""explain"">$2</span>")
+    hkResult := RegexReplace(hkResult, "\]-", "]&#x2010;")
+    hkResult := RegexReplace(hkResult, "  \|  ", "  &#x2502;  ")
+    hkResult := RegexReplace(hkResult, " (C|A|S|W|L|R)( =)", "<span class=""mod"">&nbsp;$1</span>$2")
+    hkResult := RegexReplace(hkResult, "([A-Z][^\t\n]+ )(hot)(keys)", "<span class=""section"">$1$3</span>`t")
+    hkResult := RegexReplace(hkResult, "i)(\[\*?[a-z]+\])", "<span class=""mod"">$1</span>")
+    hkResult := RegexReplace(hkResult, "(NP)", "<span class=""numpad"">$1</span>")
+    hkResult := RegexReplace(hkResult, "(MW)", "<span class=""wheel"">$1</span>")
+    hkResult := RegexReplace(hkResult, "\*", "<span class=""star"">*</span>")
+    hkResult := RegexReplace(hkResult, vspace, "&nbsp;")
+
+    hsAliasHelpEnabled =
+    (LTrim
+        Alias hotstrings`t`t`t
+        %colLine%
+        bbl`tbe back later`t`t`t
+        bbs`tbe back soon`t`t`t
+        bi#%vspace%`tback in # minutes`t`t
+        brb`tbe right back`t`t`t
+        brt`tbe right there`t`t`t
+        g2g`tGood to go.`t`t`t
+        gtg`tGot to go.`t`t`t
+        idk`tI don't know.`t`t`t
+        lmc`tLet me check on that...`t`t
+        lmk`tLet me know `t`t`t
+        nm%vspace%`tnever mind...`t`t`t
+        nmif`tNever mind, I found it.`t`t
+        np%vspace%`tno problem`t`t`t
+        nw`tno worries`t`t`t
+        okt`tOK, thanks...`t`t`t
+        thok`tThat's OK...`t`t`t
+        thx`tthanks`t`t`t`t
+        ty%vspace%`tThank you.`t`t`t
+        vg%vspace%`tvery good`t`t`t
+        yw%vspace%`tYou're welcome`t`t`t
+        wyb`tLet me know when you are back`t
+        %spacer%
+        %spacer%
+        %spacer%
+        %spacer%
+        %spacer%
+        %spacer%
+        %spacer%
+        %spacer%
+        %spacer%
+        %spacer%
+    )
+    hsAliasHelpDisabled := replaceEachLine(hsAliasHelpEnabled, spacer)
+    hsAliasHelp := (hs.config.user.enableHsAlias ? hsAliasHelpEnabled : hsAliasHelpDisabled)
+
+    hsAutoCorrectHelpEnabled =
+    (LTrim
+        %spacer%
+        Auto-correct hotstrings`t`t
+        %colLine%
+        @ip`tCurrent IP address`t`t
+        #/#`%`tdivide as percent`t`t
+        #`%#%vspace%`tpercent of number`t`t
+        #/#%vspace%`tCommon fractions (n/[2-6,8])`t
+        [c-z]L`t[c-z]:`t`t`t`t
+    )
+    hsAutoCorrectHelpDisabled := replaceEachLine(hsAutoCorrectHelpEnabled, spacer)
+    hsAutoCorrectHelp := (hs.config.user.enableHsAutoCorrect ? hsAutoCorrectHelpEnabled : hsAutoCorrectHelpDisabled)
+
+    hsCodeHelpEnabled =
+    (LTrim
+        %spacer%
+        Code hotstrings`t`t`t
+        %colLine%
+        @html`tHTML template`t`t`t
+        @java`tJava template`t`t`t
+        @perl`tPerl template`t`t`t
+        @sql`tSQL template`t`t`t
+        chh`tComment header: HTML`t`t
+        chj`tComment header: Java/JS`t`t
+        chp`tComment header: Perl`t`t
+        chs`tComment header: SQL`t`t
+        elif`t'else/if' block`t`t`t
+        for(`t'for' block`t`t`t
+        func(`t'function' block`t`t
+        if(`t'if' block`t`t`t
+        ifel`t'if/else' block`t`t`t
+        sf%vspace%`tString.format("", )`t`t
+        switch(`t'switch' block`t`t`t
+        sysout`tSystem.out.println("");`t`t
+        while(`t'while' block`t`t`t
+    )
+    hsCodeHelpDisabled := replaceEachLine(hsCodeHelpEnabled, spacer)
+    hsCodeHelp := (hs.config.user.enableHsCode ? hsCodeHelpEnabled : hsCodeHelpDisabled)
+
+    hsDatesHelpEnabled =
+    (LTrim
+        Date/Time hotstrings`t`t
+        %colLine%
+        dtms`tYYYYMDD_24MMSS`t`t`t
+        dts`tYYYYMMDD`t`t`t
+        tms`t24MMSS`t`t`t`t
+        @date`tMM/DD/YYYY`t`t`t
+        @day`tDay name`t`t`t
+        @ddd`tDay name (abbr.)`t`t
+        @mmm`tMonth name (abbr.)`t`t
+        @month`tMonth name`t`t`t
+        @now`tMM/DD/YYYY at 24:MM:SS`t`t
+        @time`t24:MM:SS`t`t`t
+    )
+    hsDatesHelpDisabled := replaceEachLine(hsDatesHelpEnabled, spacer)
+    hsDatesHelp := (hs.config.user.enableHsDates ? hsDatesHelpEnabled : hsDatesHelpDisabled)
+
+    hsDosHelpEnabled =
+    (LTrim
+        DOS hotstrings`t`t`t
+        %colLine%
+        cd`tcd /d`t`t`t`t
+    )
+    hsDosHelpDisabled := replaceEachLine(hsDosHelpEnabled, spacer)
+    hsDosHelp := (hs.config.user.enableHsDos ? hsDosHelpEnabled : hsDosHelpDisabled)
+
+    hsHtmlHelpEnabled =
+    (LTrim
+        %spacer%
+        HTML/XML hotstrings`t`t
+        %colLine%
+        <TAG`tMost HTML tags auto-complete`t
+        %A_SPACE%%A_SPACE%%pointerExtend%`t(Some create child tags)`t
+        %A_SPACE%%A_SPACE%%pointer% TAG is any of the following:`t
+        `ta/b/big/block/body/br/but/cap`t
+        `tcode/del/div/em/field/foot`t
+        `tform/h[1-6]/head/header`t`t
+        `thgroup/hr/html/i/iframe/img`t
+        `tinput/label/legend/li/link/ol`t
+        `toptg/opti/p/pre/q/script`t
+        `tsection/select/small/source`t
+        `tspan/strong/style/sub/sum`t
+        `tsup/table/tbody/td/texta`t
+        `ttfoot/th/thead/title/tr/u/ul`t
+        <xml`tAuto-completes XML header`t
+    )
+    hsHtmlHelpDisabled := replaceEachLine(hsHtmlHelpEnabled, spacer)
+    hsHtmlHelp := (hs.config.user.enableHsHtml ? hsHtmlHelpEnabled : hsHtmlHelpDisabled)
+
+    hsJiraHelpEnabled =
+    (LTrim
+        %spacer%
+        Jira/Confluence hotstrings`t`t
+        %colLine%
+        `{bpan`t'panel' tags (blue)`t`t`t
+        `{code`t'code' tags for simple code`t`t
+        `{color`t'color' tags`t`t`t
+        `{gpan`t'panel' tags (green)`t`t`t
+        `{info`t'info' tags`t`t`t
+        `{java`t'code' tags for Java`t`t
+        `{js`t'code' tags for JavaScript`t
+        `{nof`t'noformat' tags`t`t`t
+        `{note`t'note' tags`t`t`t
+        `{pan`t'panel' tags`t`t`t
+        `{quo`t'quote' tags`t`t`t
+        `{rpan`t'panel' tags (red)`t`t`t
+        `{sql`t'code' tags for SQL`t`t
+        `{table`tA simple 5-column table`t`t`t
+        `{tip`t'tip' tags`t`t`t
+        `{warn`t'warn' tags`t`t`t
+        `{xml`t'code' tags for XML`t`t
+        `{ypan`t'panel' tags (yellow)`t`t`t
+    )
+    hsJiraHelpDisabled := replaceEachLine(hsJiraHelpEnabled, spacer)
+    hsJiraHelp := (hs.config.user.enableHsJira ? hsJiraHelpEnabled : hsJiraHelpDisabled)
+
+    hsVariableHelpEnabled =
+    (LTrim
+        Variable hotstrings`t`t
+        %colLine%
+        @@`temail address`t`t`t
+        @#`tphone number`t`t`t
+        @addr`taddress`t`t`t`t
+        @dob`tyour D.o.B.`t`t`t
+        @me`tyour name`t`t`t
+        @sig`tyour signature`t`t`t
+    )
+    hsVariableHelpDisabled := replaceEachLine(hsVariableHelpEnabled, spacer)
+    hsVariableHelp := (hs.config.user.enableHsVariables ? hsVariableHelpEnabled : hsVariableHelpDisabled)
+
+    hsHeader := vspace . "`t`t`t`tHotStrings ending with " . vspace . " means any whitespace or punctuation character is required." . eol . eol
+    hsCol1 := hsAliasHelp
+    hsCol2 := hsVariableHelp . eol . hsAutoCorrectHelp . eol . hsHtmlHelp
+    hsCol3 := hsDatesHelp . eol . hsCodeHelp
+    hsCol4 := hsDosHelp . eol . hsJiraHelp
+
+    hsArr1 := listToArray(hsCol1)
+    hsArr2 := listToArray(hsCol2)
+    hsArr3 := listToArray(hsCol3)
+    hsArr4 := listToArray(hsCol4)
+
+    hsResult := hsHeader
+    for key, value in hsArr1 {
+        hsResult .= LTrim(RTrim(value . hsArr2[key] . hsArr3[key] . hsArr4[key], trimChars)) . eol
+    }
+    hsResult := RegexReplace(hsResult, "<", "&lt;")
+    hsResult := RegexReplace(hsResult, ">", "&gt;")
+    hsResult := RegexReplace(hsResult, "(with )(" . vspace . ")( means)", "$1<span class=""sep"">&nbsp;</span>$3")
+    hsResult := RegexReplace(hsResult, "([A-Z][^\t\n]+ )(hot)(strings)", "<span class=""section"">$1$3</span>`t")
+    hsResult := RegexReplace(hsResult, "(\w|#)(" . vspace . ")(\t)", "$1<span class=""sep"">&nbsp;</span>$3")
+    hsResult := RegexReplace(hsResult, "(&lt;)(TAG)", "$1<span class=""explain"">$2</span>")
+    hsResult := RegexReplace(hsResult, vspace, "&nbsp;")
+
+    hsVersion := hs.VERSION
+    homeUrl := hs.vars.url.HotScript.home
+    helpHtml =
+    (Ltrim Join
+        <!DOCTYPE html>
+        <html>
+            <head>
+                <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+                <meta charset="UTF-8"/>
+                <style type="text/css">
+                    body {background-color:#FFFEE3;color:#333;font-size:13px;margin-top:2px;}
+                    a {color:inherit;text-decoration:none;}
+                    a:hover {color:blue;text-decoration:underline;}
+                    .bigger {font-size:18px;}
+                    .explain {background-color:#FFC6FF;padding:0px 1px;}
+                    .sep {background-color:#DEA5A4;padding:0px;}
+                    .mod {color:#FF6961;font-weight:bold;}
+                    .numpad {background-color:#BAD4F4;padding:0px 1px;}
+                    .section {background-color:#DFE9F6;border-radius:5px;font-weight:bold;padding:2px 3px;border:1px solid #99BCE8;}
+                    .star {background-color:#FFCC66;color:#333;font-weight:normal;padding:0px 1px;}
+                    .title {background:#FFE7E7;border:1px solid #DF9898;border-radius:5px;color:#000;float:right;font-family:Roboto,'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:14px;margin:-12px -7px 0 0;padding:1px 8px;text-align:right;}
+                    .wheel {background-color:#C6FFC6;padding:0px 1px;}
+                    pre {-moz-tab-size:8;-o-tab-size:8;tab-size:8;line-height:15px;}
+                </style>
+            </head>
+        <body>
+            <div class="title"><a href="%homeUrl%">HotScript</a> v%hsVersion% &nbsp; <span class="bigger">&copy;</span> 2013-%A_YYYY%</div>
+            <pre>${help}</pre>
+        </body>
+        </html>
+    )
+
+    hkContent := StrReplace(helpHtml, "${help}", hkResult)
+    hsContent := StrReplace(helpHtml, "${help}", hsResult)
+
+    static helpTab := ""
+    static htmlHK := ""
+    static htmlHS := ""
+
+    Gui, QuickHelp: +AlwaysOnTop +Border -Caption -DpiScale
+    ; TODO - try using Tab3, but some adjustments will need to be made for dimensions; see tab2-help.png vs tab3-help.png
+    ; TODO - try reversing these so the first tab is drawn last
+    tabControlWidth := hs.help.width
+    tabControlHeight := (hs.help.height - 2)
+    tabWidth := (hs.help.width - 3)
+    tabHeight := (hs.help.height - 27)
+    Gui, QuickHelp: Add, Tab2, x0 y0 w%tabControlWidth% h%tabControlHeight% bottom vhelpTab, HotKeys|HotStrings
+    Gui, QuickHelp: Add, ActiveX, x0 y0 w%tabWidth% h%tabHeight% vhtmlHK, HtmlFile
+    Gui, QuickHelp: Tab, 2
+    Gui, QuickHelp: Add, ActiveX, x0 y0 w%tabWidth% h%tabHeight% vhtmlHS, HtmlFile
+    Gui, QuickHelp: Tab
+    Gui, QuickHelp: Color, FFEBCD
+
+    ; https://msdn.microsoft.com/en-us/library/ms535862
+    while (htmlHK.ReadyState != "complete") {
+        Sleep, 50
+    }
+    htmlHK.open()
+    Sleep, 50
+    htmlHK.write(hkContent)
+    Sleep, 50
+    htmlHK.close()
+
+    while (htmlHS.ReadyState != "complete") {
+        Sleep, 50
+    }
+    htmlHS.open()
+    htmlHS.write(hsContent)
+    htmlHS.close()
+}
+
 is(value, type) {
     result := false
     if value is %type%
@@ -4510,6 +5703,16 @@ is(value, type) {
 
 isActiveDos() {
     return (WinActive("ahk_class ConsoleWindowClass") || WinActive("ahk_exe cmd.exe"))
+}
+
+isActiveCalculator() {
+    procName := SetCase(getActiveProcessName(), "L")
+    return (procName == "calc.exe" || procName == "calculator.exe")
+}
+
+isNotActiveCalculator() {
+    ; this is negated because hotString()'s "condition" parameter can only run a function, not negate it
+    return !isActiveCalculator()
 }
 
 isDirectory(text) {
@@ -4524,16 +5727,14 @@ isUNC(text) {
     return RegexMatch(text, "\\\\[\\~`!@#$%^&\(\)\-_=+\[\]\{\};',.\d\w ]+")
 }
 
-isCalculatorNotActive() {
-    procName := SetCase(getActiveProcessName(), "L")
-    ; this is negated because hotString()'s "condition" parameter can only run a function, not negate it
-    return (procName != "calc.exe" && procName != "calculator.exe")
-}
-
 isUrl(text) {
     ; this does not support mailto urls
     pos := RegExMatch(text, "i)^(?:\b[a-z\d.-]+://[^<>\s]+|\b(?:(?:(?:[^\s!@#$%^&*()_=+[\]{}\|;:'"",.<>/?]+)\.)+(?:ac|ad|aero|ae|af|ag|ai|al|am|an|ao|aq|arpa|ar|asia|as|at|au|aw|ax|az|ba|bb|bd|be|bf|bg|bh|biz|bi|bj|bm|bn|bo|br|bs|bt|bv|bw|by|bz|cat|ca|cc|cd|cf|cg|ch|ci|ck|cl|cm|cn|coop|com|co|cr|cu|cv|cx|cy|cz|de|dj|dk|dm|do|dz|ec|edu|ee|eg|er|es|et|eu|fi|fj|fk|fm|fo|fr|ga|gb|gd|ge|gf|gg|gh|gi|gl|gm|gn|gov|gp|gq|gr|gs|gt|gu|gw|gy|hk|hm|hn|hr|ht|hu|id|ie|il|im|info|int|in|io|iq|ir|is|it|je|jm|jobs|jo|jp|ke|kg|kh|ki|km|kn|kp|kr|kw|ky|kz|la|lb|lc|li|lk|lr|ls|lt|lu|lv|ly|ma|mc|md|me|mg|mh|mil|mk|ml|mm|mn|mobi|mo|mp|mq|mr|ms|mt|museum|mu|mv|mw|mx|my|mz|name|na|nc|net|ne|nf|ng|ni|nl|no|np|nr|nu|nz|om|org|pa|pe|pf|pg|ph|pk|pl|pm|pn|pro|pr|ps|pt|pw|py|qa|re|ro|rs|ru|rw|sa|sb|sc|sd|se|sg|sh|si|sj|sk|sl|sm|sn|so|sr|st|su|sv|sy|sz|tc|td|tel|tf|tg|th|tj|tk|tl|tm|tn|to|tp|travel|tr|tt|tv|tw|tz|ua|ug|uk|um|us|uy|uz|va|vc|ve|vg|vi|vn|vu|wf|ws|xn--0zwm56d|xn--11b5bs3a9aj6g|xn--80akhbyknj4f|xn--9t4b11yi5a|xn--deba0ad|xn--g6w251d|xn--hgbk6aj7f53bba|xn--hlcj6aya9esc7a|xn--jxalpdlp|xn--kgbechtv|xn--zckzah|ye|yt|yu|za|zm|zw)|(?:(?:[0-9]|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5])\.){3}(?:[0-9]|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5]))(?:[;/][^#?<>\s]*)?(?:\?[^#<>\s]*)?(?:#[^<>\s]*)?(?!\w))$", matchStr)
     return (pos == 1)
+}
+
+isWord(str) {
+    return (RegexMatch(str, "^\w+$") > 0)
 }
 
 lineUnwrapSelected() {
@@ -5108,8 +6309,12 @@ pasteText(text:="", delay:=250) {
 refreshMonitors() {
     SysGet, monCount, MonitorCount
     SysGet, monPrimary, MonitorPrimary
+    SysGet, virtualWidth, 78
+    SysGet, virtualHeight, 79
     hs.vars.monitors.count := monCount
     hs.vars.monitors.primary := monPrimary
+    hs.vars.monitors.desktopHeight := virtualHeight
+    hs.vars.monitors.desktopWidth := virtualWidth
     Loop, % hs.vars.monitors.count
     {
         SysGet, monName, MonitorName, %A_Index%
@@ -5195,155 +6400,6 @@ replaceSelected(text) {
     ;SendInput, {Left %len%}+{Right %len%}
 }
 
-resizeTo(anchor) {
-    anchor := setCase(anchor, "U")
-    curMonitor := getActiveMonitor()
-    curMon := hs.vars.monitors[curMonitor]
-    WinGetClass, winClass, A
-    ; TODO - this should also be for Start Menu, SysTray, and maybe others...
-    ; TODO - need to adjust for Windows 10 calculator, too - Brady1 pushes it too far down
-    if (winClass == "CalcFrame") {
-        showSplash("Current window cannot be moved.", 2000)
-        return
-    }
-    hWnd := WinExist("A")
-    if (anchor == "T") {
-        ; top - 100% width, 50% height
-        newX := curMon.workLeft
-        newY := curMon.workTop
-        newH := (curMon.workHeight / 2)
-        newW := curMon.workWidth
-    }
-    else if (anchor == "B") {
-        ; bottom - 100% width, 50% height
-        newX := curMon.workLeft
-        newY := (curMon.workTop + (curMon.workHeight / 2))
-        newH := (curMon.workHeight / 2)
-        newW := curMon.workWidth
-    }
-    else if (anchor == "L") {
-        ; left - 50% width, 100% height
-        newX := curMon.workLeft
-        newY := curMon.workTop
-        newH := curMon.workHeight
-        newW := (curMon.workWidth / 2)
-    }
-    else if (anchor == "R") {
-        ; right - 50% width, 100% height
-        newX := (curMon.workLeft + (curMon.workWidth / 2))
-        newY := curMon.workTop
-        newH := curMon.workHeight
-        newW := (curMon.workWidth / 2)
-    }
-    else if (anchor == "TL") {
-        ; top-left - 50% width, 50% height
-        newX := curMon.workLeft
-        newY := curMon.workTop
-        newH := (curMon.workHeight / 2)
-        newW := (curMon.workWidth / 2)
-    }
-    else if (anchor == "TR") {
-        ; top-right - 50% width, 50% height
-        newX := (curMon.workLeft + (curMon.workWidth / 2))
-        newY := curMon.workTop
-        newH := (curMon.workHeight / 2)
-        newW := (curMon.workWidth / 2)
-    }
-    else if (anchor == "BL") {
-        ; bottom-left - 50% width, 50% height
-        newX := curMon.workLeft
-        newY := (curMon.workTop + (curMon.workHeight / 2))
-        newH := (curMon.workHeight / 2)
-        newW := (curMon.workWidth / 2)
-    }
-    else if (anchor == "BR") {
-        ; bottom-right - 50% width, 50% height
-        newX := (curMon.workLeft + (curMon.workWidth / 2))
-        newY := (curMon.workTop + (curMon.workHeight / 2))
-        newH := (curMon.workHeight / 2)
-        newW := (curMon.workWidth / 2)
-    }
-    else if (anchor == "NW") {
-        ; north-west - 33% width, 33% height
-        newX := curMon.workLeft
-        newY := curMon.workTop
-        newH := (curMon.workHeight / 3)
-        newW := (curMon.workWidth / 3)
-    }
-    else if (anchor == "N") {
-        ; north - 33% width, 33% height
-        newX := (curMon.workLeft + (curMon.workWidth / 3))
-        newY := curMon.workTop
-        newH := (curMon.workHeight / 3)
-        newW := (curMon.workWidth / 3)
-    }
-    else if (anchor == "NE") {
-        ; north-east - 33% width, 33% height
-        newX := (curMon.workLeft + ((curMon.workWidth / 3) * 2))
-        newY := curMon.workTop
-        newH := (curMon.workHeight / 3)
-        newW := (curMon.workWidth / 3)
-    }
-    else if (anchor == "W") {
-        ; west - 33% width, 33% height
-        newX := curMon.workLeft
-        newY := (curMon.workTop + (curMon.workHeight / 3))
-        newH := (curMon.workHeight / 3)
-        newW := (curMon.workWidth / 3)
-    }
-    else if (anchor == "C") {
-        ; center - 33% width, 33% height
-        newX := (curMon.workLeft + (curMon.workWidth / 3))
-        newY := (curMon.workTop + (curMon.workHeight / 3))
-        newH := (curMon.workHeight / 3)
-        newW := (curMon.workWidth / 3)
-    }
-    else if (anchor == "E") {
-        ; east - 33% width, 33% height
-        newX := (curMon.workLeft + ((curMon.workWidth / 3) * 2))
-        newY := (curMon.workTop + (curMon.workHeight / 3))
-        newH := (curMon.workHeight / 3)
-        newW := (curMon.workWidth / 3)
-    }
-    else if (anchor == "SW") {
-        ; south-west - 33% width, 33% height
-        newX := curMon.workLeft
-        newY := (curMon.workTop + ((curMon.workHeight / 3) * 2))
-        newH := (curMon.workHeight / 3)
-        newW := (curMon.workWidth / 3)
-    }
-    else if (anchor == "S") {
-        ; south - 33% width, 33% height
-        newX := (curMon.workLeft + (curMon.workWidth / 3))
-        newY := (curMon.workTop + ((curMon.workHeight / 3) * 2))
-        newH := (curMon.workHeight / 3)
-        newW := (curMon.workWidth / 3)
-    }
-    else if (anchor == "SE") {
-        ; south-east - 33% width, 33% height
-        newX := (curMon.workLeft + ((curMon.workWidth / 3) * 2))
-        newY := (curMon.workTop + ((curMon.workHeight / 3) * 2))
-        newH := (curMon.workHeight / 3)
-        newW := (curMon.workWidth / 3)
-    }
-    else {
-        message("Cannot resize window. Unknown anchor: " . anchor)
-        return
-    }
-    ; Windows 10 adjustments
-    if (startsWith(A_OSVersion, "10")) {
-        newX += -6
-        newY += -1
-        newW += 16
-        newH += 9
-    }
-    WinGet, minMaxState, MinMax, ahk_id %hWnd%
-    if (minMaxState == 1) {
-        WinRestore, ahk_id %hWnd%
-    }
-    WinMove, ahk_id %hWnd%,, %newX%, %newY%, %newW%, %newH%
-}
-
 resizeWindow(width:=0, height:=0, title:="A", center:=true) {
     WinGetPos, x, y, w, h, %title%
     width := (width < 1 ? w : width)
@@ -5387,7 +6443,7 @@ runAhkHelp() {
 }
 
 runDos(path:="") {
-    exeStr := "ahk_exe cmd.exe"
+    exeStr := "ahk_exe i)cmd.exe"
     if (path == "" && WinExist(exeStr) && !WinActive(exeStr)) {
         WinActivate
     }
@@ -5564,7 +6620,7 @@ runServices() {
 runTarget(target, workDir:="") {
     pid := Run(target, workDir)
     if (pid != "") {
-        WinWait, ahk_pid %pid%
+        WinWait, ahk_pid %pid%,, 1
         Sleep(250)
         WinActivate, ahk_pid %pid%
     }
@@ -5893,514 +6949,23 @@ showClipboard() {
     Progress("off")
 }
 
-initQuickHelp() {
-    help := {}
-    vspace := hs.const.VIRTUAL_SPACE
-    colLine := "—————————————————————————————————————`t"
-    eol := hs.const.EOL_NIX
-    pointer := chr(9492) . chr(9472) . chr(9658)
-    pointerExtend := chr(9474)
-    spacer := vspace . "`t`t`t`t`t"
-    trimChars := "`t " . vspace
-
-    hkActionHelpEnabled =
-    (LTrim
-        Action hotkeys`t`t`t
-        %colLine%
-        [W]-A`t`tToggle always-on-top`t
-        [CW]-A`t`tToggle click-through`t
-        [W]-C`t`tRun Calculator`t`t
-        [W]-D`t`tRun DOS`t`t`t
-        [AW]-D`t`tRun DOS from Explorer`t
-        [W]-E`t`tRun editor`t`t
-        [W]-G`t`tGoogle (or goto)`t
-        [W]-M`t`tCharacter Map`t`t
-        [W]-Q`t`tQuick Lookup`t`t
-        [W]-S`t`tRun Windows Services`t
-        [AW]-S`t`tExplore 'Startup'`t
-        [W]-X`t`tRun Windows Explorer`t
-        [W]-PrintScreen`tRun Snipping tool`t
-        [LC]-[RC]`tRun Control Panel`t
-        [A]-Apps`tToggle desktop icons`t
-    )
-    hkActionHelpDisabled := replaceEachLine(hkActionHelpEnabled, spacer)
-    hkActionHelp := (hs.config.user.enableHkAction ? hkActionHelpEnabled : hkActionHelpDisabled)
-
-    hkDosHelpEnabled =
-    (LTrim Comments
-        %spacer%
-        DOS hotkeys`t`t`t
-        %colLine%
-        [A]-C`t`t"copy "`t`t`t
-        [A]-D`t`tPUSHD to Downloads`t
-        [C]-Delete`tDelete to EOL`t`t
-        [C]-End`t`tScroll to bottom`t
-        [C]-Home`tScroll to top`t`t
-        [A]-M`t`t"move "`t`t`t
-        [A]-P`t`t"pushd "`t`t
-        [C]-P`t`tPOP to last dir`t`t
-        [C]-PgDn`tScroll down 1 page`t
-        [C]-PgUp`tScroll up 1 page`t
-        [A]-R`t`tCD to root dir`t`t
-        [A]-T`t`t"type "`t`t`t
-        [A]-Up / [A]-.`tCD to parent dir`t
-        [C]-V`t`tPaste clipboard`t`t
-        [A]-X`t`tRun 'exit'`t`t
-    )
-    hkDosHelpDisabled := replaceEachLine(hkDosHelpEnabled, spacer)
-    hkDosHelp := (hs.config.user.enableHkDos ? hkDosHelpEnabled : hkDosHelpDisabled)
-
-;    hkEppHelpEnabled =
-;    (LTrim
-;        EditPad Pro hotkeys`t`t`t
-;        %colLine%
-;        [A]-Delete`tDelete line`t`t`t
-;        [A]-Down`tMove line down`t`t`t
-;        [A]-Up`t`tMove line up`t`t`t
-;        [C]-D`t`tDelete word`t`t`t
-;        [C]-Delete`tDelete to EOL`t`t`t
-;        [C]-G`t`tGo to line`t`t`t
-;        XButton1`tPrevious file`t`t`t
-;        XButton2`tNext file`t`t`t
-;    )
-;    hkEppHelpDisabled := replaceEachLine(hkEppHelpEnabled, spacer)
-;    hkEppHelp := (hs.config.user.enableHkEpp ? hkEppHelpEnabled : hkEppHelpDisabled)
-
-    title := hs.TITLE
-    hkHotScriptHelp =
-    (LTrim Comments
-        %spacer%
-        %title% hotkeys`t`t`t
-        %colLine%
-        [AW]-H`t`tExplore '%title%'`t
-        [CW]-H`t`tToggle quick help`t
-        [W]-H`t`tShow quick help`t`t
-        [W]-1`t`tRun AHK help`t`t
-        [W]-2`t`tReload %title%`t
-        [W]-3`t`tEdit %title%`t`t
-        [W]-4`t`tEdit user keys`t`t
-        [W]-5`t`tEdit user strings`t
-        [W]-6`t`tEdit user variables`t
-        [W]-7`t`tEdit user functions`t
-        [W]-8`t`tEdit user INI`t`t
-        [W]-9`t`tEdit default INI`t
-        [W]-0`t`t%title% home page`t`t
-        [CW]-F12`tShow variable`t`t
-        [W]-F12`t`tExit %title%`t`t
-        [W]-Pause`tPause %title%`t`t
-        [W]-```t`tRun DebugView`t`t
-        %spacer%
-        %spacer%
-    )
-
-    hkMiscHelpEnabled =
-    (LTrim
-        Miscellaneous hotkeys
-        %colLine%
-        [CA]-A`t`tCopy Append
-        [CA]-C`t`tSwap to clipboard
-        [CA]-D`t`tCreate directory
-        [CA]-F`t`tCreate file
-        [CA]-V`t`tPaste as text
-        [CA]-X`t`tCut Append
-        [W]-Enter`tPastes 'enter'
-        [W]-Tab`t`tPastes 'tab'
-        [W]-V`t`tPreview clipboard
-        [W]-Z`t`tShow zoom window
-        [AW]-ARROW`tMove mouse 1px
-        [CAW]-ARROW`tDrag mouse 1px
-    )
-    hkMiscHelpDisabled := replaceEachLine(hkMiscHelpEnabled, spacer)
-    hkMiscHelp := (hs.config.user.enableHkMisc ? hkMiscHelpEnabled : hkMiscHelpDisabled)
-
-    hkTextHelpEnabled =
-    (LTrim
-        %spacer%
-        Text hotkeys`t`t`t
-        %colLine%
-        [A]-Delete`tDelete line`t`t
-        [A]-Down`tMove line down`t`t
-        [A]-Up`t`tMove line up`t`t
-        [CS]-Up`t`tDuplicate line`t`t
-        %spacer%
-    )
-    hkTextHelpDisabled := replaceEachLine(hkTextHelpEnabled, spacer)
-    hkTextHelp := (hs.config.user.enableHkText ? hkTextHelpEnabled : hkTextHelpDisabled)
-
-    hkTransformHelpEnabled =
-    (LTrim
-        Transform hotkeys`t`t`t
-        %colLine%
-        [CS]-```t`tEscape text`t`t
-        [CS]-A`t`tSort ascending`t`t
-        [CAS]-A`t`tSort ascending (case)`t
-        [CS]-D`t`tSort descending`t`t
-        [CAS]-D`t`tSort descending (case)`t
-        [CS]-E`t`tEncrypt text`t`t
-        [CS]-I`t`tiNVERT cASE`t`t
-        [CS]-L`t`tlower case`t`t
-        [CA]-N`t`tAuto-Denumber`t`t
-        [CAS]-N`t`tAuto-number (prompt)`t
-        [CS]-N`t`tAuto-number (1)`t`t
-        [CS]-O`t`tOracle words to UPPER`t
-        [CS]-R`t`tReverse text`t`t
-        [CS]-S`t`tSentence case`t`t
-        [CS]-T`t`tTitle Case`t`t
-        [CS]-U`t`tUPPER case`t`t
-        [CA]-W`t`tUnwrap wrapped text`t
-        [CS]-W`t`tWrap text at width`t
-        [AS]-KEY`tTagify text`t`t
-        %A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%%pointer% KEY is: < >`t`t`t
-        [CA]-KEY`tWrap in SYMBOLS`t`t
-        [AW]-KEY`tWrap each in SYMBOLS`t
-        %A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%%pointer% KEY is: [ ] '`t`t`t
-        [CS]-KEY`tWrap in SYMBOLS`t`t
-        [SW]-KEY`tWrap each in SYMBOLS`t
-        %A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%%pointer% KEY is: ( ) { } " < >`t`t
-    )
-    hkTransformHelpDisabled := replaceEachLine(hkTransformHelpEnabled, spacer)
-    hkTransformHelp := (hs.config.user.enableHkTransform ? hkTransformHelpEnabled : hkTransformHelpDisabled)
-
-    hkWindowHelpEnabled =
-    (LTrim
-        Window hotkeys`t`t`t
-        %colLine%
-        [A]-WheelDown`tPageDown`t`t
-        [A]-WheelUp`tPageUp`t`t`t
-        WheelLeftTilt`tMove to left monitor`t
-        WheelRightTilt`tMove to right monitor`t
-        [W]-- / [W]-Whl`tDecrease transparency`t
-        [W]-+ / [W]-Whl`tIncrease transparency`t
-        [W]-/`t`tShow window info`t
-        [W]-Delete`tHide active window`t
-        [W]-Down`tMinimize the window`t
-        [W]-Insert`tShow hidden windows`t
-        [W]-Home`tCenter current window`t
-        [W]-Left`tMove to prev. monitor`t
-        [CW]-M`t`tToggle minimized`t
-        [CW]-R`t`tQuick Resolutions`t
-        [W]-Right`tMove to next monitor`t
-        [W]-T`t`tToggle transparency`t
-        [W]-Up`t`tMaximize the window`t
-        [CW]-ARROW`tMove to edge`t`t
-        [SW]-ARROW`tResize to edge (50`%)`t
-        [SW]-DnLt`tResize to SW (25`%)`t
-        [SW]-DnRt`tResize to SE (25`%)`t
-        [SW]-UpLt`tResize to NW (25`%)`t
-        [SW]-UpRt`tResize to NE (25`%)`t
-        [W]-KEY`t`tResize to grid (11`%)`t
-        %A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%%pointer% KEY is: NumPad # (1-9)`t`t
-        %spacer%
-        %spacer%
-        %spacer%
-        %spacer%
-        %spacer%
-        %spacer%
-        %spacer%
-        %spacer%
-        %spacer%
-    )
-    hkWindowHelpDisabled := replaceEachLine(hkWindowHelpEnabled, spacer)
-    hkWindowHelp := (hs.config.user.enableHkWindow ? hkWindowHelpEnabled : hkWindowHelpDisabled)
-
-    hkHeader := vspace . "`t`t`t`t`t[ C = Ctrl  |  A = Alt  |  S = Shift  |  W = Win  |  L = Left  |  R = Right ]" . eol . eol
-    hkCol1 := hkActionHelp . eol . hkDosHelp
-    hkCol2 := hkWindowHelp
-    hkCol3 := hkTransformHelp . eol . hkTextHelp
-    hkCol4 := hkMiscHelp . eol . hkHotScriptHelp
-;    hkCol5 := hkEppHelp
-
-    hkArr1 := listToArray(hkCol1)
-    hkArr2 := listToArray(hkCol2)
-    hkArr3 := listToArray(hkCol3)
-    hkArr4 := listToArray(hkCol4)
-;    hkArr5 := listToArray(hkCol5)
-
-    hkResult := hkHeader
-    for key, value in hkArr1
-    {
-        ;hkResult .= LTrim(RTrim(value . hkArr2[key] . hkArr3[key] . hkArr4[key] . hkArr5[key], trimChars)) . eol
-        hkResult .= LTrim(RTrim(value . hkArr2[key] . hkArr3[key] . hkArr4[key], trimChars)) . eol
-    }
-    hkResult := RegexReplace(hkResult, "<", "&lt;")
-    hkResult := RegexReplace(hkResult, ">", "&gt;")
-    hkResult := RegexReplace(hkResult, "(C|A|S|W|L|R)( =)", "<span class=""mod"">$1</span>$2")
-    hkResult := RegexReplace(hkResult, "([A-Z][^\t\n]+ )(hot)(keys)", "<span class=""section"">$1$3</span>`t")
-    hkResult := RegexReplace(hkResult, "(\[\w+\])", "<span class=""mod"">$1</span>")
-    hkResult := RegexReplace(hkResult, "(-)(KEY)", "$1<span class=""explain"">$2</span>")
-    hkResult := RegexReplace(hkResult, vspace, "&nbsp;")
-
-    hsAliasHelpEnabled =
-    (LTrim
-        Alias hotstrings`t`t`t
-        %colLine%
-        bbl`tbe back later`t`t`t
-        bbs`tbe back soon`t`t`t
-        bi#%vspace%`tback in # minutes`t`t
-        brb`tbe right back`t`t`t
-        brt`tbe right there`t`t`t
-        g2g`tGood to go.`t`t`t
-        gtg`tGot to go.`t`t`t
-        idk`tI don't know.`t`t`t
-        lmc`tLet me check on that...`t`t
-        lmk`tLet me know `t`t`t
-        nm%vspace%`tnever mind...`t`t`t
-        nmif`tNever mind, I found it.`t`t
-        np%vspace%`tno problem`t`t`t
-        nw`tno worries`t`t`t
-        okt`tOK, thanks...`t`t`t
-        thok`tThat's OK...`t`t`t
-        thx`tthanks`t`t`t`t
-        ty%vspace%`tThank you.`t`t`t
-        vg%vspace%`tvery good`t`t`t
-        yw%vspace%`tYou're welcome`t`t`t
-        wyb`tLet me know when you are back`t
-        %spacer%
-        %spacer%
-        %spacer%
-        %spacer%
-        %spacer%
-        %spacer%
-        %spacer%
-        %spacer%
-        %spacer%
-        %spacer%
-    )
-    hsAliasHelpDisabled := replaceEachLine(hsAliasHelpEnabled, spacer)
-    hsAliasHelp := (hs.config.user.enableHsAlias ? hsAliasHelpEnabled : hsAliasHelpDisabled)
-
-    hsAutoCorrectHelpEnabled =
-    (LTrim
-        %spacer%
-        Auto-correct hotstrings`t`t
-        %colLine%
-        @ip`tCurrent IP address`t`t
-        #/#`%`tdivide as percent`t`t
-        #`%#%vspace%`tpercent of number`t`t
-        #/#%vspace%`tCommon fractions (n/[2-6,8])`t
-        [c-z]L`t[c-z]:`t`t`t`t
-    )
-    hsAutoCorrectHelpDisabled := replaceEachLine(hsAutoCorrectHelpEnabled, spacer)
-    hsAutoCorrectHelp := (hs.config.user.enableHsAutoCorrect ? hsAutoCorrectHelpEnabled : hsAutoCorrectHelpDisabled)
-
-    hsCodeHelpEnabled =
-    (LTrim
-        %spacer%
-        Code hotstrings`t`t`t
-        %colLine%
-        @html`tHTML template`t`t`t
-        @java`tJava template`t`t`t
-        @perl`tPerl template`t`t`t
-        @sql`tSQL template`t`t`t
-        chh`tComment header: HTML`t`t
-        chj`tComment header: Java/JS`t`t
-        chp`tComment header: Perl`t`t
-        chs`tComment header: SQL`t`t
-        elif`t'else/if' block`t`t`t
-        for(`t'for' block`t`t`t
-        func(`t'function' block`t`t
-        if(`t'if' block`t`t`t
-        ifel`t'if/else' block`t`t`t
-        sf%vspace%`tString.format("", )`t`t
-        switch(`t'switch' block`t`t`t
-        sysout`tSystem.out.println("");`t`t
-        while(`t'while' block`t`t`t
-    )
-    hsCodeHelpDisabled := replaceEachLine(hsCodeHelpEnabled, spacer)
-    hsCodeHelp := (hs.config.user.enableHsCode ? hsCodeHelpEnabled : hsCodeHelpDisabled)
-
-    hsDatesHelpEnabled =
-    (LTrim
-        Date/Time hotstrings`t`t
-        %colLine%
-        dtms`tYYYYMDD_24MMSS`t`t`t
-        dts`tYYYYMMDD`t`t`t
-        tms`t24MMSS`t`t`t`t
-        @date`tMM/DD/YYYY`t`t`t
-        @day`tDay name`t`t`t
-        @ddd`tDay name (abbr.)`t`t
-        @mmm`tMonth name (abbr.)`t`t
-        @month`tMonth name`t`t`t
-        @now`tMM/DD/YYYY at 24:MM:SS`t`t
-        @time`t24:MM:SS`t`t`t
-    )
-    hsDatesHelpDisabled := replaceEachLine(hsDatesHelpEnabled, spacer)
-    hsDatesHelp := (hs.config.user.enableHsDates ? hsDatesHelpEnabled : hsDatesHelpDisabled)
-
-    hsDosHelpEnabled =
-    (LTrim
-        DOS hotstrings`t`t`t
-        %colLine%
-        cd`tcd /d`t`t`t`t
-    )
-    hsDosHelpDisabled := replaceEachLine(hsDosHelpEnabled, spacer)
-    hsDosHelp := (hs.config.user.enableHsDos ? hsDosHelpEnabled : hsDosHelpDisabled)
-
-    hsHtmlHelpEnabled =
-    (LTrim
-        %spacer%
-        HTML/XML hotstrings`t`t
-        %colLine%
-        <TAG`tMost HTML tags auto-complete`t
-        %A_SPACE%%A_SPACE%%pointerExtend%`t(Some create child tags)`t
-        %A_SPACE%%A_SPACE%%pointer% TAG is any of the following:`t
-        `ta/b/big/block/body/br/but/cap`t
-        `tcode/del/div/em/field/foot`t
-        `tform/h[1-6]/head/header`t`t
-        `thgroup/hr/html/i/iframe/img`t
-        `tinput/label/legend/li/link/ol`t
-        `toptg/opti/p/pre/q/script`t
-        `tsection/select/small/source`t
-        `tspan/strong/style/sub/sum`t
-        `tsup/table/tbody/td/texta`t
-        `ttfoot/th/thead/title/tr/u/ul`t
-        <xml`tAuto-completes XML header`t
-    )
-    hsHtmlHelpDisabled := replaceEachLine(hsHtmlHelpEnabled, spacer)
-    hsHtmlHelp := (hs.config.user.enableHsHtml ? hsHtmlHelpEnabled : hsHtmlHelpDisabled)
-
-    hsJiraHelpEnabled =
-    (LTrim
-        %spacer%
-        Jira/Confluence hotstrings`t`t
-        %colLine%
-        `{bpan`t'panel' tags (blue)`t`t`t
-        `{code`t'code' tags for simple code`t`t
-        `{color`t'color' tags`t`t`t
-        `{gpan`t'panel' tags (green)`t`t`t
-        `{info`t'info' tags`t`t`t
-        `{java`t'code' tags for Java`t`t
-        `{js`t'code' tags for JavaScript`t
-        `{nof`t'noformat' tags`t`t`t
-        `{note`t'note' tags`t`t`t
-        `{pan`t'panel' tags`t`t`t
-        `{quo`t'quote' tags`t`t`t
-        `{rpan`t'panel' tags (red)`t`t`t
-        `{sql`t'code' tags for SQL`t`t
-        `{table`tA simple 5-column table`t`t`t
-        `{tip`t'tip' tags`t`t`t
-        `{warn`t'warn' tags`t`t`t
-        `{xml`t'code' tags for XML`t`t
-        `{ypan`t'panel' tags (yellow)`t`t`t
-    )
-    hsJiraHelpDisabled := replaceEachLine(hsJiraHelpEnabled, spacer)
-    hsJiraHelp := (hs.config.user.enableHsJira ? hsJiraHelpEnabled : hsJiraHelpDisabled)
-
-    hsVariableHelpEnabled =
-    (LTrim
-        Variable hotstrings`t`t
-        %colLine%
-        @@`temail address`t`t`t
-        @#`tphone number`t`t`t
-        @addr`taddress`t`t`t`t
-        @dob`tyour D.o.B.`t`t`t
-        @me`tyour name`t`t`t
-        @sig`tyour signature`t`t`t
-    )
-    hsVariableHelpDisabled := replaceEachLine(hsVariableHelpEnabled, spacer)
-    hsVariableHelp := (hs.config.user.enableHsVariables ? hsVariableHelpEnabled : hsVariableHelpDisabled)
-
-    hsHeader := vspace . "`t`t`t`tHotStrings ending with " . vspace . " means any whitespace or punctuation character is required." . eol . eol
-    hsCol1 := hsAliasHelp
-    hsCol2 := hsVariableHelp . eol . hsAutoCorrectHelp . eol . hsHtmlHelp
-    hsCol3 := hsDatesHelp . eol . hsCodeHelp
-    hsCol4 := hsDosHelp . eol . hsJiraHelp
-
-    hsArr1 := listToArray(hsCol1)
-    hsArr2 := listToArray(hsCol2)
-    hsArr3 := listToArray(hsCol3)
-    hsArr4 := listToArray(hsCol4)
-
-    hsResult := hsHeader
-    for key, value in hsArr1 {
-        hsResult .= LTrim(RTrim(value . hsArr2[key] . hsArr3[key] . hsArr4[key], trimChars)) . eol
-    }
-    hsResult := RegexReplace(hsResult, "<", "&lt;")
-    hsResult := RegexReplace(hsResult, ">", "&gt;")
-    hsResult := RegexReplace(hsResult, "(with )(" . vspace . ")( means)", "$1<span class=""sep"">&nbsp;</span>$3")
-    hsResult := RegexReplace(hsResult, "([A-Z][^\t\n]+ )(hot)(strings)", "<span class=""section"">$1$3</span>`t")
-    hsResult := RegexReplace(hsResult, "(\w|#)(" . vspace . ")(\t)", "$1<span class=""sep"">&nbsp;</span>$3")
-    hsResult := RegexReplace(hsResult, "(&lt;)(TAG)", "$1<span class=""explain"">$2</span>")
-    hsResult := RegexReplace(hsResult, vspace, "&nbsp;")
-
-    hsVersion := hs.VERSION
-    homeUrl := hs.vars.url.HotScript.home
-    helpHtml =
-    (Ltrim Join
-        <!DOCTYPE html>
-        <html>
-            <head>
-                <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
-                <meta charset="UTF-8"/>
-                <style type="text/css">
-                    body {background-color:#FFFEE3;color:#333;font-size:13px;margin-top:2px;}
-                    a {color:inherit;text-decoration:none;}
-                    a:hover {color:blue;text-decoration:underline;}
-                    .bigger {font-size:18px;}
-                    .explain {background-color:#E4D6EF;padding:1px;}
-                    .sep {background-color:#DEA5A4;padding:0px;}
-                    .mod {color:#FF6961;font-weight:bold;}
-                    .section {background-color:#DFE9F6;border-radius:5px;font-weight:bold;padding:2px 3px;border:1px solid #99BCE8;}
-                    .title {background:#FFE7E7;border:1px solid #DF9898;border-radius:5px;color:#000;float:right;font-family:Roboto,'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:14px;margin:-12px -7px 0 0;padding:1px 8px;text-align:right;}
-                    pre {-moz-tab-size:8;-o-tab-size:8;tab-size:8;}
-                </style>
-            </head>
-        <body>
-            <div class="title"><a href="%homeUrl%">HotScript</a> v%hsVersion% &nbsp; <span class="bigger">&copy;</span> 2013-%A_YYYY%</div>
-            <pre>${help}</pre>
-        </body>
-        </html>
-    )
-
-    hkContent := StrReplace(helpHtml, "${help}", hkResult)
-    hsContent := StrReplace(helpHtml, "${help}", hsResult)
-
-    static helpTab := ""
-    static htmlHK := ""
-    static htmlHS := ""
-
-    Gui, QuickHelp: +AlwaysOnTop +Border -Caption -DpiScale
-    ; TODO - try using Tab3, but some adjustments will need to be made for dimensions; see tab2-help.png vs tab3-help.png
-    Gui, QuickHelp: Add, Tab2, x0 y0 w1275 h643 bottom vhelpTab, HotKeys|HotStrings
-    Gui, QuickHelp: Add, ActiveX, x0 y0 w1272 h618 vhtmlHK, HtmlFile
-    Gui, QuickHelp: Tab, 2
-    Gui, QuickHelp: Add, ActiveX, x0 y0 w1272 h618 vhtmlHS, HtmlFile
-    Gui, QuickHelp: Tab
-    Gui, QuickHelp: Color, FFEBCD
-
-    ; https://msdn.microsoft.com/en-us/library/ms535862
-    while (htmlHK.ReadyState != "complete") {
-        Sleep, 50
-    }
-    htmlHK.open()
-    Sleep, 50
-    htmlHK.write(hkContent)
-    Sleep, 50
-    htmlHK.close()
-
-    while (htmlHS.ReadyState != "complete") {
-        Sleep, 50
-    }
-    htmlHS.open()
-    htmlHS.write(hsContent)
-    htmlHS.close()
-}
-
 showQuickHelp(waitforKey) {
-    static doInit := true
-    if (doInit) {
-        initQuickHelp()
-        doInit := false
-    }
     static isShowing := false
+    static helpWidth := ""
+    static helpHeight := ""
+    if (helpWidth == "") {
+        helpWidth := (hs.help.width - 3)
+        helpHeight := hs.help.height
+    }
     if (isShowing) {
         KeyWait("h")
         Gui, QuickHelp: Hide
         isShowing := false
         return
     }
-    curMonitor := getActiveMonitor()
-    Gui, QuickHelp: Show, Center w1272 h645
+    activeMon := getActiveMonitor()
+    Gui, QuickHelp: Show, Center w%helpWidth% h%helpHeight%
+    centerWindow(, activeMon)
     isShowing := true
     if (waitForKey) {
         KeyWait("h")
@@ -6940,10 +7505,10 @@ toggleTransparency(hWnd:="A") {
 
 toString(obj, depth:=0, indent:="") {
     result := ""
-    if (isFunc(obj)) {
-        result := "function " . obj.name . "()"
+    if (IsFunc(obj)) {
+        result := "function " . (isObject(obj) ? obj.name : obj) . "()"
     }
-    else if (isFunc(obj)) {
+    else if (IsLabel(obj)) {
         result := "label " . obj.name . ":"
     }
     else if (IsObject(obj)) {
@@ -6957,13 +7522,13 @@ toString(obj, depth:=0, indent:="") {
         pad := indent . hs.const.INDENT
         for key, value in obj {
             result .= (depth == 0 && StrLen(result) == 0 && getSize(obj) > 1 ? hs.const.EOL_WIN : "") . pad
-            if (isFunc(value)) {
-                result .= pad(key, keyWidth) . " --> function " . value.name . "()" . hs.const.EOL_WIN
+            if (IsFunc(value)) {
+                result .= pad(key, keyWidth) . " --> function " . (isObject(value) ? value.name : value) . "()" . hs.const.EOL_WIN
             }
-            else if (isLabel(value)) {
+            else if (IsLabel(value)) {
                 result .= pad(key, keyWidth) . " --> label " . value . ":" . hs.const.EOL_WIN
             }
-            else if (isObject(value)) {
+            else if (IsObject(value)) {
                 valStr := toString(value, depth + 1, pad)
                 result .= key . " = {" . (valStr == "" ? "" : hs.const.EOL_WIN . valstr . pad) . "}" . hs.const.EOL_WIN
             }
