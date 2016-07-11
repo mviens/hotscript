@@ -1,3 +1,33 @@
+Differences in 1.20160711.1
+===========================
+HotKeys
+    - CHANGE: Restored original functionality of Alt-Down within Windows Explorer. Previously it was trying to execute
+              the functionality for "Move line down", but this made no sense in Explorer.
+    - CHANGE: Restored original functionality of Alt-Up within Windows Explorer. Previously it was trying to execute
+              the functionality for "Move line up", but this made no sense in Explorer.
+    - CHANGE: Restored original functionality of Ctrl-Shift-E within Windows Explorer. Previously it was trying to
+              execute the functionality for "Encrypt text", but this made no sense in Explorer.
+    - CHANGE: Restored original functionality of Ctrl-Shift-N within Windows Explorer. Previously it was trying to
+              execute the functionality for "Auto-Number (1)", but this made no sense in Explorer.
+Miscellaneous
+    - CHANGE: Modified to run with admin priviledges because of a few small writes to the registry. This eliminates
+              the need to modify the shortcut to allow access.
+    - CHANGE: The Windows link (shortcut) file will now only be created if it does not exist instead of every time
+              HotScript is executed or reloaded.
+    - CHANGE: Added missing reference to "$" in the documentation within HotScriptKeys.ahk. 
+    - CHANGE: Fixed minor issue in the documentation within HotScriptKeys.ahk that incorrectly referred to HotStrings.
+    - CHANGE: Modified the URL pointing to GitHub from "release" to "master". This should have no effect as both
+              branches are kept in sync. Eventually "release" will be phased out and a new "beta" branch will be
+              available for anyone interested in using the latest and greatest development version (which is what I
+              use everyday). This will be an opt-in setting eventually.
+    - CHANGE: Modified the help screen from "Level 1-4" to read "Row 1-4" to help clarify the meaning as the optional
+              modifier keys for resizing 3x4, 4x3 and 4x4.
+    - REMOVE: Removed some old, commented code.
+Functions
+    - CHANGE: Modified message() to accept "title", "options" and "timeout". These have default values, so no changes
+              are required for existing usages.
+
+
 Differences in 1.20160710.2
 ===========================
 Miscellaneous
@@ -19,6 +49,16 @@ HotKeys
               was implemented to overcome this. To see some of the differences between applications, see the comments
               in hkTextDeleteWord().
     - CHANGE: Fixed issue with Ctrl-Delete where it was not issuing the correct keystrokes to delete the text.
+Miscellaneous
+    - NEW   : Added Ctrl-Delete (Delete to end-of-line) to help screen. This HotKey had been implemented for quite a
+              while, but was erroneously omitted from the help screen.
+    - CHANGE: Modified wait time of ClipWait() from 0.5 seconds to 0.05 seconds. This increases the speed of several
+              operations like swapping selection with the clipboard, appending to the clipboard, getting the selected
+              text and pasting text. These same operations are used by other functions as well as some HotKeys.
+    - CHANGE: Throughout HotScript, when searching for named applications, they are no longer case-sensitive.
+    - CHANGE: The help screen is now created (internally) only once instead of everytime it is displayed.
+    - CHANGE: The help screen will now be displayed on the active monitor instead of only the primary monitor.
+    - CHANGE: Minor code cleanup and changes for consistency.
 Functions
     - NEW   : Added the following new functions:
                 - extractLocationAndResize()
@@ -33,16 +73,6 @@ Functions
               labels were not being processed correctly.
     - CHANGE: Renamed isCalculatorNotActive() to isNotActiveCalculator().
     - REMOVE: Removed resizeTo(). It was replaced with extractLocationAndResize().
-Miscellaneous
-    - NEW   : Added Ctrl-Delete (Delete to end-of-line) to help screen. This HotKey had been implemented for quite a
-              while, but was erroneously omitted from the help screen.
-    - CHANGE: Modified wait time of ClipWait() from 0.5 seconds to 0.05 seconds. This increases the speed of several
-              operations like swapping selection with the clipboard, appending to the clipboard, getting the selected
-              text and pasting text. These same operations are used by other functions as well as some HotKeys.
-    - CHANGE: Throughout HotScript, when searching for named applications, they are no longer case-sensitive.
-    - CHANGE: The help screen is now created (internally) only once instead of everytime it is displayed.
-    - CHANGE: The help screen will now be displayed on the active monitor instead of only the primary monitor.
-    - CHANGE: Minor code cleanup and changes for consistency.
 
 
 Differences in 1.20160619.1

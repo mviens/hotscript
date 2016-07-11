@@ -33,6 +33,15 @@ StringCaseSense, on
 
 ;__________________________________________________
 ;Initialization
+if (!A_IsAdmin) {
+    if A_OSVersion not in WIN_2003,WIN_XP,WIN_2000
+    {
+        Run *RunAs "%A_ScriptFullPath%",, UseErrorLevel
+        if (!ErrorLevel) {
+            message("Unable to launch in Admin mode.`nSome features may not work correctly...",, 262192)
+        }
+    }
+}
 global hs := {}
 global $ := ""
 #Include *i HotScriptVariables.ahk
@@ -46,7 +55,7 @@ init()
 ; is defined using the AHK-style registration, all initialization processing stops.
 
 ; Why is this not configurable and part of external definitions?
-;   - because any hotkey/hotstring subroutine whose very first line is Suspend (except Suspend On)
+;   - because any HotKey/HotString subroutine whose very first line is Suspend (except Suspend On)
 ;     will be exempt from suspension, so it can act as a toggle.
 #pause:: ;; toggles suspension of this script
     Suspend
@@ -431,7 +440,7 @@ WinGetTitle(winTitle:="", winText:="", excludeTitle:="", excludeText:="") {
 }
 
 ;__________________________________________________
-;hotkey functions
+;HotKey functions
 hkActionAlwaysOnTop() {
     toggleAlwaysOnTop()
 }
@@ -836,6 +845,9 @@ hkTextMoveCurrentLineDown() {
     if (WinActive("ahk_exe i)EditPadPro\d*\.exe")) {
         SendInput, ^!+{Down}
     }
+    else if (WinActive("ahk_group ExplorerGroup")) {
+        SendInput, !{Down}
+    }
     else {
         moveCurrentLineDown()
     }
@@ -848,13 +860,21 @@ hkTextMoveCurrentLineUp() {
     else if (isActiveDos()) {
         hkDosCdParent()
     }
+    else if (WinActive("ahk_group ExplorerGroup")) {
+        SendInput, !{Up}
+    }
     else {
         moveCurrentLineUp()
     }
 }
 
 hkTransformEncrypt() {
-    cryptSelected()
+    if (WinActive("ahk_group ExplorerGroup")) {
+        Send, ^+e
+    }
+    else {
+        cryptSelected()
+    }
 }
 
 hkTransformEscape() {
@@ -875,7 +895,12 @@ hkTransformLowerCase() {
 }
 
 hkTransformNumberPrepend() {
-    numberSelected()
+    if (WinActive("ahk_group ExplorerGroup")) {
+        SendInput, ^+n
+    }
+    else {
+        numberSelected()
+    }
 }
 
 hkTransformNumberPrependPrompt() {
@@ -1455,7 +1480,7 @@ hkWindowToggleTransparency() {
 }
 
 ;__________________________________________________
-;hotstring functions
+;HotString functions
 hsAliasBackInX() {
     sendText("Back in " . $.value(1) . " minutes...")
 }
@@ -3128,6 +3153,9 @@ createIcon() {
 }
 
 createNewInExplorer(type:="file") {
+    ; TODO - Windows 10 --> Ctrl-Space, Menu key, W, T
+    ; TODO - Windows 8 --> Menu key, W, T
+    ; TODO - Windows 7 --> Alt-F, W, T
 ;    debug("type = " . type)
     folder := getExplorerPath()
 ;    debug("folder = " . folder)
@@ -3173,15 +3201,17 @@ createNewOnDesktop(type:="file") {
 createStartupLink() {
     lnkFile := A_Startup . "\" . hs.TITLE . ".lnk"
     if (hs.config.user.enableAutoStart) {
-        target := hs.BASENAME . ".ahk"
-        workDir := A_ScriptDir
-        args := ""
-        desc := "Changing the way you use Windows through better efficiencies!"
-        iconFile := hs.BASENAME . ".ico"
-        shortcut := ""
-        iconNum := 1
-        runState := 1
-        FileCreateShortcut(target, lnkFile, workDir, args, desc, iconFile, shortcut, iconNum, runState)
+        if (!FileExist(lnkFile)) {
+            target := hs.BASENAME . ".ahk"
+            workDir := A_ScriptDir
+            args := ""
+            desc := "Changing the way you use Windows through better efficiencies!"
+            iconFile := hs.BASENAME . ".ico"
+            shortcut := ""
+            iconNum := 1
+            runState := 1
+            FileCreateShortcut(target, lnkFile, workDir, args, desc, iconFile, shortcut, iconNum, runState)
+        }
     }
     else {
         FileDelete(lnkFile)
@@ -3226,6 +3256,7 @@ createUserFiles() {
             %A_Space%   >  - right key
             %A_Space%   *  - wild card `(fire even if extra modifier keys are pressed`)
             %A_Space%   ~  - do not block native key function
+            %A_Space%   $  - Only necessary when the script will send the same keys -- prevents endless loop
             %A_Space%   UP - fire upon key release instead of key press
             */
 
@@ -3441,10 +3472,10 @@ createUserFiles() {
 
             /*
             %A_Space%   hotKey`(hotKeyStr, action, restrict:="", funcParams*`)
-            %A_Space%       hotKeyStr - string representing the hotkey
+            %A_Space%       hotKeyStr - string representing the HotKey
             %A_Space%       action    - function to call, OR label to go to, OR text to send
-            %A_Space%                       - passing a blank value will delete any existing hotstring for the specified trigger
-            %A_Space%                       - this can be useful to allow a hotstring to trigger until some conditional has been met
+            %A_Space%                       - passing a blank value will delete any existing HotKey
+            %A_Space%                       - this can be useful to allow a HotKey to trigger until some conditional has been met
             %A_Space%       mode      - the operating mode of the trigger  `(default = NORMAL`)
             %A_Space%                       - hs.const.replaceMode.NORMAL `(or 1`)  -  `(case-insensitive`)
             %A_Space%                       - hs.const.replaceMode.CASE   `(or 2`)  -  `(case-sensitive`)
@@ -4051,11 +4082,11 @@ getDefaultHotKeyDefs(type) {
         hk["hkTextMoveCurrentLineUp"] := "!up"
     }
     else if (type == "hkTransform") {
-        hk["hkTransformEncrypt"] := "^+e"
+        hk["hkTransformEncrypt"] := "$^+e"
         hk["hkTransformEscape"] := "^+``"
         hk["hkTransformInvertCase"] := "^+i"
         hk["hkTransformLowerCase"] := "$^+l"
-        hk["hkTransformNumberPrepend"] := "^+n"
+        hk["hkTransformNumberPrepend"] := "$^+n"
         hk["hkTransformNumberPrependPrompt"] := "^!+n"
         hk["hkTransformNumberStrip"] := "^!n"
         hk["hkTransformOracleUpper"] := "^+o"
@@ -4637,7 +4668,7 @@ hotString(trigger, replace, mode:=1, clearTrigger:=true, condition:= "") {
         keysBound := true
     }
     if (mode == hs.const.replaceMode.CALLBACK) {
-        ;Callback for the hotkeys
+        ;Callback for the HotKeys
         Hotkey := SubStr(A_ThisHotkey, 3)
         if (StrLen(Hotkey) == 2 && Substr(Hotkey, 1, 1) == "+" && Instr(keys.alpha, Substr(Hotkey, 2, 1))) {
             Hotkey := Substr(Hotkey, 2)
@@ -4811,6 +4842,7 @@ init() {
     GroupAdd, ExplorerGroup, ahk_class CabinetWClass
     GroupAdd, ExplorerGroup, ahk_class ExploreWClass
     GroupAdd, ExplorerGroup, ahk_class #32770
+    ; TODO - add group for DOS / PowerShell?
     refreshMonitors()
     SetTimer("refreshMonitors", 30000)
     createUserFiles()
@@ -5063,7 +5095,7 @@ initHotStrings() {
 }
 
 initInternalVars() {
-    hs.VERSION := "1.20160710.2"
+    hs.VERSION := "1.20160711.1"
     hs.TITLE := "HotScript"
     hs.BASENAME := A_ScriptDir . "\" . hs.TITLE
 
@@ -5115,7 +5147,7 @@ initInternalVars() {
     hs.help := {}
     hs.help.width := 1275
     hs.help.height := 698
-    ; hotkeys
+    ; HotKeys
     hs.hotkeys := {}
     hs.hotkeys.actions := {}
     hs.hotkeys.conditions := {}
@@ -5131,9 +5163,9 @@ initInternalVars() {
     urls.ahk.version := urls.ahk.download . "version.txt"
     urls[hs.TITLE] := {
         (LTrim Join
-            home: "https://github.com/mviens/hotscript"
+            home: "https://github.com/mviens/" . hs.TITLE
         )}
-    homeRaw := urls[hs.TITLE].home . "/raw/release/"
+    homeRaw := urls[hs.TITLE].home . "/raw/master/"
     urls[hs.TITLE].download := homeRaw . hs.TITLE . ".ahk"
     urls[hs.TITLE].history := homeRaw . "changes.txt"
     urls[hs.TITLE].version := homeRaw . "version.txt"
@@ -5178,7 +5210,7 @@ initQuickHelp() {
 
     hkActionHelpEnabled =
     (LTrim
-        Action hotkeys`t`t`t
+        Action HotKeys`t`t`t
         %colLine%
         [W]-A`t`tToggle always-on-top`t
         [CW]-A`t`tToggle click-through`t
@@ -5202,7 +5234,7 @@ initQuickHelp() {
     hkDosHelpEnabled =
     (LTrim Comments
         %spacer%
-        DOS hotkeys`t`t`t
+        DOS HotKeys`t`t`t
         %colLine%
         [A]-C`t`t"copy "`t`t`t
         [A]-D`t`tPUSHD to Downloads`t
@@ -5229,26 +5261,11 @@ initQuickHelp() {
     hkDosHelpDisabled := replaceEachLine(hkDosHelpEnabled, spacer)
     hkDosHelp := (hs.config.user.enableHkDos ? hkDosHelpEnabled : hkDosHelpDisabled)
 
-;    hkEppHelpEnabled =
-;    (LTrim
-;        EditPad Pro hotkeys`t`t`t
-;        %colLine%
-;        [A]-Delete`tDelete line`t`t`t
-;        [A]-Down`tMove line down`t`t`t
-;        [A]-Up`t`tMove line up`t`t`t
-;        [C]-Delete`tDelete to EOL`t`t`t
-;        [C]-G`t`tGo to line`t`t`t
-;        XButton1`tPrevious file`t`t`t
-;        XButton2`tNext file`t`t`t
-;    )
-;    hkEppHelpDisabled := replaceEachLine(hkEppHelpEnabled, spacer)
-;    hkEppHelp := (hs.config.user.enableHkEpp ? hkEppHelpEnabled : hkEppHelpDisabled)
-
     title := hs.TITLE
     hkHotScriptHelp =
     (LTrim Comments
         %spacer%
-        %title% hotkeys`t`t`t
+        %title% HotKeys`t`t`t
         %colLine%
         [AW]-H`t`tExplore '%title%'`t
         [CW]-H`t`tToggle quick help`t
@@ -5278,7 +5295,7 @@ initQuickHelp() {
 
     hkMiscHelpEnabled =
     (LTrim
-        Miscellaneous hotkeys`t`t
+        Miscellaneous HotKeys`t`t
         %colLine%
         [CA]-A`t`tCopy Append`t`t
         [CA]-C`t`tSwap to clipboard`t`t
@@ -5299,7 +5316,7 @@ initQuickHelp() {
     hkTextHelpEnabled =
     (LTrim
         %spacer%
-        Text hotkeys`t`t`t
+        Text HotKeys`t`t`t
         %colLine%
         [C]-D`t`tDelete word`t`t
         [A]-Delete`tDelete line`t`t
@@ -5317,7 +5334,7 @@ initQuickHelp() {
 
     hkTransformHelpEnabled =
     (LTrim
-        Transform hotkeys`t`t`t
+        Transform HotKeys`t`t`t
         %colLine%
         [CS]-```t`tEscape text for AHK`t
         [CS]-A`t`tSort ascending`t`t
@@ -5351,7 +5368,7 @@ initQuickHelp() {
 
     hkWindowHelpEnabled =
     (LTrim Comments
-        Window hotkeys`t`t`t
+        Window HotKeys`t`t`t
         %colLine%
         [A]-MW&#x21e7;`t`tPageUp`t`t`t
         [A]-MW&#x21e9;`t`tPageDown`t`t
@@ -5388,10 +5405,10 @@ initQuickHelp() {
         [SW]-Left-Right`tResize to max width`t
         %spacer%
         %vspace%*  = Additional Modifier Key`t`t
-        %vspace%     Shift: Level 4`t`t`t
-        %vspace%     Ctrl : Level 3`t`t`t
-        %vspace%     Alt  : Level 2`t`t`t
-        %vspace%     None : Level 1`t`t`t
+        %vspace%     Shift: Row 4`t`t`t
+        %vspace%     Ctrl : Row 3`t`t`t
+        %vspace%     Alt  : Row 2`t`t`t
+        %vspace%     None : Row 1`t`t`t
     )
     hkWindowHelpDisabled := replaceEachLine(hkWindowHelpEnabled, spacer)
     hkWindowHelp := (hs.config.user.enableHkWindow ? hkWindowHelpEnabled : hkWindowHelpDisabled)
@@ -5401,18 +5418,15 @@ initQuickHelp() {
     hkCol2 := hkWindowHelp
     hkCol3 := hkTransformHelp . eol . hkTextHelp
     hkCol4 := hkMiscHelp . eol . hkHotScriptHelp
-;    hkCol5 := hkEppHelp
 
     hkArr1 := listToArray(hkCol1)
     hkArr2 := listToArray(hkCol2)
     hkArr3 := listToArray(hkCol3)
     hkArr4 := listToArray(hkCol4)
-;    hkArr5 := listToArray(hkCol5)
 
     hkResult := hkHeader
     for key, value in hkArr1
     {
-        ;hkResult .= LTrim(RTrim(value . hkArr2[key] . hkArr3[key] . hkArr4[key] . hkArr5[key], trimChars)) . eol
         hkResult .= LTrim(RTrim(value . hkArr2[key] . hkArr3[key] . hkArr4[key], trimChars)) . eol
     }
     hkResult := RegexReplace(hkResult, "<", "&lt;")
@@ -5421,7 +5435,7 @@ initQuickHelp() {
     hkResult := RegexReplace(hkResult, "\]-", "]&#x2010;")
     hkResult := RegexReplace(hkResult, "  \|  ", "  &#x2502;  ")
     hkResult := RegexReplace(hkResult, " (C|A|S|W|L|R)( =)", "<span class=""mod"">&nbsp;$1</span>$2")
-    hkResult := RegexReplace(hkResult, "([A-Z][^\t\n]+ )(hot)(keys)", "<span class=""section"">$1$3</span>`t")
+    hkResult := RegexReplace(hkResult, "([A-Z][^\t\n]+ )(Hot)(Keys)", "<span class=""section"">$1$3</span>`t")
     hkResult := RegexReplace(hkResult, "i)(\[\*?[a-z]+\])", "<span class=""mod"">$1</span>")
     hkResult := RegexReplace(hkResult, "(NP)", "<span class=""numpad"">$1</span>")
     hkResult := RegexReplace(hkResult, "(MW)", "<span class=""wheel"">$1</span>")
@@ -5430,7 +5444,7 @@ initQuickHelp() {
 
     hsAliasHelpEnabled =
     (LTrim
-        Alias hotstrings`t`t`t
+        Alias HotStrings`t`t`t
         %colLine%
         bbl`tbe back later`t`t`t
         bbs`tbe back soon`t`t`t
@@ -5470,7 +5484,7 @@ initQuickHelp() {
     hsAutoCorrectHelpEnabled =
     (LTrim
         %spacer%
-        Auto-correct hotstrings`t`t
+        Auto-correct HotStrings`t`t
         %colLine%
         @ip`tCurrent IP address`t`t
         #/#`%`tdivide as percent`t`t
@@ -5484,7 +5498,7 @@ initQuickHelp() {
     hsCodeHelpEnabled =
     (LTrim
         %spacer%
-        Code hotstrings`t`t`t
+        Code HotStrings`t`t`t
         %colLine%
         @html`tHTML template`t`t`t
         @java`tJava template`t`t`t
@@ -5509,7 +5523,7 @@ initQuickHelp() {
 
     hsDatesHelpEnabled =
     (LTrim
-        Date/Time hotstrings`t`t
+        Date/Time HotStrings`t`t
         %colLine%
         dtms`tYYYYMDD_24MMSS`t`t`t
         dts`tYYYYMMDD`t`t`t
@@ -5527,7 +5541,7 @@ initQuickHelp() {
 
     hsDosHelpEnabled =
     (LTrim
-        DOS hotstrings`t`t`t
+        DOS HotStrings`t`t`t
         %colLine%
         cd`tcd /d`t`t`t`t
     )
@@ -5537,7 +5551,7 @@ initQuickHelp() {
     hsHtmlHelpEnabled =
     (LTrim
         %spacer%
-        HTML/XML hotstrings`t`t
+        HTML/XML HotStrings`t`t
         %colLine%
         <TAG`tMost HTML tags auto-complete`t
         %A_SPACE%%A_SPACE%%pointerExtend%`t(Some create child tags)`t
@@ -5560,7 +5574,7 @@ initQuickHelp() {
     hsJiraHelpEnabled =
     (LTrim
         %spacer%
-        Jira/Confluence hotstrings`t`t
+        Jira/Confluence HotStrings`t`t
         %colLine%
         `{bpan`t'panel' tags (blue)`t`t`t
         `{code`t'code' tags for simple code`t`t
@@ -5586,7 +5600,7 @@ initQuickHelp() {
 
     hsVariableHelpEnabled =
     (LTrim
-        Variable hotstrings`t`t
+        Variable HotStrings`t`t
         %colLine%
         @@`temail address`t`t`t
         @#`tphone number`t`t`t
@@ -5616,7 +5630,7 @@ initQuickHelp() {
     hsResult := RegexReplace(hsResult, "<", "&lt;")
     hsResult := RegexReplace(hsResult, ">", "&gt;")
     hsResult := RegexReplace(hsResult, "(with )(" . vspace . ")( means)", "$1<span class=""sep"">&nbsp;</span>$3")
-    hsResult := RegexReplace(hsResult, "([A-Z][^\t\n]+ )(hot)(strings)", "<span class=""section"">$1$3</span>`t")
+    hsResult := RegexReplace(hsResult, "([A-Z][^\t\n]+ )(Hot)(Strings)", "<span class=""section"">$1$3</span>`t")
     hsResult := RegexReplace(hsResult, "(\w|#)(" . vspace . ")(\t)", "$1<span class=""sep"">&nbsp;</span>$3")
     hsResult := RegexReplace(hsResult, "(&lt;)(TAG)", "$1<span class=""explain"">$2</span>")
     hsResult := RegexReplace(hsResult, vspace, "&nbsp;")
@@ -5919,7 +5933,7 @@ loadConfig() {
     hs.config.user.templates.java := IniRead(hs.config.user.file, "templates", "java", hs.config.default.templates.java)
     hs.config.user.templates.perl := IniRead(hs.config.user.file, "templates", "perl", hs.config.default.templates.perl)
     hs.config.user.templates.sql := IniRead(hs.config.user.file, "templates", "sql", hs.config.default.templates.sql)
-    ; set hotkeys to equal defaults, then override any from the user
+    ; set HotKeys to equal defaults, then override any from the user
     hs.config.user.hotkeys := hs.config.default.hotkeys
     loadHotKeyDefs(hs.config.user)
     sites := loadQuickLookupSites(hs.config.user)
@@ -6030,8 +6044,11 @@ minimize(hWnd:="") {
     }
 }
 
-message(msg) {
-    MsgBox % msg
+message(msg, title:="", options:="0", timeout:="0") {
+    if (title == "") {
+        title := hs.TITLE
+    }
+    MsgBox, % options, % title, % msg, % timeout
 }
 
 moveCurrentLineDown() {
@@ -7071,7 +7088,7 @@ stop() {
     hkTotal := toComma(hs.config.user.hkTotalCount)
     hsSession := toComma(hs.config.user.hsSessionCount)
     hsTotal := toComma(hs.config.user.hsTotalCount)
-    msg := "Shutting down..." . hs.const.EOL_NIX . hs.const.EOL_NIX . "Session Usage" . hs.const.EOL_NIX . "    hotkeys: " . hkSession . hs.const.EOL_NIX . "    hotstrings: " . hsSession . hs.const.EOL_NIX . hs.const.EOL_NIX . "Total Usage" . hs.const.EOL_NIX . "    hotkeys: " . hkTotal . hs.const.EOL_NIX . "    hotstrings: " . hsTotal
+    msg := "Shutting down...`n`nSession Usage`n    HotKeys: " . hkSession . "`n    HotStrings: " . hsSession . "`n`nTotal Usage`n    HotKeys: " . hkTotal . "`n    HotStrings: " . hsTotal
     MsgBox,, % hs.VERSION, %msg%
     ExitApp
 }
