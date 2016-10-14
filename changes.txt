@@ -1,3 +1,33 @@
+Differences in 1.20161014.1
+===========================
+HotKeys
+    - CHANGE: Modified the behavior of checkVersions(), because as of version 1.1.24.02, AutoHotKey has changed the
+              filename of their installation file. This was causing HotScript to fail when it detected a new version
+              of AutoHotKey to be installed. Previously, new version of AutoHotKey were named like
+              "AutoHotkey112401_Install.exe" but are now available as "AutoHotkey_1.1.24.02_setup.exe". For existing
+              users of HotScript, the best solution for now is to manually download and install the new version of
+              AutoHotKey and then manually install the new version of HotScript. While this should only affect a
+              small number of users, it is inconvenient. This should no longer happen regardless of the name of the
+              AutoHotKey installation. Further verification checks are being done to validate that any new version of
+              AutoHotKey that is downloaded is a valid file. 
+    - CHANGE: Changed action for DOS HotKey Alt-Up (or Alt-.) to run "cd .." instead of "cd..".  Linux/Unix wants the
+              space between the 'd' and '.' whereas DOS did not care. This is helpful for DOS windows running SSH to
+              access a Linux/Unix server.
+    - CHANGE: Added some additional checking with Delete Word (Ctrl-D) to determine is Microsoft's Visual Studio Code
+              is the active Window. If so, need to treat it differently because Ctrl-C, from getSelectedText(), will
+              copy the entire line if there is no selection. This is a temporary workaround until a better solution
+              can be found.
+Functions
+    - CHANGE: Renamed findOrRunByExe() to findAndRun()
+    - CHANGE: Moved error logic from hkActionWindowsSnip() to findAndRun()
+    - REMOVE: Removed unnecessary functions:
+                - StringLower()
+                - StringUpper()
+Miscellaneous
+    - CHANGE: Made a minor change to the help screen for to indicate that no additional modifier key is required for
+              "Row 1" on HotKeys that resize the window to 3x4, 4x3 and 4x4.
+
+
 Differences in 1.20160711.1
 ===========================
 HotKeys
@@ -14,7 +44,7 @@ Miscellaneous
               the need to modify the shortcut to allow access.
     - CHANGE: The Windows link (shortcut) file will now only be created if it does not exist instead of every time
               HotScript is executed or reloaded.
-    - CHANGE: Added missing reference to "$" in the documentation within HotScriptKeys.ahk. 
+    - CHANGE: Added missing reference to "$" in the documentation within HotScriptKeys.ahk.
     - CHANGE: Fixed minor issue in the documentation within HotScriptKeys.ahk that incorrectly referred to HotStrings.
     - CHANGE: Modified the URL pointing to GitHub from "release" to "master". This should have no effect as both
               branches are kept in sync. Eventually "release" will be phased out and a new "beta" branch will be

@@ -36,7 +36,10 @@ StringCaseSense, on
 if (!A_IsAdmin) {
     if A_OSVersion not in WIN_2003,WIN_XP,WIN_2000
     {
-        Run *RunAs "%A_ScriptFullPath%",, UseErrorLevel
+        ; possible fix for win10
+        ; RunWait, %A_WinDir%\System32\schtasks.exe /create /TN [TaskName] /TR [Path\To\MyScript.exe] OR ["c:\program files\AutoHotkey\autohotkey.exe" "PathTo\MyScript.ahk"] /RL HIGHEST /SC ONLOGON
+        ; https://autohotkey.com/boards/viewtopic.php?f=5&t=21434
+        Run, *RunAs "%A_ScriptFullPath%",, UseErrorLevel
         if (!ErrorLevel) {
             message("Unable to launch in Admin mode.`nSome features may not work correctly...",, 262192)
         }
@@ -343,16 +346,6 @@ StringLen(inputVar) {
     return v
 }
 
-StringLower(inputVar, t:="") {
-    if (inputVar == "") {
-        v := ""
-    }
-    else {
-        StringLower, v, inputVar, %t%
-    }
-    return v
-}
-
 StringMid(inputVar, startChar, count , l:="") {
     if (inputVar == "") {
         v := ""
@@ -389,16 +382,6 @@ StringTrimRight(inputVar, count) {
     }
     else {
         StringTrimRight, v, inputVar, %count%
-    }
-    return v
-}
-
-StringUpper(inputVar, t:="") {
-    if (inputVar == "") {
-        v := ""
-    }
-    else {
-        StringUpper, v, inputVar, %t%
     }
     return v
 }
@@ -454,7 +437,7 @@ hkActionClickThrough() {
 }
 
 hkActionCharacterMap() {
-    findOrRunByExe("charmap")
+    findAndRun("charmap.exe")
 }
 
 hkActionControlPanel() {
@@ -504,22 +487,11 @@ hkActionWindowsServices() {
 }
 
 hkActionWindowsSnip() {
-    snip := findOnPath("SnippingTool.exe")
-    if (snip == "") {
-        winVer := RegRead("HKEY_LOCAL_MACHINE", "SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ProductName")
-        msg := ""
-        if (contains(winVer, "2008", "2012")) {
-            msg := "`n`nFor Windows Server 2008 or 2012, you need to install 'Themes' or 'Desktop Experience' to get the SnippingTool."
-        }
-        MsgBox, 48, File not found, Unable to locate SnippingTool on the PATH.%msg%
-    }
-    else {
-        Run(snip)
-    }
+    findAndRun("SnippingTool.exe")
 }
 
 hkDosCdParent() {
-    SendInput, cd..{Enter}
+    SendInput, cd ..{Enter}
 }
 
 hkDosCopy() {
@@ -809,7 +781,9 @@ hkTextDeleteWord() {
     }
     else {
         text := getSelectedText()
-        if (text == "") {
+        ; need to check for Visual Studio Code because Ctrl-C (from getSelectedText) causes the entire line to be copied if there is no selection
+        ; this is a temporary hack, because if text is already selected, this will not work correctly
+        if (WinActive("ahk_exe i)code.exe") || text == "") {
             ; this has unusual behavior... Some symbols are treated as "word" characters instead of "breaking" characters,
             ; which means that they will be selected and deleted, unless they are the ending character(s).
             ; Notepad   :     ` ~ @ # ^ & * ) _ = ] ; : ' " , . < > /
@@ -2122,16 +2096,24 @@ checkVersions() {
                 }
             }
             if (doUpdate) {
-                ver := RegexReplace(ahkAvailable, "\.", "")
-                exe := StrReplace(hs.vars.url.ahk.install, "{version}", ver)
-                dlFile := hs.vars.url.ahk.download . exe
-                fullPath := A_ScriptDir . "\" . exe
+                dlFile := hs.vars.url.ahk.install
+                fullPath := A_ScriptDir . "\AutoHotKey_" . ahkAvailable . "_Setup.exe"
                 UrlDownloadToFile, % dlFile, % fullPath
                 if (ErrorLevel == 0) {
-                    Run(fullPath)
+                    size := FileGetSize(fullPath, "M")
+                    header := FileRead(fullPath, "*m1024")
+                    if (size < 2 || containsIgnoreCase(header, "<html", "<body", "<div", "error")) {
+                        message("The downloaded AutoHotKey update file is not valid.`n`nReview: " . fullPath)
+                        return
+                    }
+                    else {
+                        Run(fullPath)
+                    }
+
                 }
                 else {
                     message("Failed to download AutoHotKey installer from:`n" . dlFile . "`n`nError: " . ErrorLevel)
+                    return
                 }
             }
         }
@@ -2178,11 +2160,13 @@ checkVersions() {
                         selfReload()
                     }
                     else {
-                        message("The downloaded " . hs.TITLE . " update file is not a valid.`n`nReview: " . newPath)
+                        message("The downloaded " . hs.TITLE . " update file is not valid.`n`nReview: " . newPath)
+                        return
                     }
                 }
                 else {
                     message("Failed to download " . hs.TITLE . " from:`n`n" . dlFile . "`n`nError: " . ErrorLevel)
+                    return
                 }
             }
         }
@@ -2193,7 +2177,7 @@ checkVersions() {
     else {
         setLastUpdateCheck(today)
     }
-    path := A_ScriptDir . "\AutoHotkey*_Install.exe"
+    path := A_ScriptDir . "\AutoHotKey*.exe"
     Loop, Files, % path
     {
         FileDelete(A_LoopFileLongPath)
@@ -3160,7 +3144,7 @@ createNewInExplorer(type:="file") {
     folder := getExplorerPath()
 ;    debug("folder = " . folder)
     if (folder != "") {
-        type := StringLower(type)
+        type := setCase(type, "L")
         name := getUniqueNewName(folder, type)
 ;        debug("name = " . name)
         fullName := folder . name
@@ -3184,7 +3168,7 @@ createNewInExplorer(type:="file") {
 
 createNewOnDesktop(type:="file") {
     folder := A_Desktop
-    type := StringLower(type)
+    type := setCase(type, "L")
     name := getUniqueNewName(folder, type)
     fullName := folder . name
     if (type == "folder") {
@@ -3861,6 +3845,21 @@ escapeText(text:="") {
     }
 }
 
+findAndRun(exe) {
+    file := findOnPath(exe)
+    if (file == "") {
+        winVer := RegRead("HKEY_LOCAL_MACHINE", "SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ProductName")
+        msg := ""
+        if (contains(winVer, "2008", "2012")) {
+            msg := "`n`nFor Windows Server 2008 or 2012, you may need to install 'Themes' or 'Desktop Experience'"
+        }
+        MsgBox, 48, File not found, Unable to locate %exe% on the PATH.%msg%
+    }
+    else {
+        Run(file)
+    }
+}
+
 findOnPath(filename) {
     target := ""
     if (FileExist(filename) != "") {
@@ -4444,7 +4443,7 @@ getUniqueNewName(ByRef path, type:="file") {
     if (!endsWith(path, "\")) {
         path .= "\"
     }
-    type := StringLower(type)
+    type := setCase(type, "L")
     if (type != "folder") {
         type := "file"
     }
@@ -4673,14 +4672,14 @@ hotString(trigger, replace, mode:=1, clearTrigger:=true, condition:= "") {
         if (StrLen(Hotkey) == 2 && Substr(Hotkey, 1, 1) == "+" && Instr(keys.alpha, Substr(Hotkey, 2, 1))) {
             Hotkey := Substr(Hotkey, 2)
             if (!GetKeyState("Capslock", "T")) {
-                StringUpper, Hotkey, Hotkey
+                HotKey := setCase(HotKey, "U")
             }
         }
         shiftState := GetKeyState("Shift", "P")
         uppercase := GetKeyState("Capslock", "T") ? !shiftState : shiftState
         ;if capslock is down, shift's function is reversed (pressing shift and a key while capslock is on will provide the lowercase key)
         if (uppercase && Instr(keys.alpha, Hotkey)) {
-            StringUpper, Hotkey, Hotkey
+            HotKey := setCase(HotKey, "U")
         }
         if (Instr("," . keys.breakKeys . ",", "," . Hotkey . ",")) {
             typed := ""
@@ -5095,7 +5094,7 @@ initHotStrings() {
 }
 
 initInternalVars() {
-    hs.VERSION := "1.20160711.1"
+    hs.VERSION := "1.20161014.1"
     hs.TITLE := "HotScript"
     hs.BASENAME := A_ScriptDir . "\" . hs.TITLE
 
@@ -5158,7 +5157,7 @@ initInternalVars() {
     urls.ahk := {
         (LTrim Join
             download: "http://ahkscript.org/download/1.1/",
-            install: "AutoHotkey{version}_Install.exe"
+            install: "https://autohotkey.com/download/ahk-install.exe"
         )}
     urls.ahk.version := urls.ahk.download . "version.txt"
     urls[hs.TITLE] := {
@@ -5408,7 +5407,7 @@ initQuickHelp() {
         %vspace%     Shift: Row 4`t`t`t
         %vspace%     Ctrl : Row 3`t`t`t
         %vspace%     Alt  : Row 2`t`t`t
-        %vspace%     None : Row 1`t`t`t
+        %vspace%     n/a  : Row 1`t`t`t
     )
     hkWindowHelpDisabled := replaceEachLine(hkWindowHelpEnabled, spacer)
     hkWindowHelp := (hs.config.user.enableHkWindow ? hkWindowHelpEnabled : hkWindowHelpDisabled)
@@ -6283,7 +6282,7 @@ pasteTemplate(template, tokens:="", keys:="", delay:=250) {
 }
 
 pad(value, width, type:="R") {
-    StringLower, type, type
+    type := setCase(type, "L")
     type := (type == "l" || type == "left" ? "L" : "R")
     Loop % (width - StrLen(value))
     {
@@ -6793,7 +6792,7 @@ saveQuickLookupSites(config) {
 }
 
 scrollWindow(direction, title:="A") {
-    direction := StringLower(direction)
+    direction := setCase(direction, "L")
     ; see https://msdn.microsoft.com/en-us/library/windows/desktop/bb787577(v=vs.85).aspx
     if (direction == "bottom") {
         scroll := 7
@@ -6877,7 +6876,7 @@ sendText(text, keys:="", delay:="250") {
 }
 
 setCase(value, case) {
-    case := StringUpper(case)
+    StringUpper, case, case
     result := ""
     if (case == "I") {
         Loop, Parse, value
@@ -6894,18 +6893,18 @@ setCase(value, case) {
         }
     }
     else if (case == "L") {
-        result := StringLower(value)
+        StringLower, result, value
     }
     else if (case == "S") {
-        result := StringLower(value)
+        result := setCase(value, "L")
         result := RegExReplace(result, "((?:^|[.!?]\s+)[a-z])", "$u1")
         result := RegExReplace(result, "(\bi\b)", "$u1")
     }
     else if (case == "T") {
-        result := StringUpper(value, "T")
+        StringUpper, result, value, T
     }
     else if (case == "U") {
-        result := StringUpper(value)
+        StringUpper, result, value
     }
     else {
         result := value
@@ -7380,10 +7379,10 @@ templateSql() {
 toBool(value)
 {
     static trueList := "1,active,enabled,on,t,true,y,yes"
-    value := StringLower(value)
+    value := setCase(value, "L")
     value := Trim(value)
     result := false
-    if (is(value, "Number") && value > 0) {
+    if (is(value, "Number") && value != 0) {
         result := true
     }
     else if value in %trueList%
@@ -7523,7 +7522,7 @@ toggleTransparency(hWnd:="A") {
 toString(obj, depth:=0, indent:="") {
     result := ""
     if (IsFunc(obj)) {
-        result := "function " . (isObject(obj) ? obj.name : obj) . "()"
+        result := "function " . (IsObject(obj) ? obj.name : obj) . "()"
     }
     else if (IsLabel(obj)) {
         result := "label " . obj.name . ":"
@@ -7778,7 +7777,7 @@ zoomStart() {
     return
 
     zoomChange:
-        zcKey := StringLower(A_ThisHotKey)
+        zcKey := setCase(A_ThisHotKey, "L")
         if (endsWith(zcKey, "wheelup") || zcKey == "!up") {
             direction := -1
         }
@@ -7841,7 +7840,7 @@ zoomStart() {
         return
 
     zoomWindowChange:
-        zwcKey := StringLower(A_ThisHotKey)
+        zwcKey := setCase(A_ThisHotKey, "L")
         if (zwcKey == "+wheelup" || zwcKey == "+up") {
             zoomWindowDimension := 32
         }
