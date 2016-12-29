@@ -1542,7 +1542,7 @@ hsCommentHeaderHtml() {
     template =
     (LTrim
         <!--%line%
-        %indent%%indent%
+        %indent%%indent1%
         %indent%%line%--->
     )
     sendText(template, "{Up}{End}")
@@ -1565,7 +1565,7 @@ hsCommentHeaderPerl() {
     template =
     (LTrim
         # %line%
-        %indent%#%indent%
+        %indent%#%indent1%
         %indent%# %line%
     )
     sendText(template, "{Up}{End}")
@@ -1577,7 +1577,7 @@ hsCommentHeaderSql() {
     template =
     (LTrim
         -- %line%
-        %indent%--%indent%
+        %indent%--%indent1%
         %indent%-- %line%
     )
     sendText(template, "{Up}{End}")
@@ -3206,7 +3206,7 @@ createUserFiles() {
     file := hs.file.USER_FUNCTIONS
     if (FileExist(file) == "") {
         contents =
-        (LTrim
+        (LTrim Join`r`n
             ; All user-defined functions should be declared below.
             ; Functions defined here can be used by HotScriptKeys.ahk or HotScriptStrings.ahk.
             ; Any functions defined within HotScript itself can be called by functions created here.
@@ -3227,7 +3227,7 @@ createUserFiles() {
     file := hs.file.USER_KEYS
     if (FileExist(file) == "") {
         contents =
-        (LTrim
+        (LTrim Join`r`n
             ; All user-defined HotKeys should be declared below.
             ; All HotScript or user-defined functions are available for use here.
 
@@ -3498,7 +3498,7 @@ createUserFiles() {
     file := hs.file.USER_STRINGS
     if (FileExist(file) == "") {
         contents =
-        (LTrim
+        (LTrim Join`r`n
             ; All user-defined HotStrings should be declared below.
             ; All HotScript or user-defined functions are available for use here.
 
@@ -3543,7 +3543,7 @@ createUserFiles() {
             %A_Space%       - if myTestFunc does not exist, the HotString will be triggered
             %A_Space%   hotString`("aBc", "This is case-sensitive!", 2`)
             %A_Space%   hotString`("\w{3}\d{3}", "Three letters and three numbers...", 3`)
-            %A_Space%       - when typing any three letter followed by three numbers, this HotString is triggered
+            %A_Space%       - when typing any three letters followed by three numbers, this HotString is triggered
 
             By calling a user-defined function, very advanced functionality or output may be created.
 
@@ -3556,10 +3556,10 @@ createUserFiles() {
     file := hs.file.USER_VARIABLES
     if (FileExist(file) == "") {
         contents =
-        (LTrim
+        (LTrim Join`r`n
             ; All user-defined variables should be declared below.
             ; Variables defined here can be used referenced by HotScriptFunctions.ahk, HotScriptKeys.ahk or HotScriptStrings.ahk.
-            ; All variables should be declared with "global" to make them easily accessible by other HotScript scripts and functions.
+            ; All variables should be declared with "global" to make them easily accessible by other HotScript modules and functions.
 
         )
         FileAppend(contents, file)
@@ -5094,7 +5094,7 @@ initHotStrings() {
 }
 
 initInternalVars() {
-    hs.VERSION := "1.20161014.1"
+    hs.VERSION := "1.20161228.1"
     hs.TITLE := "HotScript"
     hs.BASENAME := A_ScriptDir . "\" . hs.TITLE
 
@@ -5127,6 +5127,36 @@ initInternalVars() {
             INDENT: "    ",
             LINE_SEP: repeatStr(chr(183), 157),
             MARKER: markers,
+            MENU_COLORS: [
+                {
+                    color: "FFFEE3",
+                    name: "yellow"
+                },
+                {
+                    color: "D7DEEF",
+                    name: "blue"
+                },
+                {
+                    color: "FFE2E3",
+                    name: "red"
+                },
+                {
+                    color: "D9F4DC",
+                    name: "green"
+                },
+                {
+                    color: "E4D6EF",
+                    name: "purple"
+                },
+                {
+                    color: "D2EAEC",
+                    name: "cyan"
+                },
+                {
+                    color: "FFE3D1",
+                    name: "orange"
+                }
+            ],
             MENU_SEP: "-",
             replaceMode: mode,
             VIRTUAL_SPACE: chr(160)
@@ -5208,7 +5238,7 @@ initQuickHelp() {
     trimChars := "`t " . vspace
 
     hkActionHelpEnabled =
-    (LTrim
+    (LTrim Comments
         Action HotKeys`t`t`t
         %colLine%
         [W]-A`t`tToggle always-on-top`t
@@ -5293,7 +5323,7 @@ initQuickHelp() {
     )
 
     hkMiscHelpEnabled =
-    (LTrim
+    (LTrim Comments
         Miscellaneous HotKeys`t`t
         %colLine%
         [CA]-A`t`tCopy Append`t`t
@@ -5313,7 +5343,7 @@ initQuickHelp() {
     hkMiscHelp := (hs.config.user.enableHkMisc ? hkMiscHelpEnabled : hkMiscHelpDisabled)
 
     hkTextHelpEnabled =
-    (LTrim
+    (LTrim Comments
         %spacer%
         Text HotKeys`t`t`t
         %colLine%
@@ -5332,7 +5362,7 @@ initQuickHelp() {
     hkTextHelp := (hs.config.user.enableHkText ? hkTextHelpEnabled : hkTextHelpDisabled)
 
     hkTransformHelpEnabled =
-    (LTrim
+    (LTrim Comments
         Transform HotKeys`t`t`t
         %colLine%
         [CS]-```t`tEscape text for AHK`t
@@ -5442,7 +5472,7 @@ initQuickHelp() {
     hkResult := RegexReplace(hkResult, vspace, "&nbsp;")
 
     hsAliasHelpEnabled =
-    (LTrim
+    (LTrim Comments
         Alias HotStrings`t`t`t
         %colLine%
         bbl`tbe back later`t`t`t
@@ -5481,7 +5511,7 @@ initQuickHelp() {
     hsAliasHelp := (hs.config.user.enableHsAlias ? hsAliasHelpEnabled : hsAliasHelpDisabled)
 
     hsAutoCorrectHelpEnabled =
-    (LTrim
+    (LTrim Comments
         %spacer%
         Auto-correct HotStrings`t`t
         %colLine%
@@ -5495,7 +5525,7 @@ initQuickHelp() {
     hsAutoCorrectHelp := (hs.config.user.enableHsAutoCorrect ? hsAutoCorrectHelpEnabled : hsAutoCorrectHelpDisabled)
 
     hsCodeHelpEnabled =
-    (LTrim
+    (LTrim Comments
         %spacer%
         Code HotStrings`t`t`t
         %colLine%
@@ -5521,7 +5551,7 @@ initQuickHelp() {
     hsCodeHelp := (hs.config.user.enableHsCode ? hsCodeHelpEnabled : hsCodeHelpDisabled)
 
     hsDatesHelpEnabled =
-    (LTrim
+    (LTrim Comments
         Date/Time HotStrings`t`t
         %colLine%
         dtms`tYYYYMDD_24MMSS`t`t`t
@@ -5539,7 +5569,7 @@ initQuickHelp() {
     hsDatesHelp := (hs.config.user.enableHsDates ? hsDatesHelpEnabled : hsDatesHelpDisabled)
 
     hsDosHelpEnabled =
-    (LTrim
+    (LTrim Comments
         DOS HotStrings`t`t`t
         %colLine%
         cd`tcd /d`t`t`t`t
@@ -5548,7 +5578,7 @@ initQuickHelp() {
     hsDosHelp := (hs.config.user.enableHsDos ? hsDosHelpEnabled : hsDosHelpDisabled)
 
     hsHtmlHelpEnabled =
-    (LTrim
+    (LTrim Comments
         %spacer%
         HTML/XML HotStrings`t`t
         %colLine%
@@ -5571,7 +5601,7 @@ initQuickHelp() {
     hsHtmlHelp := (hs.config.user.enableHsHtml ? hsHtmlHelpEnabled : hsHtmlHelpDisabled)
 
     hsJiraHelpEnabled =
-    (LTrim
+    (LTrim Comments
         %spacer%
         Jira/Confluence HotStrings`t`t
         %colLine%
@@ -5598,7 +5628,7 @@ initQuickHelp() {
     hsJiraHelp := (hs.config.user.enableHsJira ? hsJiraHelpEnabled : hsJiraHelpDisabled)
 
     hsVariableHelpEnabled =
-    (LTrim
+    (LTrim Comments
         Variable HotStrings`t`t
         %colLine%
         @@`temail address`t`t`t
@@ -5637,7 +5667,7 @@ initQuickHelp() {
     hsVersion := hs.VERSION
     homeUrl := hs.vars.url.HotScript.home
     helpHtml =
-    (Ltrim Join
+    (LTrim Join
         <!DOCTYPE html>
         <html>
             <head>
@@ -5723,6 +5753,15 @@ isActiveCalculator() {
     return (procName == "calc.exe" || procName == "calculator.exe")
 }
 
+isArray(obj) {
+    result := false
+	if (IsObject(obj)) {
+		; TODO - this fails to correctly determine an empty array, but until AHK v2.0, this seems to be the best solution
+		result := (obj.SetCapacity(0) == (obj.MaxIndex() - obj.MinIndex() + 1))
+	}
+	return result
+}
+
 isNotActiveCalculator() {
     ; this is negated because hotString()'s "condition" parameter can only run a function, not negate it
     return !isActiveCalculator()
@@ -5730,6 +5769,17 @@ isNotActiveCalculator() {
 
 isDirectory(text) {
     return (InStr(FileExist(text), "D") > 0)
+}
+
+isEmpty(value) {
+    result := false
+    if (isObject(value)) {
+        result := !value._NewEnum()[k, v]
+    }
+    else if (value == "") {
+        result := true
+    }
+    return result
 }
 
 isFile(text) {
@@ -6029,6 +6079,91 @@ maximize(hWnd:="") {
     }
 }
 
+menuBuilder(menu, parent:="") {
+    static level := 0
+    static handler := ""
+    static colors := {}
+    if (IsObject(menu)) {
+        if (menu.name != "") {
+            if (menu.handler != "") {
+                if (IsFunc(menu.handler)) {
+                    handler := menu.handler
+                }
+                else {
+                    msg := "Warning: menu.handler defined (" . menu.handler . ") for`nmenu '" . menu.name . "' but it is not a function."
+                    MsgBox, 48, Menu handler not found, % msg
+                }
+            }
+            if (handler == "") {
+                if (IsFunc(menu.name)) {
+                    handler := menu.name
+                }
+                else if (IsFunc(menu.name . "Handler")) {
+                    handler := menu.name . "Handler"
+                }
+                else {
+                    handler := "menuHandler"
+                }
+            }
+            level++
+            colors[menu.name] := hs.const.MENU_COLORS[level].color
+            menuBuilder(menu.entries, toSafeName(menu.name))
+            Menu, % menu.name, Add
+            Menu, % menu.name, Add, &Cancel, %handler%
+            for name, color in colors
+            {
+                Menu, %name%, Color, %color%, Single
+            }
+            Menu, % menu.name, Show
+            Menu, % menu.name, Delete
+        }
+        else {
+            if (menu.text != "") {
+                menuName := toSafeName(parent . menu.text)
+                level++
+                menuBuilder(menu.entries, toSafeName(parent . menu.text))
+                Menu, %parent%, Add, % menu.text, % ":" . menuName
+                colors[menuName] := hs.const.MENU_COLORS[level].color
+                level--
+            }
+            else {
+                ; iterate over the actual values
+                for i, entry in menu
+                {
+                    menuBuilder(entry, parent)
+                }
+            }
+        }
+    }
+    else {
+        Menu, %parent%, Add, %menu%, %handler%
+    }
+}
+
+menuHandler() {
+	if (A_ThisMenuItem != "&Cancel") {
+		funcName := A_ThisMenu . toSafeName(A_ThisMenuItem)
+		if (IsFunc(funcName)) {
+			%funcName%()
+		}
+		else {
+			msg =
+            (LTrim Join`r`n
+                Function for '%funcName%' has not yet been defined...
+
+                Add this function definition to your script:
+
+                %funcName%() {
+                    %A_Space%   ; TODO - implement this function
+                }
+            )
+			ListVars
+			WinWaitActive, ahk_class AutoHotkey
+			ControlSetText, Edit1, %msg%
+		}
+	}
+}
+
 minimize(hWnd:="") {
     hWnd := setCase(Trim(hWnd), "U")
     if (hWnd == "" || hWnd == "A") {
@@ -6269,6 +6404,16 @@ numberSelectedPrompt() {
     }
 }
 
+pad(value, width, type:="R") {
+    type := setCase(type, "L")
+    type := (type == "l" || type == "left" ? "L" : "R")
+    Loop % (width - StrLen(value))
+    {
+        value := (type == "L" ? A_Space . value : value . A_Space)
+    }
+    return value
+}
+
 parseTemplate(template, tokens:="") {
     for name, value in tokens {
         token := "{" . name . "}"
@@ -6279,16 +6424,6 @@ parseTemplate(template, tokens:="") {
 
 pasteTemplate(template, tokens:="", keys:="", delay:=250) {
     sendText(parseTemplate(template, tokens), keys, delay)
-}
-
-pad(value, width, type:="R") {
-    type := setCase(type, "L")
-    type := (type == "l" || type == "left" ? "L" : "R")
-    Loop % (width - StrLen(value))
-    {
-        value := (type == "L" ? A_Space . value : value . A_Space)
-    }
-    return value
 }
 
 pasteText(text:="", delay:=250) {
@@ -7020,8 +7155,7 @@ showVariable(value:="") {
         }
         type := varName
     }
-    bracket := (IsObject(value) ? ["{", "}"] : ["[", "]"])
-    msg := type . " = " . bracket[1] . toString(value) . bracket[2]
+    msg := type . " = " . toString(value)
     ListVars
     debugWin := WinExist("A")
     WinActivate, ahk_id %debugWin%
@@ -7519,6 +7653,10 @@ toggleTransparency(hWnd:="A") {
     WinSetTitle, ahk_id %hWnd%, , %newTitle%
 }
 
+toSafeName(value) {
+    return RegExReplace(value, "[\``\~\!\@\#\$\%\^\&\*\(\)\-\_\=\+\[\]\{\}\\\|\;\:\'\""\,\.\<\>\/\?\s\t\r\n]", "")
+}
+
 toString(obj, depth:=0, indent:="") {
     result := ""
     if (IsFunc(obj)) {
@@ -7539,22 +7677,45 @@ toString(obj, depth:=0, indent:="") {
         for key, value in obj {
             result .= (depth == 0 && StrLen(result) == 0 && getSize(obj) > 1 ? hs.const.EOL_WIN : "") . pad
             if (IsFunc(value)) {
-                result .= pad(key, keyWidth) . " --> function " . (isObject(value) ? value.name : value) . "()" . hs.const.EOL_WIN
+                result .= pad(key, keyWidth) . " = <" . (isObject(value) ? value.name : value) . "> --> function()" . hs.const.EOL_WIN
             }
             else if (IsLabel(value)) {
                 result .= pad(key, keyWidth) . " --> label " . value . ":" . hs.const.EOL_WIN
             }
             else if (IsObject(value)) {
                 valStr := toString(value, depth + 1, pad)
-                result .= key . " = {" . (valStr == "" ? "" : hs.const.EOL_WIN . valstr . pad) . "}" . hs.const.EOL_WIN
+                if (isArray(value)) {
+                    ob := "["
+                    cb := "]"
+                }
+                else {
+                    ob := "{"
+                    cb := "}"
+                }
+                result .= key . " = " . ob . (valStr == "" ? "" : hs.const.EOL_WIN . valstr . pad) . cb . hs.const.EOL_WIN
             }
             else {
-                result .= pad(key, keyWidth) . " = [" . value . "]" . hs.const.EOL_WIN
+                result .= pad(key, keyWidth) . " = <" . value . ">" . hs.const.EOL_WIN
             }
         }
     }
     else {
         result := obj
+    }
+    if (depth == 0) {
+        if (isArray(obj)) {
+            ob := "["
+            cb := "]"
+        }
+        else if (isObject(obj)) {
+            ob := "{"
+            cb := "}"
+        }
+        else {
+            ob := ""
+            cb := ""
+        }
+        result := ob . "" . result . cb
     }
     return result
 }

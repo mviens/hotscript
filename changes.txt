@@ -1,3 +1,24 @@
+Differences in 1.20161226.1
+===========================
+HotStrings
+    - NEW   : Add a constant for menu colors. (hs.const.MENU_COLORS) There are seven pre-defined colors.
+    - CHANGE: Fixed comment header for Perl and SQL to use the correct indentation.
+Miscellaneous
+    - CHANGE: Modified the creation of HotScriptFunctions.ahk, HotScriptKeys.ahk, HotScriptStrings.ahk and
+              HotScriptVariables.ahk to use correct Windows line ending characters (CRLF) instead of Unix/Linux
+              line-endings (LF).
+Functions
+    - NEW   : Added the following new functions:
+                - isArray()
+                - isEmpty()
+                - menuBuilder()
+                - menuHandler()
+                - toSafeName()
+    - CHANGE: Modified toString() to use the correct brackets for the object type, when applicable:
+              "[]" for array, "{}" for objects and "<>" for all other objects. Note: empty arrays cannot be
+              properly detected and will instead show as empty objects.
+    
+
 Differences in 1.20161014.1
 ===========================
 HotKeys
@@ -170,7 +191,7 @@ Miscellaneous
 Differences in 1.20160406.2
 ===========================
 Miscellaneous
-    - NEW   : Added a constant for a default indent of 4 spaces.
+    - NEW   : Added a constant for a default indent of 4 spaces. (hs.const.INDENT)
 Functions
     - CHANGE: Modified getIndent() to check if the active window is a DOS window. If so, it will use the new default
               constant value of 4 spaces, otherwise it will try to determine the indent level from the active window.
