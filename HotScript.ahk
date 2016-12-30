@@ -1417,7 +1417,7 @@ hkWindowResizeToAnchor() {
         SetTimer, clearCount, 500
     }
     return
-    
+
     clearCount:
         countTB := 0
         countLR := 0
@@ -3764,7 +3764,7 @@ extractLocationAndResize() {
                 {
                     mon := hs.vars.monitors[A_Index]
                     if (top == "" || mon.workTop < top) {
-                        top := mon.workTop 
+                        top := mon.workTop
                     }
                     if (height == "" || mon.workBottom > height) {
                         height := mon.workBottom
@@ -5094,7 +5094,7 @@ initHotStrings() {
 }
 
 initInternalVars() {
-    hs.VERSION := "1.20161228.1"
+    hs.VERSION := "1.20161229.1"
     hs.TITLE := "HotScript"
     hs.BASENAME := A_ScriptDir . "\" . hs.TITLE
 
@@ -5755,11 +5755,11 @@ isActiveCalculator() {
 
 isArray(obj) {
     result := false
-	if (IsObject(obj)) {
-		; TODO - this fails to correctly determine an empty array, but until AHK v2.0, this seems to be the best solution
-		result := (obj.SetCapacity(0) == (obj.MaxIndex() - obj.MinIndex() + 1))
-	}
-	return result
+    if (IsObject(obj)) {
+        ; TODO - this fails to correctly determine an empty array, but until AHK v2.0, this seems to be the best solution
+        result := (obj.SetCapacity(0) == (obj.MaxIndex() - obj.MinIndex() + 1))
+    }
+    return result
 }
 
 isNotActiveCalculator() {
@@ -6080,11 +6080,16 @@ maximize(hWnd:="") {
 }
 
 menuBuilder(menu, parent:="") {
-    static level := 0
-    static handler := ""
     static colors := {}
+    static handler := ""
+    static level := 0
+    static runIcon := false
+    static warnIcon := false
     if (IsObject(menu)) {
         if (menu.name != "") {
+            level := 0
+            runIcon := toBool(menu.runIcon)
+            warnIcon := toBool(menu.warnIcon)
             if (menu.handler != "") {
                 if (IsFunc(menu.handler)) {
                     handler := menu.handler
@@ -6121,7 +6126,7 @@ menuBuilder(menu, parent:="") {
             if (menu.text != "") {
                 menuName := toSafeName(parent . menu.text)
                 level++
-                menuBuilder(menu.entries, toSafeName(parent . menu.text))
+                menuBuilder(menu.entries, menuName)
                 Menu, %parent%, Add, % menu.text, % ":" . menuName
                 colors[menuName] := hs.const.MENU_COLORS[level].color
                 level--
@@ -6137,17 +6142,26 @@ menuBuilder(menu, parent:="") {
     }
     else {
         Menu, %parent%, Add, %menu%, %handler%
+        if (runIcon || warnIcon) {
+            hasFunc := IsFunc(parent . toSafeName(menu))
+            if (runIcon && hasFunc) {
+                Menu, %parent%, Icon, %menu%, shell32.dll, -246, 16
+            }
+            else if (warnIcon && !hasFunc) {
+                Menu, %parent%, Icon, %menu%, setupapi.dll, -161, 16
+            }
+        }
     }
 }
 
 menuHandler() {
-	if (A_ThisMenuItem != "&Cancel") {
-		funcName := A_ThisMenu . toSafeName(A_ThisMenuItem)
-		if (IsFunc(funcName)) {
-			%funcName%()
-		}
-		else {
-			msg =
+    if (A_ThisMenuItem != "&Cancel") {
+        funcName := A_ThisMenu . toSafeName(A_ThisMenuItem)
+        if (IsFunc(funcName)) {
+            %funcName%()
+        }
+        else {
+            msg =
             (LTrim Join`r`n
                 Function for '%funcName%' has not yet been defined...
 
@@ -6155,13 +6169,14 @@ menuHandler() {
 
                 %funcName%() {
                     %A_Space%   ; TODO - implement this function
+                    %A_Space%   message(A_ThisFunc . "() has not been implemented yet.")
                 }
             )
-			ListVars
-			WinWaitActive, ahk_class AutoHotkey
-			ControlSetText, Edit1, %msg%
-		}
-	}
+            ListVars
+            WinWaitActive, ahk_class AutoHotkey
+            ControlSetText, Edit1, %msg%
+        }
+    }
 }
 
 minimize(hWnd:="") {

@@ -1,4 +1,15 @@
-Differences in 1.20161226.1
+Differences in 1.20161229.1
+===========================
+Functions
+    - NEW   : Added support for menus to automatically include an icon if the corresponding function name is
+              defined. A different icon can show for when the function is defined as well as for when it is
+              not. Within the primary menu object, use the "runIcon" and "warnIcon" boolean flags to enable
+              displaying the icons.
+    - CHANGE: Fixed a minor cosmetic issue in menuBuilder() where the primary menu color would increment by
+              one for each time the menu was shown instead of always showing the first defined color.
+
+
+Differences in 1.20161228.1
 ===========================
 HotStrings
     - NEW   : Add a constant for menu colors. (hs.const.MENU_COLORS) There are seven pre-defined colors.
