@@ -1,3 +1,18 @@
+Differences in 1.20170109.1
+===========================
+HotKeys
+    - NEW   : Added Alt-Win-F12 to run an internal function. This is primarily for debugging your own functions
+              but may have other uses. It still experimental and does not (yet) support parameters.
+Functions
+    - NEW   : Added the following new functions:
+                - output()
+                - runFunction()
+    - CHANGE: Fixed an issue with centerControls() being unable to detect windows whose title contains certain
+              symbols. This would cause the controls to be incorrect displayed in the dialog.
+    - CHANGE: Changed message() to return the name of button that was clicked, which eliminates the need to
+              use IfMsgBox.
+
+
 Differences in 1.20161229.1
 ===========================
 Functions
@@ -28,7 +43,7 @@ Functions
     - CHANGE: Modified toString() to use the correct brackets for the object type, when applicable:
               "[]" for array, "{}" for objects and "<>" for all other objects. Note: empty arrays cannot be
               properly detected and will instead show as empty objects.
-    
+
 
 Differences in 1.20161014.1
 ===========================
@@ -41,7 +56,7 @@ HotKeys
               AutoHotKey and then manually install the new version of HotScript. While this should only affect a
               small number of users, it is inconvenient. This should no longer happen regardless of the name of the
               AutoHotKey installation. Further verification checks are being done to validate that any new version of
-              AutoHotKey that is downloaded is a valid file. 
+              AutoHotKey that is downloaded is a valid file.
     - CHANGE: Changed action for DOS HotKey Alt-Up (or Alt-.) to run "cd .." instead of "cd..".  Linux/Unix wants the
               space between the 'd' and '.' whereas DOS did not care. This is helpful for DOS windows running SSH to
               access a Linux/Unix server.

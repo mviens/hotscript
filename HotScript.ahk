@@ -24,6 +24,7 @@ HotScript is copyrighted 2013-2016.
 #Warn UseUnsetGlobal, OutputDebug
 #Warn UseUnsetLocal, OutputDebug
 Autotrim, off
+DetectHiddenWindows, On
 ListLines, off
 SetBatchLines -1
 SetKeyDelay, -1
@@ -634,9 +635,9 @@ hkHotScriptRunDebugView() {
             msg := "Unable to locate DebugView on the PATH.`n`nDebugView displays Windows debug messages, which HotScript`n(and many other programs) can generate.`n`nClick the 'Download' button to go to the website for DebugView."
             SetTimer("ChangeButtons", 30)
             ; 1 + 48 + 256 = 305
-            MsgBox, 305, File Not Found, % msg
-            IfMsgBox, OK
+            if (message(msg, "File Not Found", 305) == "OK") {
                 Run("https://technet.microsoft.com/en-us/sysinternals/debugview.aspx")
+            }
             return
 
             ChangeButtons:
@@ -652,6 +653,10 @@ hkHotScriptRunDebugView() {
             Run(dvExe)
         }
     }
+}
+
+hkHotScriptRunFunction() {
+    runFunction()
 }
 
 hkHotScriptShowVariable() {
@@ -1971,8 +1976,10 @@ ask(title, prompt, width:=250, rows:=1, defaultValue:="", monoFont:=false) {
     Gui, AskMulti: Add, Button, vbtnOK gAskMulti_OK default, &OK
     Gui, AskMulti: Add, Button, vbtnCancel gAskMulti_Escape x+0, &Cancel
     centerControls(title, "AskMulti",,,, "Button1", "Button2")
+
     Gui, AskMulti: Show, autosize center
     centerWindow(, activeMon)
+
     while (myErrorLevel == -1) {
         Sleep(100)
     }
@@ -2027,9 +2034,14 @@ boolToStr(value) {
 }
 
 centerControls(title, guiName, hPadding:=10, vPadding:=5, spaceBetween:=30, controls*) {
-    DetectHiddenWindows, On
     Gui, %guiName%: Show, Hide
+    oldMode := A_TitleMatchMode
+    SetTitleMatchMode, 2
     WinGetPos,,, winW,, %title%
+    SetTitleMatchMode, %oldMode%
+    if (winW == "") {
+        message("Unable to find window for: '" . title . "'`n`nCannot center controls...")
+    }
     maxWidth := 0
     maxHeight := 0
     for idx, ctrl in controls {
@@ -2045,7 +2057,7 @@ centerControls(title, guiName, hPadding:=10, vPadding:=5, spaceBetween:=30, cont
     newHeight := maxHeight + vPadding
     nextPos := (winW - (newWidth * controls.MaxIndex()) - (spaceBetween * (controls.MaxIndex() - 1))) // 2
     if (startsWith(A_OSVersion, "10")) {
-        nextPos -= 2
+        nextPos -= 3
     }
     for idx, ctrl in controls {
         if (idx > 1) {
@@ -2089,9 +2101,7 @@ checkVersions() {
 
                         Would you like to download the new version and install it?
                     )
-                MsgBox, 36, % hs.TITLE . ": New AHK version available", % msg, 30
-                IfMsgBox, Yes
-                {
+                if (message(msg, hs.TITLE . ": New AHK version available", 36, 30) == "Yes") {
                     doUpdate := true
                 }
             }
@@ -2138,9 +2148,7 @@ checkVersions() {
 
                         Would you like to download the new version and install it?
                     )"
-                MsgBox, 36, % hs.TITLE . ": New version available", % msg, 30
-                IfMsgBox, Yes
-                {
+                if (message(msg, hs.TITLE . ": New version available", 36, 30) == "Yes") {
                     doUpdate := true
                 }
             }
@@ -3853,7 +3861,7 @@ findAndRun(exe) {
         if (contains(winVer, "2008", "2012")) {
             msg := "`n`nFor Windows Server 2008 or 2012, you may need to install 'Themes' or 'Desktop Experience'"
         }
-        MsgBox, 48, File not found, Unable to locate %exe% on the PATH.%msg%
+        message("Unable to locate " . exe . " on the PATH." . msg, "File not found", 48)
     }
     else {
         Run(file)
@@ -4050,6 +4058,7 @@ getDefaultHotKeyDefs(type) {
         hk["hkHotScriptQuickHelpToggle"] := "^#h"
         hk["hkHotScriptReload"] := "#2"
         hk["hkHotScriptRunDebugView"] := "#``"
+        hk["hkHotScriptRunFunction"] := "!#f12"
         hk["hkHotScriptShowVariable"] := "^#f12"
     }
     else if (type == "hkMisc") {
@@ -4510,7 +4519,7 @@ hexToBin(ByRef bytes, hex, num:=0)
     alloc := VarSetCapacity(bytes, num, 1)
     if (alloc < num) {
        ErrorLevel = Mem=%Granted%
-       MsgBox % "hexToBin() allocated " . alloc . " memory, but needed " . needed
+       message("hexToBin() allocated [" . alloc . "] memory, but needed [" . num . "]")
        return
     }
     StringLeft bytes, bytes, num
@@ -4526,7 +4535,8 @@ hexToBin(ByRef bytes, hex, num:=0)
 
 hideWindow(title:="A") {
     hWnd := WinExist(title)
-    ; TODO - this should be an array
+    ; TODO - this should be an array and persist across reloads, but not across reboots
+    ; may need to capture last reboot date/time, and compare
     hs.vars.hiddenWindows .= (hs.vars.hiddenWindows ? "|" : "") . hWnd
     WinHide, ahk_id %hWnd%
     GroupActivate("AllWindows")
@@ -4868,7 +4878,7 @@ init() {
     if (FileExist(hs.config.user.editor) == "") {
         if (findOnPath(hs.config.user.editor) = "") {
             msg := "The configured editor cannot be found: " . hs.config.user.editor . "`n`nTo change this, edit the " . hs.config.user.file . " file and add the 'editor' value in the [config] section."
-            MsgBox, 48,, %msg%
+            message(msg,, 48)
         }
     }
     if (IsFunc("userInit")) {
@@ -4889,9 +4899,7 @@ init() {
 
                 Would you like to see the list changes?
             )"
-        MsgBox, 36, % hs.TITLE . ": New version installed", % msg, 30
-        IfMsgBox, Yes
-        {
+        if (message(msg, hs.TITLE . ": New version installed", 36, 30) == "Yes") {
             Run(hs.vars.url[hs.TITLE].history)
         }
         FileDelete, % hs.file.UPDATE
@@ -5094,7 +5102,7 @@ initHotStrings() {
 }
 
 initInternalVars() {
-    hs.VERSION := "1.20161229.1"
+    hs.VERSION := "1.20170109.1"
     hs.TITLE := "HotScript"
     hs.BASENAME := A_ScriptDir . "\" . hs.TITLE
 
@@ -5309,11 +5317,11 @@ initQuickHelp() {
         [W]-8`t`tEdit user INI`t`t
         [W]-9`t`tEdit default INI`t
         [W]-0`t`t%title% home page`t`t
+        [AW]-F12`t`tRun function`t`t
         [CW]-F12`t`tShow variable`t`t
         [W]-F12`t`tExit %title%`t`t
         [W]-Pause`tPause %title%`t`t
         [W]-```t`tRun DebugView`t`t
-        %spacer%
         %spacer%
         %spacer%
         %spacer%
@@ -6096,7 +6104,7 @@ menuBuilder(menu, parent:="") {
                 }
                 else {
                     msg := "Warning: menu.handler defined (" . menu.handler . ") for`nmenu '" . menu.name . "' but it is not a function."
-                    MsgBox, 48, Menu handler not found, % msg
+                    message(msg, "Menu handler not found", 48)
                 }
             }
             if (handler == "") {
@@ -6172,11 +6180,36 @@ menuHandler() {
                     %A_Space%   message(A_ThisFunc . "() has not been implemented yet.")
                 }
             )
-            ListVars
-            WinWaitActive, ahk_class AutoHotkey
-            ControlSetText, Edit1, %msg%
+            output(msg)
         }
     }
+}
+
+message(msg, title:="", options:="0", timeout:="0") {
+    if (title == "") {
+        title := hs.TITLE
+    }
+    MsgBox, % options, % title, % msg, % timeout
+    IfMsgBox, Abort
+        return "Abort"
+    IfMsgBox, Cancel
+        return "Cancel"
+    IfMsgBox, Continue
+        return "Continue"
+    IfMsgBox, Ignore
+        return "Ignore"
+    IfMsgBox, No
+        return "No"
+    IfMsgBox, OK
+        return "OK"
+    IfMsgBox, Retry
+        return "Retry"
+    IfMsgBox, Timeout
+        return "Timeout"
+    IfMsgBox, TryAgain
+        return "TryAgain"
+    IfMsgBox, Yes
+        return "Yes"
 }
 
 minimize(hWnd:="") {
@@ -6191,13 +6224,6 @@ minimize(hWnd:="") {
     else {
         WinMinimize, ahk_id %hWnd%
     }
-}
-
-message(msg, title:="", options:="0", timeout:="0") {
-    if (title == "") {
-        title := hs.TITLE
-    }
-    MsgBox, % options, % title, % msg, % timeout
 }
 
 moveCurrentLineDown() {
@@ -6417,6 +6443,13 @@ numberSelectedPrompt() {
     else {
         numberSelected(start)
     }
+}
+
+output(text) {
+    ListVars
+    WinWaitActive, ahk_class AutoHotkey
+    ControlSetText, Edit1, %text%
+    WinWaitClose
 }
 
 pad(value, width, type:="R") {
@@ -6643,6 +6676,39 @@ runEditor(file:="") {
     }
     else {
         message("Unable to locate the configured editor: " . hs.config.user.editor)
+    }
+}
+
+runFunction(value:="", params*) {
+    if (value == "") {
+        funcName := trim(ask("Debug", "Enter the name of the function to execute:", 330))
+    }
+    else if (IsObject(value)) {
+        message("Unable to run a function for type 'object'...", "Invalid parameter", 48)
+        funcName := ""
+    }
+    if (funcName != "") {
+        func := Func(funcName)
+        if (func == 0) {
+            message("'" . funcName . "' is not a known function.", "Error", 48)
+        }
+        else {
+            try {
+                msg := funcName . "() is: " . (func.IsBuiltIn ? "built-in" : "user-defined") . hs.const.EOL_WIN . hs.const.EOL_WIN
+                if (func.minParams >= 1) {
+                    msg .= "Parameters: " . toString(params)
+                    result := func.Call(params*)
+                }
+                else {
+                    result := func.Call()
+                }
+                msg .= "Result: " . toString(result)
+                output(msg)
+            }
+            catch e {
+                message("Unable to execute the function: " . funcName . "`n`n" . e.Message, "Error", 48)
+            }
+        }
     }
 }
 
@@ -7011,9 +7077,7 @@ selfReload(silent:=false) {
     }
     Reload
     Sleep(1000)
-    MsgBox, 4,, The script could not be reloaded. Would you like to open it for editing?
-    IfMsgBox, Yes
-    {
+    if (message("The script could not be reloaded. Would you like to open it for editing?",, 4) == "Yes") {
         runEditor(A_ScriptFullPath)
     }
 }
@@ -7154,7 +7218,6 @@ showSplash(msg,timeout:=1500) {
 }
 
 showVariable(value:="") {
-    msg := ""
     type := "Parameter"
     if (!IsObject(value) && value == "") {
         varName := trim(ask("Debug", "Enter the name of the variable to inspect:", 330))
@@ -7165,17 +7228,12 @@ showVariable(value:="") {
             value := getVar(varName)
         }
         catch e {
-            MsgBox % e.Message
+            message(e.Message, "Unable to show variable", 48)
             return
         }
         type := varName
     }
-    msg := type . " = " . toString(value)
-    ListVars
-    debugWin := WinExist("A")
-    WinActivate, ahk_id %debugWin%
-    WinWaitActive, ahk_id %debugWin%
-    ControlSetText, Edit1, %msg%
+    output(type . " = " . toString(value))
 }
 
 showWindowInfo(title:="A") {
@@ -7237,7 +7295,7 @@ stop() {
     hsSession := toComma(hs.config.user.hsSessionCount)
     hsTotal := toComma(hs.config.user.hsTotalCount)
     msg := "Shutting down...`n`nSession Usage`n    HotKeys: " . hkSession . "`n    HotStrings: " . hsSession . "`n`nTotal Usage`n    HotKeys: " . hkTotal . "`n    HotStrings: " . hsTotal
-    MsgBox,, % hs.VERSION, %msg%
+    message(msg, hs.VERSION)
     ExitApp
 }
 
@@ -7738,7 +7796,7 @@ toString(obj, depth:=0, indent:="") {
 transformSelected(type,types:="I|L|R|S|T|U") {
     type := setCase(type, "L")
     if (!InStr(types, type)) {
-        MsgBox, 16, transformSelected() - Invalid parameter, illegal value for 'type' specified as: [%type%]
+        message("Illegal value for 'type' specified as: [" . type . "]", "transformSelected() - Invalid parameter", 16)
         return false
     }
     selText := getSelectedText()
