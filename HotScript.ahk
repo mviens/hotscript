@@ -2077,9 +2077,9 @@ centerWindow(title:="A", monitor:="") {
     WinMove, %title%,, coord.x, coord.y
 }
 
-checkVersions() {
+checkVersions(forceCheck:=false) {
     today := getDtsString()
-    if (hs.config.user.enableVersionCheck && hs.config.user.lastUpdateCheck < today) {
+    if (forceCheck || (hs.config.user.enableVersionCheck && hs.config.user.lastUpdateCheck < today)) {
         ahkAvailable := urlToVar(hs.vars.url.ahk.version)
         if (ahkAvailable == "") {
             debug("Unable to obtain AutoHotKey version information from:`n    " . hs.vars.url.ahk.version)
@@ -2180,6 +2180,9 @@ checkVersions() {
         }
         else {
             setLastUpdateCheck(today)
+            if (forceCheck) {
+                message(hs.TITLE . " is already running the latest version.")
+            }
         }
     }
     else {
@@ -4869,8 +4872,9 @@ init() {
     Menu, Tray, Add, Window Spy, customTrayMenu
     Menu, Tray, Add
     Menu, Tray, Add, Home Page, customTrayMenu
-    Menu, Tray, Add, Historical changes, customTrayMenu
     Menu, Tray, Add, Help, customTrayMenu
+    Menu, Tray, Add, Historical changes, customTrayMenu
+    Menu, Tray, Add, Check for new version, customTrayMenu
     Menu, Tray, Add
     Menu, Tray, Add, Exit, customTrayMenu
     initHotStrings()
@@ -4922,11 +4926,14 @@ init() {
         else if (A_ThisMenuItem == "Home Page") {
             hkHotScriptHome()
         }
+        else if (A_ThisMenuItem == "Help") {
+            showQuickHelp(false)
+        }
         else if (A_ThisMenuItem == "Historical changes") {
             Run(hs.vars.url[hs.TITLE].history)
         }
-        else if (A_ThisMenuItem == "Help") {
-            showQuickHelp(false)
+        else if (A_ThisMenuItem == "Check for new version") {
+            checkVersions(true)
         }
         else if (A_ThisMenuItem == "Exit") {
             stop()
@@ -5102,7 +5109,7 @@ initHotStrings() {
 }
 
 initInternalVars() {
-    hs.VERSION := "1.20170109.1"
+    hs.VERSION := "1.20170110.1"
     hs.TITLE := "HotScript"
     hs.BASENAME := A_ScriptDir . "\" . hs.TITLE
 

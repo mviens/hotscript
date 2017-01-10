@@ -1,5 +1,14 @@
 Differences in 1.20170109.1
 ===========================
+Miscellaneous
+    - NEW   : Added tray menu option for checking for a new version of HotScript. This is different than the
+              automated daily check because it will always compare the current version against the latest
+              version even if the automated check has already run for the day. The automated check runs once
+              once per day.
+
+
+Differences in 1.20170109.1
+===========================
 HotKeys
     - NEW   : Added Alt-Win-F12 to run an internal function. This is primarily for debugging your own functions
               but may have other uses. It still experimental and does not (yet) support parameters.
