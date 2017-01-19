@@ -944,52 +944,93 @@ hkTransformUpperCase() {
     }
 }
 
-hkTransformWrapEachInBrackets() {
-    wrapSelectedEach("[", "]")
-}
-
-hkTransformWrapEachInCurlys() {
-    wrapSelectedEach("{", "}")
-}
-
-hkTransformWrapEachInParenthesis() {
-    wrapSelectedEach("(", ")")
-}
-
-hkTransformWrapEachInDoubleQuotes() {
-    wrapSelectedEach("""", """")
-}
-
-hkTransformWrapEachInSingleQuotes() {
-    wrapSelectedEach("'", "'")
-}
-
-hkTransformWrapEachInTags() {
-    wrapSelectedEach("<", ">")
-}
-
-hkTransformWrapInBrackets() {
-    wrapSelected("[", "]")
-}
-
-hkTransformWrapInCurlys() {
-    wrapSelected("{", "}")
-}
-
-hkTransformWrapInParenthesis() {
-    wrapSelected("(", ")")
-}
-
-hkTransformWrapInDoubleQuotes() {
-    wrapSelected("""", """")
-}
-
-hkTransformWrapInSingleQuotes() {
-    wrapSelected("'", "'")
-}
-
-hkTransformWrapInTags() {
-    wrapSelected("<", ">")
+hkTransformWrap() {
+    myKey := RegexReplace(A_ThisHotKey, "[!+^#*]", "")
+    isAlt := GetKeyState("Alt", "p")
+    isShift := GetKeyState("Shift", "p")
+    if (myKey == "9" || myKey == "0") {
+        s1 := "("
+        s2 := ")"
+    }
+    else if (myKey == "[" || myKey == "]") {
+        if (isShift) {
+            s1 := "{"
+            s2 := "}"
+        }
+        else {
+            s1 := "["
+            s2 := "]"
+        }
+    }
+    else if (myKey == "," || myKey == ".") {
+        if (isShift) {
+            s1 := "<"
+            s2 := ">"
+        }
+        else {
+            s1 := myKey
+            s2 := s1
+        }
+    }
+    else {
+        if (myKey == "``") {
+            s1 := (isShift ? "~" : "``")
+        }
+        else if (myKey == "1") {
+            s1 := "!"
+        }
+        else if (myKey == "2") {
+            s1 := "@"
+        }
+        else if (myKey == "3") {
+            s1 := "#"
+        }
+        else if (myKey == "4") {
+            s1 := "$"
+        }
+        else if (myKey == "5") {
+            s1 := "%"
+        }
+        else if (myKey == "6") {
+            s1 := "^"
+        }
+        else if (myKey == "7") {
+            s1 := "&"
+        }
+        else if (myKey == "8") {
+            s1 := "*"
+        }
+        else if (isShift) {
+            if (myKey == "-") {
+                s1 := "_"
+            }
+            else if (myKey == "=") {
+                s1 := "+"
+            }
+            else if (myKey == "\") {
+                s1 := "|"
+            }
+            else if (myKey == ";") {
+                s1 := ":"
+            }
+            else if (myKey == "'") {
+                s1 := """"
+            }
+            else if (myKey == "/") {
+                s1 := "?"
+            }
+        }
+        else {
+            s1 := myKey
+        }
+        s2 := s1
+    }
+    if (isAlt) {
+        wrapSelectedEach(s1, s2)
+    }
+    else {
+        wrapSelected(s1, s2)
+    }
 }
 
 hkTransformWrapText() {
@@ -1368,10 +1409,10 @@ hkWindowResizeToAnchor() {
     static BOTH := 3
     static countTB := 0
     static countLR := 0
-    isUp := GetKeyState("up", "p")
-    isDown := GetKeyState("down", "p")
-    isLeft := GetKeyState("left", "p")
-    isRight := GetKeyState("right", "p")
+    isUp := GetKeyState("Up", "p")
+    isDown := GetKeyState("Down", "p")
+    isLeft := GetKeyState("Left", "p")
+    isRight := GetKeyState("Right", "p")
     direction := (isUp ? "T" : "") . (isDown ? "B" : "") . (isLeft ? "L" : "") . (isRight ? "R" : "")
     if (direction == "B") {
         hkWindowResizeTo1x2_1()
@@ -1927,10 +1968,9 @@ addHotString() {
 addMissingVariables() {
     varAppend := ""
     FileRead, hsVars, % hs.file.USER_VARIABLES
-    quote := chr(34)
     for key, value in hs.vars.defaultMyVars {
         if (!contains(hsVars, "global MY_" . key)) {
-            tmpQ := (contains(value, quote) ? "" : quote)
+            tmpQ := (contains(value, """") ? "" : """")
             comment := ""
             if (key == "PASSWORD") {
                 comment := "  `; this is encrypted using CtrlShift-E (delete this comment after editing the value)"
@@ -3471,10 +3511,10 @@ createUserFiles() {
             %A_Space%       action    - function to call, OR label to go to, OR text to send
             %A_Space%                       - passing a blank value will delete any existing HotKey
             %A_Space%                       - this can be useful to allow a HotKey to trigger until some conditional has been met
-            %A_Space%       mode      - the operating mode of the trigger  `(default = NORMAL`)
-            %A_Space%                       - hs.const.replaceMode.NORMAL `(or 1`)  -  `(case-insensitive`)
-            %A_Space%                       - hs.const.replaceMode.CASE   `(or 2`)  -  `(case-sensitive`)
-            %A_Space%                       - hs.const.replaceMode.REGEX  `(or 3`)  -  `(regular expression`)
+            %A_Space%       mode      - the operating mode of the trigger  `(default = Normal`)
+            %A_Space%                       - hs.const.REPLACE_MODE.Normal `(or 1`)  -  `(case-insensitive`)
+            %A_Space%                       - hs.const.REPLACE_MODE.Case   `(or 2`)  -  `(case-sensitive`)
+            %A_Space%                       - hs.const.REPLACE_MODE.Regex  `(or 3`)  -  `(regular expression`)
             %A_Space%       restrict  - `(optional`) either a function name that must return true or false if the action should be
             %A_Space%                   executed OR a string in the format of "ahk_xxx yyy" that must match the current window
             %A_Space%                       - See AutoHotKey help for: ahk_class, ahk_exe_ ahk_group, ahk_id, ahk_pid
@@ -3519,10 +3559,10 @@ createUserFiles() {
             %A_Space%       replace   - string to replace trigger, OR function to call, OR label to go to
             %A_Space%                       - passing a blank value will delete any existing HotString for the specified trigger
             %A_Space%                       - this can be useful to allow a HotString to trigger until some conditional has been met
-            %A_Space%       mode      - the operating mode of the trigger  `(default = NORMAL`)
-            %A_Space%                       - hs.const.replaceMode.NORMAL `(or 1`)  -  `(case-insensitive`)
-            %A_Space%                       - hs.const.replaceMode.CASE   `(or 2`)  -  `(case-sensitive`)
-            %A_Space%                       - hs.const.replaceMode.REGEX  `(or 3`)  -  `(regular expression`)
+            %A_Space%       mode      - the operating mode of the trigger  `(default = Normal`)
+            %A_Space%                       - hs.const.REPLACE_MODE.Normal `(or 1`)  -  `(case-insensitive`)
+            %A_Space%                       - hs.const.REPLACE_MODE.Case   `(or 2`)  -  `(case-sensitive`)
+            %A_Space%                       - hs.const.REPLACE_MODE.Regex  `(or 3`)  -  `(regular expression`)
             %A_Space%       clear     - `(optional`) true if the trigger should be erased, false to leave the trigger `(default = true`)
             %A_Space%       condition - `(optional`) function name that must return true or false if the action should be executed
 
@@ -3655,7 +3695,7 @@ extractLocationAndResize() {
         }
         dimension := match1
         position := match2
-        if (dimension == "3x3" && GetKeyState("shift", "p")) {
+        if (dimension == "3x3" && GetKeyState("Shift", "p")) {
             ; necessary because AHK does not register Alt-Win-NumPad keys but instead it fires as though Win-NumPad key was pressed with the NumLock being toggled
             dimension := "3x2"
         }
@@ -4019,20 +4059,20 @@ getDefaultHotKeyDefs(type) {
         hk["hkActionWindowsSnip"] := "#printscreen"
     }
     else if (type == "hkDos") {
-        hk["hkDosCdParent-1"] := "!."
-        hk["hkDosCdParent-2"] := "!up"
+        hk["hkDosCdParent-01"] := "!."
+        hk["hkDosCdParent-02"] := "!up"
         hk["hkDosCopy"] := "!c"
         hk["hkDosDownloads"] := "!d"
         hk["hkDosExit"] := "!x"
         hk["hkDosMove"] := "!m"
-        hk["hkDosPageDown-1"] := "+pgdn"
-        hk["hkDosPageDown-2"] := "^pgdn"
-        hk["hkDosPageDown-3"] := "!pgdn"
-        hk["hkDosPageUp-1"] := "+pgup"
-        hk["hkDosPageUp-2"] := "^pgup"
-        hk["hkDosPageUp-3"] := "!pgup"
-        hk["hkDosPaste-1"] := "^v"
-        hk["hkDosPaste-2"] := "+insert"
+        hk["hkDosPageDown-01"] := "+pgdn"
+        hk["hkDosPageDown-02"] := "^pgdn"
+        hk["hkDosPageDown-03"] := "!pgdn"
+        hk["hkDosPageUp-01"] := "+pgup"
+        hk["hkDosPageUp-02"] := "^pgup"
+        hk["hkDosPageUp-03"] := "!pgup"
+        hk["hkDosPaste-01"] := "^v"
+        hk["hkDosPaste-02"] := "+insert"
         hk["hkDosPopd"] := "^p"
         hk["hkDosPushd"] := "!p"
         hk["hkDosRoot"] := "!r"
@@ -4081,7 +4121,8 @@ getDefaultHotKeyDefs(type) {
         hk["hkMiscPasteEnter"] := "#enter"
         hk["hkMiscPasteTab"] := "#tab"
         hk["hkMiscPreviewClipboard"] := "#v"
-        hk["hkMiscSwapToClipboard"] := "^!c"
+        hk["hkMiscSwapToClipboard-01"] := "^!c"
+        hk["hkMiscSwapToClipboard-02"] := "^!insert"
         hk["hkMiscZoomWindow"] := "#z"
     }
     else if (type == "hkText") {
@@ -4094,7 +4135,7 @@ getDefaultHotKeyDefs(type) {
     }
     else if (type == "hkTransform") {
         hk["hkTransformEncrypt"] := "$^+e"
-        hk["hkTransformEscape"] := "^+``"
+        hk["hkTransformEscape"] := "^!``"
         hk["hkTransformInvertCase"] := "^+i"
         hk["hkTransformLowerCase"] := "$^+l"
         hk["hkTransformNumberPrepend"] := "$^+n"
@@ -4107,46 +4148,58 @@ getDefaultHotKeyDefs(type) {
         hk["hkTransformSortAscendingNoCase"] := "^+a"
         hk["hkTransformSortDescending"] := "^!+d"
         hk["hkTransformSortDescendingNoCase"] := "^+d"
-        hk["hkTransformTagify-1"] := "!+,"
-        hk["hkTransformTagify-2"] := "!+."
+        hk["hkTransformTagify-01"] := "!+,"
+        hk["hkTransformTagify-02"] := "!+."
         hk["hkTransformTitleCase"] := "$^+t"
         hk["hkTransformUnwrapText"] := "^!w"
         hk["hkTransformUpperCase"] := "$^+u"
-        hk["hkTransformWrapEachInBrackets-1"] := "#!["
-        hk["hkTransformWrapEachInBrackets-2"] := "#!]"
-        hk["hkTransformWrapEachInCurlys-1"] := "#+["
-        hk["hkTransformWrapEachInCurlys-2"] := "#+]"
-        hk["hkTransformWrapEachInParenthesis-1"] := "#+9"
-        hk["hkTransformWrapEachInParenthesis-2"] := "#+0"
-        hk["hkTransformWrapEachInDoubleQuotes"] := "#+'"
-        hk["hkTransformWrapEachInSingleQuotes"] := "#!'"
-        hk["hkTransformWrapEachInTags-1"] := "#+,"
-        hk["hkTransformWrapEachInTags-2"] := "#+."
-        hk["hkTransformWrapInBrackets-1"] := "^!["
-        hk["hkTransformWrapInBrackets-2"] := "^!]"
-        hk["hkTransformWrapInCurlys-1"] := "^+["
-        hk["hkTransformWrapInCurlys-2"] := "^+]"
-        hk["hkTransformWrapInParenthesis-1"] := "^+9"
-        hk["hkTransformWrapInParenthesis-2"] := "^+0"
-        hk["hkTransformWrapInDoubleQuotes"] := "^+'"
-        hk["hkTransformWrapInSingleQuotes"] := "^!'"
-        hk["hkTransformWrapInTags-1"] := "^+,"
-        hk["hkTransformWrapInTags-2"] := "^+."
+        hk["hkTransformWrap-01"] := "*^#``"
+        hk["hkTransformWrap-02"] := "*+#``"
+        hk["hkTransformWrap-03"] := "*+#1"
+        hk["hkTransformWrap-04"] := "*+#2"
+        hk["hkTransformWrap-05"] := "*+#3"
+        hk["hkTransformWrap-06"] := "*+#4"
+        hk["hkTransformWrap-07"] := "*+#5"
+        hk["hkTransformWrap-08"] := "*+#6"
+        hk["hkTransformWrap-09"] := "*+#7"
+        hk["hkTransformWrap-10"] := "*+#8"
+        hk["hkTransformWrap-11"] := "*+#9"
+        hk["hkTransformWrap-12"] := "*+#0"
+        hk["hkTransformWrap-13"] := "*^#-"
+        hk["hkTransformWrap-14"] := "*+#-"
+        hk["hkTransformWrap-15"] := "*^#="
+        hk["hkTransformWrap-16"] := "*+#="
+        hk["hkTransformWrap-17"] := "*^#["
+        hk["hkTransformWrap-18"] := "*+#["
+        hk["hkTransformWrap-19"] := "*^#]"
+        hk["hkTransformWrap-20"] := "*+#]"
+        hk["hkTransformWrap-21"] := "*^#\"
+        hk["hkTransformWrap-22"] := "*+#\"
+        hk["hkTransformWrap-23"] := "*^#;"
+        hk["hkTransformWrap-24"] := "*+#;"
+        hk["hkTransformWrap-25"] := "*^#'"
+        hk["hkTransformWrap-26"] := "*+#'"
+        hk["hkTransformWrap-27"] := "*^#,"
+        hk["hkTransformWrap-28"] := "*+#,"
+        hk["hkTransformWrap-29"] := "*^#."
+        hk["hkTransformWrap-30"] := "*+#."
+        hk["hkTransformWrap-31"] := "*^#/"
+        hk["hkTransformWrap-32"] := "*+#/"
         hk["hkTransformWrapText"] := "^+w"
     }
     else if (type == "hkWindow") {
         hk["hkWindowCenter"] := "#home"
-        hk["hkWindowDecreaseTransparency-1"] := "#-"
-        hk["hkWindowDecreaseTransparency-2"] := "#numpadsub"
-        hk["hkWindowDecreaseTransparency-3"] := "#wheeldown"
+        hk["hkWindowDecreaseTransparency-01"] := "#-"
+        hk["hkWindowDecreaseTransparency-02"] := "#numpadsub"
+        hk["hkWindowDecreaseTransparency-03"] := "#wheeldown"
         hk["hkWindowHide"] := "#delete"
         hk["hkWindowHorizontalScrollLeft"] := "^wheelup"
         hk["hkWindowHorizontalScrollRight"] := "^wheeldown"
-        hk["hkWindowIncreaseTransparency-1"] := "#="
-        hk["hkWindowIncreaseTransparency-2"] := "#numpadadd"
-        hk["hkWindowIncreaseTransparency-3"] := "#wheelup"
-        hk["hkWindowLeft-1"] := "wheelleft"
-        hk["hkWindowLeft-2"] := "#left"
+        hk["hkWindowIncreaseTransparency-01"] := "#="
+        hk["hkWindowIncreaseTransparency-02"] := "#numpadadd"
+        hk["hkWindowIncreaseTransparency-03"] := "#wheelup"
+        hk["hkWindowLeft-01"] := "wheelleft"
+        hk["hkWindowLeft-02"] := "#left"
         hk["hkWindowMaximize"] := "#up"
         hk["hkWindowMinimize"] := "#down"
         hk["hkWindowMoveToEdgeBottom"] := "^#down"
@@ -4156,97 +4209,97 @@ getDefaultHotKeyDefs(type) {
         hk["hkWindowPageDown"] := "!wheeldown"
         hk["hkWindowPageUp"] := "!wheelup"
         hk["hkWindowResize"] := "^#r"
-        hk["hkWindowResizeToAnchor-1"] := "+#down"
-        hk["hkWindowResizeToAnchor-2"] := "+#left"
-        hk["hkWindowResizeToAnchor-3"] := "+#right"
-        hk["hkWindowResizeToAnchor-4"] := "+#up"
-        hk["hkWindowResizeTo1x3_1-1"] := "^#numpad0"
-        hk["hkWindowResizeTo1x3_1-2"] := "^#numpadins"
-        hk["hkWindowResizeTo1x3_2-1"] := "^#numpad4"
-        hk["hkWindowResizeTo1x3_2-2"] := "^#numpadleft"
-        hk["hkWindowResizeTo1x3_3-1"] := "^#numpad7"
-        hk["hkWindowResizeTo1x3_3-2"] := "^#numpadhome"
-        hk["hkWindowResizeTo2x3_1-1"] := "!#numpad1"
-        hk["hkWindowResizeTo2x3_1-2"] := "!#numpadend"
-        hk["hkWindowResizeTo2x3_2-1"] := "!#numpad2"
-        hk["hkWindowResizeTo2x3_2-2"] := "!#numpaddown"
-        hk["hkWindowResizeTo2x3_3-1"] := "!#numpad4"
-        hk["hkWindowResizeTo2x3_3-2"] := "!#numpadleft"
-        hk["hkWindowResizeTo2x3_4-1"] := "!#numpad5"
-        hk["hkWindowResizeTo2x3_4-2"] := "!#numpadclear"
-        hk["hkWindowResizeTo2x3_5-1"] := "!#numpad7"
-        hk["hkWindowResizeTo2x3_5-2"] := "!#numpadhome"
-        hk["hkWindowResizeTo2x3_6-1"] := "!#numpad8"
-        hk["hkWindowResizeTo2x3_6-2"] := "!#numpadup"
-        hk["hkWindowResizeTo3x1_1-1"] := "^#numpad1"
-        hk["hkWindowResizeTo3x1_1-2"] := "^#numpadend"
-        hk["hkWindowResizeTo3x1_2-1"] := "^#numpad2"
-        hk["hkWindowResizeTo3x1_2-2"] := "^#numpaddown"
-        hk["hkWindowResizeTo3x1_3-1"] := "^#numpad3"
-        hk["hkWindowResizeTo3x1_3-2"] := "^#numpadpgdn"
-        hk["hkWindowResizeTo3x2_1-1"] := "+#numpad1"
-        hk["hkWindowResizeTo3x2_1-2"] := "+#numpadend"
-        hk["hkWindowResizeTo3x2_2-1"] := "+#numpad2"
-        hk["hkWindowResizeTo3x2_2-2"] := "+#numpaddown"
-        hk["hkWindowResizeTo3x2_3-1"] := "+#numpad3"
-        hk["hkWindowResizeTo3x2_3-2"] := "+#numpadpgdn"
-        hk["hkWindowResizeTo3x2_4-1"] := "+#numpad4"
-        hk["hkWindowResizeTo3x2_4-2"] := "+#numpadleft"
-        hk["hkWindowResizeTo3x2_5-1"] := "+#numpad5"
-        hk["hkWindowResizeTo3x2_5-2"] := "+#numpadclear"
-        hk["hkWindowResizeTo3x2_6-1"] := "+#numpad6"
-        hk["hkWindowResizeTo3x2_6-2"] := "+#numpadright"
-        hk["hkWindowResizeTo3x3_1-1"] := "#numpad1"
-        hk["hkWindowResizeTo3x3_1-2"] := "#numpadend"
-        hk["hkWindowResizeTo3x3_2-1"] := "#numpad2"
-        hk["hkWindowResizeTo3x3_2-2"] := "#numpaddown"
-        hk["hkWindowResizeTo3x3_3-1"] := "#numpad3"
-        hk["hkWindowResizeTo3x3_3-2"] := "#numpadpgdn"
-        hk["hkWindowResizeTo3x3_4-1"] := "#numpad4"
-        hk["hkWindowResizeTo3x3_4-2"] := "#numpadleft"
-        hk["hkWindowResizeTo3x3_5-1"] := "#numpad5"
-        hk["hkWindowResizeTo3x3_5-2"] := "#numpadclear"
-        hk["hkWindowResizeTo3x3_6-1"] := "#numpad6"
-        hk["hkWindowResizeTo3x3_6-2"] := "#numpadright"
-        hk["hkWindowResizeTo3x3_7-1"] := "#numpad7"
-        hk["hkWindowResizeTo3x3_7-2"] := "#numpadhome"
-        hk["hkWindowResizeTo3x3_8-1"] := "#numpad8"
-        hk["hkWindowResizeTo3x3_8-2"] := "#numpadup"
-        hk["hkWindowResizeTo3x3_9-1"] := "#numpad9"
-        hk["hkWindowResizeTo3x3_9-2"] := "#numpadpgup"
-        hk["hkWindowResizeTo3x4_1"] := "#f9"
-        hk["hkWindowResizeTo3x4_2"] := "#f10"
-        hk["hkWindowResizeTo3x4_3"] := "#f11"
-        hk["hkWindowResizeTo3x4_4"] := "!#f9"
-        hk["hkWindowResizeTo3x4_5"] := "!#f10"
-        hk["hkWindowResizeTo3x4_6"] := "!#f11"
-        hk["hkWindowResizeTo3x4_7"] := "^#f9"
-        hk["hkWindowResizeTo3x4_8"] := "^#f10"
-        hk["hkWindowResizeTo3x4_9"] := "^#f11"
+        hk["hkWindowResizeToAnchor-01"] := "+#down"
+        hk["hkWindowResizeToAnchor-02"] := "+#left"
+        hk["hkWindowResizeToAnchor-03"] := "+#right"
+        hk["hkWindowResizeToAnchor-04"] := "+#up"
+        hk["hkWindowResizeTo1x3_1-01"] := "^#numpad0"
+        hk["hkWindowResizeTo1x3_1-02"] := "^#numpadins"
+        hk["hkWindowResizeTo1x3_2-01"] := "^#numpad4"
+        hk["hkWindowResizeTo1x3_2-02"] := "^#numpadleft"
+        hk["hkWindowResizeTo1x3_3-01"] := "^#numpad7"
+        hk["hkWindowResizeTo1x3_3-02"] := "^#numpadhome"
+        hk["hkWindowResizeTo2x3_1-01"] := "!#numpad1"
+        hk["hkWindowResizeTo2x3_1-02"] := "!#numpadend"
+        hk["hkWindowResizeTo2x3_2-01"] := "!#numpad2"
+        hk["hkWindowResizeTo2x3_2-02"] := "!#numpaddown"
+        hk["hkWindowResizeTo2x3_3-01"] := "!#numpad4"
+        hk["hkWindowResizeTo2x3_3-02"] := "!#numpadleft"
+        hk["hkWindowResizeTo2x3_4-01"] := "!#numpad5"
+        hk["hkWindowResizeTo2x3_4-02"] := "!#numpadclear"
+        hk["hkWindowResizeTo2x3_5-01"] := "!#numpad7"
+        hk["hkWindowResizeTo2x3_5-02"] := "!#numpadhome"
+        hk["hkWindowResizeTo2x3_6-01"] := "!#numpad8"
+        hk["hkWindowResizeTo2x3_6-02"] := "!#numpadup"
+        hk["hkWindowResizeTo3x1_1-01"] := "^#numpad1"
+        hk["hkWindowResizeTo3x1_1-02"] := "^#numpadend"
+        hk["hkWindowResizeTo3x1_2-01"] := "^#numpad2"
+        hk["hkWindowResizeTo3x1_2-02"] := "^#numpaddown"
+        hk["hkWindowResizeTo3x1_3-01"] := "^#numpad3"
+        hk["hkWindowResizeTo3x1_3-02"] := "^#numpadpgdn"
+        hk["hkWindowResizeTo3x2_1-01"] := "+#numpad1"
+        hk["hkWindowResizeTo3x2_1-02"] := "+#numpadend"
+        hk["hkWindowResizeTo3x2_2-01"] := "+#numpad2"
+        hk["hkWindowResizeTo3x2_2-02"] := "+#numpaddown"
+        hk["hkWindowResizeTo3x2_3-01"] := "+#numpad3"
+        hk["hkWindowResizeTo3x2_3-02"] := "+#numpadpgdn"
+        hk["hkWindowResizeTo3x2_4-01"] := "+#numpad4"
+        hk["hkWindowResizeTo3x2_4-02"] := "+#numpadleft"
+        hk["hkWindowResizeTo3x2_5-01"] := "+#numpad5"
+        hk["hkWindowResizeTo3x2_5-02"] := "+#numpadclear"
+        hk["hkWindowResizeTo3x2_6-01"] := "+#numpad6"
+        hk["hkWindowResizeTo3x2_6-02"] := "+#numpadright"
+        hk["hkWindowResizeTo3x3_1-01"] := "#numpad1"
+        hk["hkWindowResizeTo3x3_1-02"] := "#numpadend"
+        hk["hkWindowResizeTo3x3_2-01"] := "#numpad2"
+        hk["hkWindowResizeTo3x3_2-02"] := "#numpaddown"
+        hk["hkWindowResizeTo3x3_3-01"] := "#numpad3"
+        hk["hkWindowResizeTo3x3_3-02"] := "#numpadpgdn"
+        hk["hkWindowResizeTo3x3_4-01"] := "#numpad4"
+        hk["hkWindowResizeTo3x3_4-02"] := "#numpadleft"
+        hk["hkWindowResizeTo3x3_5-01"] := "#numpad5"
+        hk["hkWindowResizeTo3x3_5-02"] := "#numpadclear"
+        hk["hkWindowResizeTo3x3_6-01"] := "#numpad6"
+        hk["hkWindowResizeTo3x3_6-02"] := "#numpadright"
+        hk["hkWindowResizeTo3x3_7-01"] := "#numpad7"
+        hk["hkWindowResizeTo3x3_7-02"] := "#numpadhome"
+        hk["hkWindowResizeTo3x3_8-01"] := "#numpad8"
+        hk["hkWindowResizeTo3x3_8-02"] := "#numpadup"
+        hk["hkWindowResizeTo3x3_9-01"] := "#numpad9"
+        hk["hkWindowResizeTo3x3_9-02"] := "#numpadpgup"
+        hk["hkWindowResizeTo3x4_01"] := "#f9"
+        hk["hkWindowResizeTo3x4_02"] := "#f10"
+        hk["hkWindowResizeTo3x4_03"] := "#f11"
+        hk["hkWindowResizeTo3x4_04"] := "!#f9"
+        hk["hkWindowResizeTo3x4_05"] := "!#f10"
+        hk["hkWindowResizeTo3x4_06"] := "!#f11"
+        hk["hkWindowResizeTo3x4_07"] := "^#f9"
+        hk["hkWindowResizeTo3x4_08"] := "^#f10"
+        hk["hkWindowResizeTo3x4_09"] := "^#f11"
         hk["hkWindowResizeTo3x4_10"] := "+#f9"
         hk["hkWindowResizeTo3x4_11"] := "+#f10"
         hk["hkWindowResizeTo3x4_12"] := "+#f11"
-        hk["hkWindowResizeTo4x3_1"] := "#f5"
-        hk["hkWindowResizeTo4x3_2"] := "#f6"
-        hk["hkWindowResizeTo4x3_3"] := "#f7"
-        hk["hkWindowResizeTo4x3_4"] := "#f8"
-        hk["hkWindowResizeTo4x3_5"] := "!#f5"
-        hk["hkWindowResizeTo4x3_6"] := "!#f6"
-        hk["hkWindowResizeTo4x3_7"] := "!#f7"
-        hk["hkWindowResizeTo4x3_8"] := "!#f8"
-        hk["hkWindowResizeTo4x3_9"] := "^#f5"
+        hk["hkWindowResizeTo4x3_01"] := "#f5"
+        hk["hkWindowResizeTo4x3_02"] := "#f6"
+        hk["hkWindowResizeTo4x3_03"] := "#f7"
+        hk["hkWindowResizeTo4x3_04"] := "#f8"
+        hk["hkWindowResizeTo4x3_05"] := "!#f5"
+        hk["hkWindowResizeTo4x3_06"] := "!#f6"
+        hk["hkWindowResizeTo4x3_07"] := "!#f7"
+        hk["hkWindowResizeTo4x3_08"] := "!#f8"
+        hk["hkWindowResizeTo4x3_09"] := "^#f5"
         hk["hkWindowResizeTo4x3_10"] := "^#f6"
         hk["hkWindowResizeTo4x3_11"] := "^#f7"
         hk["hkWindowResizeTo4x3_12"] := "^#f8"
-        hk["hkWindowResizeTo4x4_1"] := "#f1"
-        hk["hkWindowResizeTo4x4_2"] := "#f2"
-        hk["hkWindowResizeTo4x4_3"] := "#f3"
-        hk["hkWindowResizeTo4x4_4"] := "#f4"
-        hk["hkWindowResizeTo4x4_5"] := "!#f1"
-        hk["hkWindowResizeTo4x4_6"] := "!#f2"
-        hk["hkWindowResizeTo4x4_7"] := "!#f3"
-        hk["hkWindowResizeTo4x4_8"] := "!#f4"
-        hk["hkWindowResizeTo4x4_9"] := "^#f1"
+        hk["hkWindowResizeTo4x4_01"] := "#f1"
+        hk["hkWindowResizeTo4x4_02"] := "#f2"
+        hk["hkWindowResizeTo4x4_03"] := "#f3"
+        hk["hkWindowResizeTo4x4_04"] := "#f4"
+        hk["hkWindowResizeTo4x4_05"] := "!#f1"
+        hk["hkWindowResizeTo4x4_06"] := "!#f2"
+        hk["hkWindowResizeTo4x4_07"] := "!#f3"
+        hk["hkWindowResizeTo4x4_08"] := "!#f4"
+        hk["hkWindowResizeTo4x4_09"] := "^#f1"
         hk["hkWindowResizeTo4x4_10"] := "^#f2"
         hk["hkWindowResizeTo4x4_11"] := "^#f3"
         hk["hkWindowResizeTo4x4_12"] := "^#f4"
@@ -4255,8 +4308,8 @@ getDefaultHotKeyDefs(type) {
         hk["hkWindowResizeTo4x4_15"] := "+#f3"
         hk["hkWindowResizeTo4x4_16"] := "+#f4"
         hk["hkWindowRestoreHidden"] := "#insert"
-        hk["hkWindowRight-1"] := "wheelright"
-        hk["hkWindowRight-2"] := "#right"
+        hk["hkWindowRight-01"] := "wheelright"
+        hk["hkWindowRight-02"] := "#right"
         hk["hkWindowShowInfo"] := "#/"
         hk["hkWindowToggleMinimized"] := "^#m"
         hk["hkWindowToggleTransparency"] := "#t"
@@ -4620,7 +4673,7 @@ hotKeyAction() {
 /*
     trigger      - string or regex to trigger the action
     replace      - string to replace trigger, OR label to go to, OR function to call, OR object containing function name and optional parameters
-    mode         - NORMAL (case-insensitive), CASE (case-sensitive), REGEX (regular expression) (default = NORMAL)
+    mode         - Normal (case-insensitive), Case (case-sensitive), Regex (regular expression) (default = Normal)
     clearTrigger - true if the trigger should be erased (default = true)
     condition    - function name that should return true/false is the action should be executed
 */
@@ -4679,7 +4732,7 @@ hotString(trigger, replace, mode:=1, clearTrigger:=true, condition:= "") {
         ;keysBound is a static variable, so now the keys won't be bound twice
         keysBound := true
     }
-    if (mode == hs.const.replaceMode.CALLBACK) {
+    if (mode == hs.const.REPLACE_MODE.Callback) {
         ;Callback for the HotKeys
         Hotkey := SubStr(A_ThisHotkey, 3)
         if (StrLen(Hotkey) == 2 && Substr(Hotkey, 1, 1) == "+" && Instr(keys.alpha, Substr(Hotkey, 2, 1))) {
@@ -4827,7 +4880,7 @@ hotString(trigger, replace, mode:=1, clearTrigger:=true, condition:= "") {
 
     __hotstring:
         ;this label is triggered every time a key is pressed
-        hotString("", "", hs.const.replaceMode.CALLBACK)
+        hotString("", "", hs.const.REPLACE_MODE.Callback)
         return
 }
 
@@ -4844,6 +4897,10 @@ hsPercentOf() {
         result := StringTrimRight(result, 1)
     }
     sendText(result)
+}
+
+hsUnicode() {
+    sendText(Chr("0x" . $.value(1)))
 }
 
 init() {
@@ -4943,100 +5000,112 @@ init() {
 
 initHotStrings() {
     endChars := hs.const.END_CHARS_REGEX
-    mode := hs.const.replaceMode
+    mode := hs.const.REPLACE_MODE
     if (toBool(hs.config.user.enableHsAlias)) {
-        hotString("\bbbl", "be back later", mode.REGEX)
-        hotString("\bbbs", "be back soon", mode.REGEX)
-        hotString("\bbi(\d+)" . endChars, "hsAliasBackInX", mode.REGEX)
-        hotString("\bbrb", "be right back", mode.REGEX)
-        hotString("\bbrt", "be right there", mode.REGEX)
-        hotString("\bg2g", "Good to go!", mode.REGEX)
-        hotString("\bgtg", "Got to go...", mode.REGEX)
-        hotString("\bidk", "I don't know.", mode.REGEX)
-        hotString("\blmc", "Let me check on that...", mode.REGEX)
-        hotString("\blmk", "Let me know ", mode.REGEX)
-        hotString("\bnm" . endChars, "never mind...", mode.REGEX)
-        hotString("\bnmif", "Never mind, I found it.", mode.REGEX)
-        hotString("\bnp" . endChars, "no problem$1", mode.REGEX)
-        hotString("\bnw", "no worries", mode.REGEX)
-        hotString("\bokt", "OK, thanks...", mode.REGEX)
-        hotString("\bthok", "That's OK...", mode.REGEX)
-        hotString("\bthx", "thanks", mode.REGEX)
-        hotString("\bty" . endChars, "Thank you$1", mode.REGEX)
-        hotString("\bvg" . endChars, "very good$1", mode.REGEX)
-        hotString("\byw" . endChars, "You're welcome$1", mode.REGEX)
-        hotString("\bwyb", "Please let me know when you are back...", mode.REGEX)
+        hotString("\bbbl", "be back later", mode.Regex)
+        hotString("\bbbs", "be back soon", mode.Regex)
+        hotString("\bbi(\d+)" . endChars, "hsAliasBackInX", mode.Regex)
+        hotString("\bbrb", "be right back", mode.Regex)
+        hotString("\bbrt", "be right there", mode.Regex)
+        hotString("\bg2g", "Good to go!", mode.Regex)
+        hotString("\bgtg", "Got to go...", mode.Regex)
+        hotString("\bidk", "I don't know.", mode.Regex)
+        hotString("\blmc", "Let me check on that...", mode.Regex)
+        hotString("\blmk", "Let me know ", mode.Regex)
+        hotString("\bnm" . endChars, "never mind...", mode.Regex)
+        hotString("\bnmif", "Never mind, I found it.", mode.Regex)
+        hotString("\bnp" . endChars, "no problem$1", mode.Regex)
+        hotString("\bnw", "no worries", mode.Regex)
+        hotString("\bokt", "OK, thanks...", mode.Regex)
+        hotString("\bthok", "That's OK...", mode.Regex)
+        hotString("\bthx", "thanks", mode.Regex)
+        hotString("\bty" . endChars, "Thank you$1", mode.Regex)
+        hotString("\bvg" . endChars, "very good$1", mode.Regex)
+        hotString("\byw" . endChars, "You're welcome$1", mode.Regex)
+        hotString("\bwyb", "Please let me know when you are back...", mode.Regex)
     }
     if (toBool(hs.config.user.enableHsAutoCorrect)) {
-        hotString("@ip", A_IPAddress1, mode.CASE)
-        hotString("(\d+)\/(\d+)%", "hsDivPercent", mode.REGEX)
-        hotString("(\d+)%(\d+)" . endChars, "hsPercentOf", mode.REGEX)
-        hotString("\b1\/8" . endChars, chr(8539), mode.REGEX,, "isNotActiveCalculator")
-        hotString("\b1\/6" . endChars, chr(8537), mode.REGEX,, "isNotActiveCalculator")
-        hotString("\b1\/5" . endChars, chr(8533), mode.REGEX,, "isNotActiveCalculator")
-        hotString("\b1\/4" . endChars, chr(188), mode.REGEX,, "isNotActiveCalculator")
-        hotString("\b2\/8" . endChars, chr(188), mode.REGEX,, "isNotActiveCalculator")
-        hotString("\b1\/3" . endChars, chr(8531), mode.REGEX,, "isNotActiveCalculator")
-        hotString("\b2\/6" . endChars, chr(8531), mode.REGEX,, "isNotActiveCalculator")
-        hotString("\b3\/8" . endChars, chr(8540), mode.REGEX,, "isNotActiveCalculator")
-        hotString("\b2\/5" . endChars, chr(8534), mode.REGEX,, "isNotActiveCalculator")
-        hotString("\b1\/2" . endChars, chr(189), mode.REGEX,, "isNotActiveCalculator")
-        hotString("\b2\/4" . endChars, chr(189), mode.REGEX,, "isNotActiveCalculator")
-        hotString("\b3\/6" . endChars, chr(189), mode.REGEX,, "isNotActiveCalculator")
-        hotString("\b4\/8" . endChars, chr(189), mode.REGEX,, "isNotActiveCalculator")
-        hotString("\b3\/5" . endChars, chr(8535), mode.REGEX,, "isNotActiveCalculator")
-        hotString("\b5\/8" . endChars, chr(8541), mode.REGEX,, "isNotActiveCalculator")
-        hotString("\b2\/3" . endChars, chr(8532), mode.REGEX,, "isNotActiveCalculator")
-        hotString("\b4\/6" . endChars, chr(8532), mode.REGEX,, "isNotActiveCalculator")
-        hotString("\b3\/4" . endChars, chr(190), mode.REGEX,, "isNotActiveCalculator")
-        hotString("\b6\/8" . endChars, chr(190), mode.REGEX,, "isNotActiveCalculator")
-        hotString("\b4\/5" . endChars, chr(8536), mode.REGEX,, "isNotActiveCalculator")
-        hotString("\b5\/6" . endChars, chr(8538), mode.REGEX,, "isNotActiveCalculator")
-        hotString("\b7\/8" . endChars, chr(8542), mode.REGEX,, "isNotActiveCalculator")
-        hotString("\b([a-z])L", "$1:", mode.REGEX)
+        hotString("@ip", A_IPAddress1, mode.Case)
+        hotString("(\d+)\/(\d+)%", "hsDivPercent", mode.Regex)
+        hotString("(\d+)%(\d+)" . endChars, "hsPercentOf", mode.Regex)
+        hotString("\b1\/8" . endChars, Chr(0x215B), mode.Regex,, "isNotActiveCalculator")
+        hotString("\b1\/6" . endChars, Chr(0x2159), mode.Regex,, "isNotActiveCalculator")
+        hotString("\b1\/5" . endChars, Chr(0x2155), mode.Regex,, "isNotActiveCalculator")
+        hotString("\b1\/4" . endChars, Chr(188), mode.Regex,, "isNotActiveCalculator")
+        hotString("\b2\/8" . endChars, Chr(188), mode.Regex,, "isNotActiveCalculator")
+        hotString("\b1\/3" . endChars, Chr(0x2153), mode.Regex,, "isNotActiveCalculator")
+        hotString("\b2\/6" . endChars, Chr(0x2153), mode.Regex,, "isNotActiveCalculator")
+        hotString("\b3\/8" . endChars, Chr(0x215C), mode.Regex,, "isNotActiveCalculator")
+        hotString("\b2\/5" . endChars, Chr(0x2156), mode.Regex,, "isNotActiveCalculator")
+        hotString("\b1\/2" . endChars, Chr(189), mode.Regex,, "isNotActiveCalculator")
+        hotString("\b2\/4" . endChars, Chr(189), mode.Regex,, "isNotActiveCalculator")
+        hotString("\b3\/6" . endChars, Chr(189), mode.Regex,, "isNotActiveCalculator")
+        hotString("\b4\/8" . endChars, Chr(189), mode.Regex,, "isNotActiveCalculator")
+        hotString("\b3\/5" . endChars, Chr(0x2157), mode.Regex,, "isNotActiveCalculator")
+        hotString("\b5\/8" . endChars, Chr(0x215D), mode.Regex,, "isNotActiveCalculator")
+        hotString("\b2\/3" . endChars, Chr(0x2154), mode.Regex,, "isNotActiveCalculator")
+        hotString("\b4\/6" . endChars, Chr(0x2154), mode.Regex,, "isNotActiveCalculator")
+        hotString("\b3\/4" . endChars, Chr(190), mode.Regex,, "isNotActiveCalculator")
+        hotString("\b6\/8" . endChars, Chr(190), mode.Regex,, "isNotActiveCalculator")
+        hotString("\b4\/5" . endChars, Chr(0x2158), mode.Regex,, "isNotActiveCalculator")
+        hotString("\b5\/6" . endChars, Chr(0x215A), mode.Regex,, "isNotActiveCalculator")
+        hotString("\b7\/8" . endChars, Chr(0x215E), mode.Regex,, "isNotActiveCalculator")
+        hotString("\b([a-z])L", "$1:", mode.Regex)
+        hotString("@bullet", Chr(0x2022))
+        hotString("@club", Chr(0x2663))
+        hotString("@copy", Chr(0x00A9))
+        hotString("@diam", Chr(0x2666))
+        hotString("@ellip", Chr(0x2026))
+        hotString("@heart", Chr(0x2665))
+        hotString("@mdash", Chr(0x2014))
+        hotString("@ndash", Chr(0x2013))
+        hotString("@reg", Chr(0x00AE))
+        hotString("@spade", Chr(0x2660))
+        hotString("@tm", Chr(0x2122))
+        hotString("i)@uni([A-F0-9]{4})", "hsUnicode", mode.Regex)
     }
     if (toBool(hs.config.user.enableHsCode)) {
-        hotString("@html", "templateHtml", mode.CASE)
-        hotString("@java", "templateJava", mode.CASE)
-        hotString("@perl", "templatePerl", mode.CASE)
-        hotString("@sql", "templateSql", mode.CASE)
-        hotString("chh", "hsCommentHeaderHtml", mode.CASE)
-        hotString("chj", "hsCommentHeaderJava", mode.CASE)
-        hotString("chp", "hsCommentHeaderPerl", mode.CASE)
-        hotString("chs", "hsCommentHeaderSql", mode.CASE)
-        hotString("\b(for|if|while) ?\(", "hsCodeBlock", mode.REGEX, false)
-        hotString("\belif", "hsCodeElseIf", mode.REGEX)
-        hotString("\bfunc ?\(", "hsCodeFunction", mode.REGEX)
-        hotString("\bifel", "hsCodeIfElse", mode.REGEX)
-        hotString("\bswitch ?\(", "hsCodeSwitch", mode.REGEX, false)
-        hotString("sf.", "hsCodeStringFormat", mode.CASE)
-        hotString("sysout", "hsCodeSysOut", mode.CASE)
+        hotString("@html", "templateHtml", mode.Case)
+        hotString("@java", "templateJava", mode.Case)
+        hotString("@perl", "templatePerl", mode.Case)
+        hotString("@sql", "templateSql", mode.Case)
+        hotString("chh", "hsCommentHeaderHtml", mode.Case)
+        hotString("chj", "hsCommentHeaderJava", mode.Case)
+        hotString("chp", "hsCommentHeaderPerl", mode.Case)
+        hotString("chs", "hsCommentHeaderSql", mode.Case)
+        hotString("\b(for|if|while) ?\(", "hsCodeBlock", mode.Regex, false)
+        hotString("\belif", "hsCodeElseIf", mode.Regex)
+        hotString("\bfunc ?\(", "hsCodeFunction", mode.Regex)
+        hotString("\bifel", "hsCodeIfElse", mode.Regex)
+        hotString("\bswitch ?\(", "hsCodeSwitch", mode.Regex, false)
+        hotString("sf.", "hsCodeStringFormat", mode.Case)
+        hotString("sysout", "hsCodeSysOut", mode.Case)
     }
     if (toBool(hs.config.user.enableHsDates)) {
-        hotString("\bdtms", "getDtmsString", mode.REGEX)
-        hotString("\bdts", "getDtsString", mode.REGEX)
-        hotString("\btms", "getTmsString", mode.REGEX)
-        hotString("@date", "getDateString", mode.CASE)
-        hotString("@day", "getDayString", mode.CASE)
-        hotString("@ddd", "getDddString", mode.CASE)
-        hotString("@mmm", "getMmmString", mode.CASE)
-        hotString("@month", "getMonthString", mode.CASE)
-        hotString("@now", "getNowString", mode.CASE)
-        hotString("@time", "getTimeString", mode.CASE)
+        hotString("\bdtms", "getDtmsString", mode.Regex)
+        hotString("\bdts", "getDtsString", mode.Regex)
+        hotString("\btms", "getTmsString", mode.Regex)
+        hotString("@date", "getDateString", mode.Case)
+        hotString("@day", "getDayString", mode.Case)
+        hotString("@ddd", "getDddString", mode.Case)
+        hotString("@mmm", "getMmmString", mode.Case)
+        hotString("@month", "getMonthString", mode.Case)
+        hotString("@now", "getNowString", mode.Case)
+        hotString("@time", "getTimeString", mode.Case)
     }
     if (toBool(hs.config.user.enableHsDos)) {
-        hotString("\bcd ", "/d ", mode.REGEX, false, "isActiveDos")
+        hotString("\bcd ", "/d ", mode.Regex, false, "isActiveDos")
     }
     if (toBool(hs.config.user.enableHsHtml)) {
         ; single
-        hotString("<!-", "hsHtmlComment", mode.REGEX, false)
-        hotString("<a" . endChars, "hsHtmlA", mode.REGEX, false)
-        hotString("<[bh]r", "/>", mode.REGEX, false)
-        hotString("<h([1-6])", "hsHtmlHeader", mode.REGEX, false)
+        hotString("<!-", "hsHtmlComment", mode.Regex, false)
+        hotString("<a" . endChars, "hsHtmlA", mode.Regex, false)
+        hotString("<[bh]r", "/>", mode.Regex, false)
+        hotString("<h([1-6])", "hsHtmlHeader", mode.Regex, false)
         hotString("<html", "hsHtmlHtml",, false)
         hotString("<input", "hsHtmlInput",, false)
         hotString("<link", "hsHtmlLink",, false)
-        hotString("<([o|u]l)", "hsHtmlList", mode.REGEX, false)
+        hotString("<([o|u]l)", "hsHtmlList", mode.Regex, false)
         hotString("<optg", "hsHtmlOptGroup",, false)
         hotString("<select", "hsHtmlSelect",, false)
         hotString("<source", "hsHtmlSource",, false)
@@ -5046,12 +5115,12 @@ initHotStrings() {
         hotString("<tr", "hsHtmlTr",, false)
         hotString("<xml", " version='1.0' encoding='UTF-8'?>",, false)
         ; reusable
-        hotString("<(b|head|i|li|p|q|th|u)" . endChars, "hsHtmlTagNoEndChar", mode.REGEX, false)
-        hotString("<(big|code|del|em|legend|pre|small|span|strong|sub|sup|td|title)", "hsHtmlTagSimple", mode.REGEX, false)
-        hotString("<(block|body|div|form|header|hgroup|script|section|tbody|tfoot|thead)", "hsHtmlTagBlock", mode.REGEX, false)
-        hotString("<(but|cap|field|foot|opti|sum)", "hsHtmlTagAbbr", mode.REGEX, false)
-        hotString("<(iframe|img)", "hsHtmlTagSrc", mode.REGEX, false)
-        hotString("<(label)", "hsHtmlTagFor", mode.REGEX, false)
+        hotString("<(b|head|i|li|p|q|th|u)" . endChars, "hsHtmlTagNoEndChar", mode.Regex, false)
+        hotString("<(big|code|del|em|legend|pre|small|span|strong|sub|sup|td|title)", "hsHtmlTagSimple", mode.Regex, false)
+        hotString("<(block|body|div|form|header|hgroup|script|section|tbody|tfoot|thead)", "hsHtmlTagBlock", mode.Regex, false)
+        hotString("<(but|cap|field|foot|opti|sum)", "hsHtmlTagAbbr", mode.Regex, false)
+        hotString("<(iframe|img)", "hsHtmlTagSrc", mode.Regex, false)
+        hotString("<(label)", "hsHtmlTagFor", mode.Regex, false)
     }
     if (toBool(hs.config.user.enableHsJira)) {
         ; code
@@ -5088,94 +5157,72 @@ initHotStrings() {
             hotString("@#", MY_PHONE)
         }
         if (MY_ADDRESS != "") {
-            hotString("@addr", MY_ADDRESS, mode.CASE)
+            hotString("@addr", MY_ADDRESS, mode.Case)
         }
         if (MY_DOB != "") {
-            hotString("@dob", MY_DOB, mode.CASE)
+            hotString("@dob", MY_DOB, mode.Case)
         }
         if (MY_NAME != "") {
-            hotString("@me", MY_NAME, mode.CASE)
+            hotString("@me", MY_NAME, mode.Case)
         }
         if (MY_PASSWORD != "") {
-            hotString("@pw", crypt(MY_PASSWORD), mode.CASE)
+            hotString("@pw", crypt(MY_PASSWORD), mode.Case)
         }
         if (MY_SIGNATURE != "") {
-            hotString("@sig", MY_SIGNATURE, mode.CASE)
+            hotString("@sig", MY_SIGNATURE, mode.Case)
         }
         if (MY_WORK_EMAIL != "") {
-            hotString("@w", MY_WORK_EMAIL, mode.CASE)
+            hotString("@w", MY_WORK_EMAIL, mode.Case)
         }
     }
 }
 
 initInternalVars() {
-    hs.VERSION := "1.20170110.1"
+    hs.VERSION := "1.20170119.1"
     hs.TITLE := "HotScript"
     hs.BASENAME := A_ScriptDir . "\" . hs.TITLE
 
-    quote := chr(34)
-    markers := {
-        (LTrim Join
-            always_on_top: chr(5826) . chr(160),
-            click_through: chr(5822) . chr(160),
-            pinned: chr(4968) . chr(160),
-            transparent: chr(8801) . chr(160)
-        )}
-
-    ; mode
-    mode := {
-        (LTrim Join
-            NORMAL: 1,
-            CASE: 2,
-            REGEX: 3,
-            CALLBACK: "!CALLBACK!"
-        )}
     ; const
     hs.const := {
         (LTrim Join Comments
             COMMENT_HEADER_LINE: repeatStr("-", 70),
-            END_CHARS_REGEX: "([``~!@#$%^&*()\-_=+[\]{}\\|;:'" . chr(34) . ",.<>/?\s\t\r\n])",
+            END_CHARS_REGEX: "([``~!@#$%^&*()\-_=+[\]{}\\|;:'"",.<>/?\s\t\r\n])",
             EOL_MAC: "`r",
             EOL_NIX: "`n",
             EOL_WIN: "`r`n",
             EOL_REGEX: "(\r\n|\n|\r)",
             INDENT: "    ",
-            LINE_SEP: repeatStr(chr(183), 157),
-            MARKER: markers,
+            LINE_SEP: repeatStr(Chr(183), 157),
             MENU_COLORS: [
-                {
-                    color: "FFFEE3",
-                    name: "yellow"
-                },
-                {
-                    color: "D7DEEF",
-                    name: "blue"
-                },
-                {
-                    color: "FFE2E3",
-                    name: "red"
-                },
-                {
-                    color: "D9F4DC",
-                    name: "green"
-                },
-                {
-                    color: "E4D6EF",
-                    name: "purple"
-                },
-                {
-                    color: "D2EAEC",
-                    name: "cyan"
-                },
-                {
-                    color: "FFE3D1",
-                    name: "orange"
-                }
+                {color: "FFFEE3", name: "yellow"},
+                {color: "D7DEEF", name: "blue"},
+                {color: "FFE2E3", name: "red"},
+                {color: "D9F4DC", name: "green"},
+                {color: "E4D6EF", name: "purple"},
+                {color: "D2EAEC", name: "cyan"},
+                {color: "FFE3D1", name: "orange"}
             ],
             MENU_SEP: "-",
-            replaceMode: mode,
-            VIRTUAL_SPACE: chr(160)
+            VIRTUAL_SPACE: Chr(160)
         )}
+
+    hs.const.MARKER := {
+        (LTrim Comments Join
+            always_on_top: Chr(0x16C2) . hs.const.VIRTUAL_SPACE,
+            click_through: Chr(0x16BE) . hs.const.VIRTUAL_SPACE,
+            pinned: Chr(0x1368) . hs.const.VIRTUAL_SPACE,    ; reserved for future use
+            transparent: Chr(0x2261) . hs.const.VIRTUAL_SPACE
+        )}
+
+    ; mode
+    hs.const.REPLACE_MODE := {
+        (LTrim Comments Join
+            Normal: 1,
+            Case: 2,
+            Regex: 3,
+            Callback: "!CALLBACK!"    ; not to be used directly, for internal use only
+        )}
+
     ; file
     hs.file := {
         (LTrim Join
@@ -5190,7 +5237,7 @@ initInternalVars() {
     ; help
     hs.help := {}
     hs.help.width := 1275
-    hs.help.height := 698
+    hs.help.height := 638
     ; HotKeys
     hs.hotkeys := {}
     hs.hotkeys.actions := {}
@@ -5219,9 +5266,9 @@ initInternalVars() {
             DOB: "01/01/1980",
             EMAIL: "firstlast@mail.com",
             NAME: "First Last",
-            PASSWORD: chr(209) . chr(193) . chr(165) . chr(165) . chr(246) . chr(177) . chr(243) . chr(229) . chr(190),
+            PASSWORD: Chr(209) . Chr(193) . Chr(165) . Chr(165) . Chr(246) . Chr(177) . Chr(243) . Chr(229) . Chr(190),
             PHONE: "789-456-0123",
-            SIGNATURE: quote . "Sincerely,``n" . quote . " . MY_NAME",
+            SIGNATURE: """Sincerely,``n"" . MY_NAME",
             WORK_EMAIL: "firstlast@work.com"
         )}
     hs.vars := {
@@ -5245,10 +5292,10 @@ initInternalVars() {
 initQuickHelp() {
     help := {}
     vspace := hs.const.VIRTUAL_SPACE
-    colLine := repeatStr(chr(8212), 37) . A_Tab
+    colLine := repeatStr(Chr(0x2014), 37) . A_Tab
     eol := hs.const.EOL_NIX
-    pointer := chr(9492) . chr(9472) . chr(9658)
-    pointerExtend := chr(9474)
+    pointer := Chr(0x2514) . Chr(0x2500) . Chr(0x25BA)
+    pointerExtend := Chr(0x2502)
     spacer := vspace . "`t`t`t`t`t"
     trimChars := "`t " . vspace
 
@@ -5292,13 +5339,9 @@ initQuickHelp() {
         [C]-PgUp`t`tScroll up 1 page`t
         [A]-R`t`tCD to root dir`t`t
         [A]-T`t`t"type "`t`t`t
-        [A]-Up   [A]-.`tCD to parent dir`t
+        [A]-&#x21e7;   [A]-.`tCD to parent dir`t
         [C]-V`t`tPaste clipboard`t`t
         [A]-X`t`tRun 'exit'`t`t
-        %spacer%
-        %spacer%
-        %spacer%
-        %spacer%
         %spacer%
         %spacer%
     )
@@ -5331,10 +5374,6 @@ initQuickHelp() {
         [W]-```t`tRun DebugView`t`t
         %spacer%
         %spacer%
-        %spacer%
-        %spacer%
-        %spacer%
-        %spacer%
     )
 
     hkMiscHelpEnabled =
@@ -5365,13 +5404,9 @@ initQuickHelp() {
         [C]-D`t`tDelete word`t`t
         [A]-Delete`tDelete line`t`t
         [C]-Delete`tDelete to EOL`t`t
-        [A]-Down`t`tMove line down`t`t
-        [A]-Up`t`tMove line up`t`t
-        [CS]-Up`t`tDuplicate line`t`t
-        %spacer%
-        %spacer%
-        %spacer%
-        %spacer%
+        [A]-&#x21e9;`t`tMove line down`t`t
+        [A]-&#x21e7;`t`tMove line up`t`t
+        [CS]-&#x21e7;`t`tDuplicate line`t`t
     )
     hkTextHelpDisabled := replaceEachLine(hkTextHelpEnabled, spacer)
     hkTextHelp := (hs.config.user.enableHkText ? hkTextHelpEnabled : hkTextHelpDisabled)
@@ -5380,7 +5415,7 @@ initQuickHelp() {
     (LTrim Comments
         Transform HotKeys`t`t`t
         %colLine%
-        [CS]-```t`tEscape text for AHK`t
+        [CA]-```t`tEscape text for AHK`t
         [CS]-A`t`tSort ascending`t`t
         [CAS]-A`t`tSort ascending (case)`t
         [CS]-D`t`tSort descending`t`t
@@ -5398,14 +5433,13 @@ initQuickHelp() {
         [CS]-U`t`tUPPER case`t`t
         [CA]-W`t`tUnwrap wrapped text`t
         [CS]-W`t`tWrap text at width`t
-        [AS]-KEY`t`tTagify text`t`t
-        %A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%%pointer% KEY is: < >`t`t`t
-        [CA]-KEY`t`tWrap in SYMBOLS`t`t
-        [AW]-KEY`t`tWrap each in SYMBOLS`t
-        %A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%%pointer% KEY is: [ ] '`t`t`t
-        [CS]-KEY`t`tWrap in SYMBOLS`t`t
-        [SW]-KEY`t`tWrap each in SYMBOLS`t
-        %A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%%A_SPACE%%pointer% KEY is: ( ) { } " < >`t`t
+        [AS]-[[<>]]`tTagify text`t`t
+        [CW]-KEY`t`tWrap in SYMBOLS`t`t
+        [CAW]-KEY`tWrap each in SYMBOLS`t
+        %A_SPACE%     %pointer% [[``-=[]\;',./]]`t`t`t
+        [SW]-KEY`t`tWrap in SYMBOLS`t`t
+        [ASW]-KEY`tWrap each in SYMBOLS`t
+        %A_SPACE%     %pointer% [[~!@#$`%^&&#42;()_+{}|:"<>?]]`t
     )
     hkTransformHelpDisabled := replaceEachLine(hkTransformHelpEnabled, spacer)
     hkTransformHelp := (hs.config.user.enableHkTransform ? hkTransformHelpEnabled : hkTransformHelpDisabled)
@@ -5414,50 +5448,46 @@ initQuickHelp() {
     (LTrim Comments
         Window HotKeys`t`t`t
         %colLine%
-        [A]-MW&#x21e7;`t`tPageUp`t`t`t
-        [A]-MW&#x21e9;`t`tPageDown`t`t
-        [C]-MW&#x21e7;`t`tScroll left`t`t
-        [C]-MW&#x21e9;`t`tScroll right`t`t
-        [W]-+   [W]-MW&#x21e7;`tIncrease transparency`t
-        [W]--   [W]-MW&#x21e9;`tDecrease transparency`t
+        [A]-MW&#x21d1;MW`t`tPageUp`t`t`t
+        [A]-MW&#x21d3;MW`t`tPageDown`t`t
+        [C]-MW&#x21d0;MW`t`tScroll left`t`t
+        [C]-MW&#x21d2;MW`t`tScroll right`t`t
+        [W]-+   [W]-MW&#x21d1;MW`tIncrease transparency`t
+        [W]--   [W]-MW&#x21d3;MW`tDecrease transparency`t
         [W]-/`t`tShow window info`t
         [W]-Delete`tHide active window`t
-        [W]-Down`t`tMinimize the window`t
+        [W]-&#x21e9;`t`tMinimize the window`t
         [W]-Insert`tShow hidden windows`t
         [W]-Home`t`tCenter current window`t
-        [W]-Left   MW&#x21e6;`tMove to prev monitor`t
+        [W]-&#x21e6;   MW&#x21d0;MW`tMove to prev monitor`t
         [CW]-M`t`tToggle minimized`t
         [CW]-R`t`tQuick Resolutions`t
-        [W]-Right  MW&#x21e8;`tMove to next monitor`t
+        [W]-&#x21e8;   MW&#x21d2;MW`tMove to next monitor`t
         [W]-T`t`tToggle transparency`t
-        [W]-Up`t`tMaximize the window`t
-        [CW]-ARROW`tMove to edge`t`t
-        [SW]-ARROW`tResize to 1x2 or 2x1`t
-        [CW]-NP[047]`tResize to 1x3`t`t
-        [SW]-Down-Left`tResize to 2x2 (SW)`t
-        [SW]-Down-Right`tResize to 2x2 (SE)`t
-        [SW]-Up-Left`tResize to 2x2 (NW)`t
-        [SW]-Up-Right`tResize to 2x2 (NE)`t
-        [AW]-NP[124578]`tResize to 2x3`t`t
-        [CW]-NP[1-3]`tResize to 3x1`t`t
-        [SW]-NP[1-6]`tResize to 3x2`t`t
-        [W]-NP[1-9]`tResize to 3x3`t`t
-        [*W]-[F9-F11]`tResize to 3x4`t`t
-        [*W]-[F5-F8]`tResize to 4x3`t`t
-        [*W]-[F1-F4]`tResize to 4x4`t`t
-        [SW]-Up-Down`tResize to max height`t
-        [SW]-Left-Right`tResize to max width`t
-        %spacer%
-        %vspace%*  = Additional Modifier Key`t`t
-        %vspace%     Shift: Row 4`t`t`t
-        %vspace%     Ctrl : Row 3`t`t`t
-        %vspace%     Alt  : Row 2`t`t`t
-        %vspace%     n/a  : Row 1`t`t`t
+        [W]-&#x21e7;`t`tMaximize the window`t
+        [CW]-[[&#x21e7;&#x21e9;&#x21e6;&#x21e8;]]`tMove to edge`t`t
+        [SW]-[[&#x21e7;&#x21e9;&#x21e6;&#x21e8;]]`tResize to 1x2 or 2x1`t
+        [CW]-[[NP047NP]]`tResize to 1x3`t`t
+        [SW]-[[&#x21e7;&#x21e9;]]-[[&#x21e6;&#x21e8;]]`tResize to 2x2`t`t
+        [AW]-[[NP124578NP]]`tResize to 2x3`t`t
+        [CW]-[[NP1-3NP]]`tResize to 3x1`t`t
+        [SW]-[[NP1-6NP]]`tResize to 3x2`t`t
+        [W]-[[NP1-9NP]]`tResize to 3x3`t`t
+        [*W]-[[F9-F11]]`tResize to 3x4`t`t
+        [*W]-[[F5-F8]]`tResize to 4x3`t`t
+        [*W]-[[F1-F4]]`tResize to 4x4`t`t
+        [SW]-&#x21e7;&#x21e9;`t`tResize to max height`t
+        [SW]-&#x21e6;&#x21e8;`t`tResize to max width`t
+        %vspace%   * = Additional Modifier Key`t`t
+        %vspace%       Shift: Row 4`t`t`t
+        %vspace%       Ctrl : Row 3`t`t`t
+        %vspace%       Alt  : Row 2`t`t`t
+        %vspace%       n/a  : Row 1`t`t`t
     )
     hkWindowHelpDisabled := replaceEachLine(hkWindowHelpEnabled, spacer)
     hkWindowHelp := (hs.config.user.enableHkWindow ? hkWindowHelpEnabled : hkWindowHelpDisabled)
 
-    hkHeader := vspace . " C = Ctrl  |  A = Alt  |  S = Shift  |  W = Win  |  L = Left  |  R = Right  |  MW = MouseWheel  |  NP = NumPad" . eol . eol
+    hkHeader := vspace . " C = Ctrl  |  A = Alt  |  S = Shift  |  W = Win  |  L = Left  |  R = Right  |  MWMouseWheel directionMW  |  NPNumPad keyNP" . eol . eol
     hkCol1 := hkActionHelp . eol . hkDosHelp
     hkCol2 := hkWindowHelp
     hkCol3 := hkTransformHelp . eol . hkTextHelp
@@ -5476,13 +5506,15 @@ initQuickHelp() {
     hkResult := RegexReplace(hkResult, "<", "&lt;")
     hkResult := RegexReplace(hkResult, ">", "&gt;")
     hkResult := RegexReplace(hkResult, "(-)(KEY)", "$1<span class=""explain"">$2</span>")
+    hkResult := RegexReplace(hkResult, "\[\[", "<span class=""mod"">[</span>")
+    hkResult := RegexReplace(hkResult, "\]\]", "<span class=""mod"">]</span>")
     hkResult := RegexReplace(hkResult, "\]-", "]&#x2010;")
     hkResult := RegexReplace(hkResult, "  \|  ", "  &#x2502;  ")
     hkResult := RegexReplace(hkResult, " (C|A|S|W|L|R)( =)", "<span class=""mod"">&nbsp;$1</span>$2")
     hkResult := RegexReplace(hkResult, "([A-Z][^\t\n]+ )(Hot)(Keys)", "<span class=""section"">$1$3</span>`t")
     hkResult := RegexReplace(hkResult, "i)(\[\*?[a-z]+\])", "<span class=""mod"">$1</span>")
-    hkResult := RegexReplace(hkResult, "(NP)", "<span class=""numpad"">$1</span>")
-    hkResult := RegexReplace(hkResult, "(MW)", "<span class=""wheel"">$1</span>")
+    hkResult := RegexReplace(hkResult, "U)NP(.*)NP", "<span class=""numpad"">$1</span>")
+    hkResult := RegexReplace(hkResult, "U)MW(.*)MW", "<span class=""wheel"">$1</span>")
     hkResult := RegexReplace(hkResult, "\*", "<span class=""star"">*</span>")
     hkResult := RegexReplace(hkResult, vspace, "&nbsp;")
 
@@ -5511,30 +5543,31 @@ initQuickHelp() {
         vg%vspace%`tvery good`t`t`t
         yw%vspace%`tYou're welcome`t`t`t
         wyb`tLet me know when you are back`t
-        %spacer%
-        %spacer%
-        %spacer%
-        %spacer%
-        %spacer%
-        %spacer%
-        %spacer%
-        %spacer%
-        %spacer%
-        %spacer%
     )
     hsAliasHelpDisabled := replaceEachLine(hsAliasHelpEnabled, spacer)
     hsAliasHelp := (hs.config.user.enableHsAlias ? hsAliasHelpEnabled : hsAliasHelpDisabled)
 
     hsAutoCorrectHelpEnabled =
     (LTrim Comments
-        %spacer%
         Auto-correct HotStrings`t`t
         %colLine%
-        @ip`tCurrent IP address`t`t
-        #/#`%`tdivide as percent`t`t
-        #`%#%vspace%`tpercent of number`t`t
-        #/#%vspace%`tCommon fractions (n/[2-6,8])`t
-        [c-z]L`t[c-z]:`t`t`t`t
+        @ip`t Current IP address`t`t
+        #/#`%`t divide as percent`t`t
+        #`%#%vspace%`t percent of number`t`t
+        #/#%vspace%`t Common fractions (n/[2-6,8])`t
+        [c-z]L`t [c-z]:`t`t`t`t
+        @bullet`t Bullet symbol (&#x2022;)`t`t
+        @club`t Club symbol (&#x2663;)`t`t`t
+        @copy`t Copyright symbol (&#x00A9;)`t`t
+        @diamond Diamond symbol (&#x2666;)`t`t
+        @ellip`t Ellipsis symbol (&#x2026;)`t`t
+        @heart`t Heart symbol (&#x2665;)`t`t
+        @mdash`t MDash symbol (&#x2014;)`t`t
+        @ndash`t NDash symbol (&#x2013;)`t`t
+        @reg`t Registered symbol (&#x00AE;)`t`t
+        @spade`t Spade symbol (&#x2660;)`t`t
+        @tm`t Trademark symbol (&#x2122;)`t`t
+        @uniXXXX Unicode symbol (X=hex 0-F)`t
     )
     hsAutoCorrectHelpDisabled := replaceEachLine(hsAutoCorrectHelpEnabled, spacer)
     hsAutoCorrectHelp := (hs.config.user.enableHsAutoCorrect ? hsAutoCorrectHelpEnabled : hsAutoCorrectHelpDisabled)
@@ -5644,12 +5677,13 @@ initQuickHelp() {
 
     hsVariableHelpEnabled =
     (LTrim Comments
+        %spacer%
         Variable HotStrings`t`t
         %colLine%
         @@`temail address`t`t`t
         @#`tphone number`t`t`t
         @addr`taddress`t`t`t`t
-        @dob`tyour D.o.B.`t`t`t
+        @dob`tyour date of birth`t`t
         @me`tyour name`t`t`t
         @sig`tyour signature`t`t`t
     )
@@ -5657,8 +5691,8 @@ initQuickHelp() {
     hsVariableHelp := (hs.config.user.enableHsVariables ? hsVariableHelpEnabled : hsVariableHelpDisabled)
 
     hsHeader := vspace . "`t`t`t`tHotStrings ending with " . vspace . " means any whitespace or punctuation character is required." . eol . eol
-    hsCol1 := hsAliasHelp
-    hsCol2 := hsVariableHelp . eol . hsAutoCorrectHelp . eol . hsHtmlHelp
+    hsCol1 := hsAliasHelp . eol . hsVariableHelp
+    hsCol2 := hsAutoCorrectHelp . eol . hsHtmlHelp
     hsCol3 := hsDatesHelp . eol . hsCodeHelp
     hsCol4 := hsDosHelp . eol . hsJiraHelp
 
@@ -6456,7 +6490,6 @@ output(text) {
     ListVars
     WinWaitActive, ahk_class AutoHotkey
     ControlSetText, Edit1, %text%
-    WinWaitClose
 }
 
 pad(value, width, type:="R") {
@@ -6688,7 +6721,7 @@ runEditor(file:="") {
 
 runFunction(value:="", params*) {
     if (value == "") {
-        funcName := trim(ask("Debug", "Enter the name of the function to execute:", 330))
+        funcName := trim(ask(hs.TITLE . " - Debug Function", "Enter the name of the function to execute:", 330))
     }
     else if (IsObject(value)) {
         message("Unable to run a function for type 'object'...", "Invalid parameter", 48)
@@ -7227,7 +7260,7 @@ showSplash(msg,timeout:=1500) {
 showVariable(value:="") {
     type := "Parameter"
     if (!IsObject(value) && value == "") {
-        varName := trim(ask("Debug", "Enter the name of the variable to inspect:", 330))
+        varName := trim(ask(hs.TITLE . " - Debug Variable", "Enter the name of the variable to inspect:", 330))
         if (varName == "") {
             return
         }

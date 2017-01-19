@@ -1,3 +1,61 @@
+Differences in 1.20170119.1
+===========================
+HotKeys
+    - NEW   : New HotKeys for "wrapping text in symbols". Previous only a few symbols were supported:
+              (   [] {} () <> ' "   ). Now all symbols from the US keyboard are supported:
+              (   ` ~ ! @ # $ % ^ & * () - _ = + [] {} \ | ; : ' " <> , . / ?   ). The HotKeys are
+              Ctrl-Win-SYMBOL for wrapping all of the selected text (or just the current line if no
+              text is selected), or Ctrl-Alt-Win-SYMBOL for wrapping each individual line. As a result
+              the previously defined HotKeys for wrapping text have been changed.
+    - NEW   : Added Ctrl-Alt-Insert as an additional HotKey for "Copy Append". The existing HotKey of
+              Ctrl-Alt-C still works. The reason for the new one is for long-time users of DOS where
+              we learned Ctrl-Insert (copy) and Shift-Insert (paste). Some habits cannot be changed!
+              FYI - these legacy HotKeys are still supported by Windows (thankfully).
+    - CHANGE: Changed HotKey for "escaping text for AHK" (Ctrl-Shift-`) to (Ctrl-Alt-`). This was
+              necessary to provide
+HotStrings
+    - NEW   : Added new HotString "@bullet" to generate a bullet character.
+    - NEW   : Added new HotString "@club" to generate a club character.
+    - NEW   : Added new HotString "@copy" to generate a Copyright character.
+    - NEW   : Added new HotString "@diam" to generate a diamond character.
+    - NEW   : Added new HotString "@ellip" to generate a ellipsis character.
+    - NEW   : Added new HotString "@heart" to generate a heart character.
+    - NEW   : Added new HotString "@mdash" to generate a MDash character.
+    - NEW   : Added new HotString "@ndash" to generate a NDash character.
+    - NEW   : Added new HotString "@reg" to generate a Registered character.
+    - NEW   : Added new HotString "@spade" to generate a spade character.
+    - NEW   : Added new HotString "@tm" to generate a Trademark character.
+    - NEW   : Added new HotString "@uniXXXX" to generate the Unicode character represented by the hex value XXXX.
+Functions
+    - CHANGE: Consolidated functionality of several "one-off" functions into hkTransformWrap(). This function
+              now handles all traditional symbols that have keys on a standard US keyboard.
+    - CHANGE: Fixed a bug with output that would cause any thread that called it to stop working.
+    - CHANGE: Fixed a bug with funFunction() and showVariable() that would (rarely) cause the buttons displayed
+              on the dialog to be in the wrong location or the wrong size.
+    - REMOVE: Removed obsolete functions:
+                - hkTransformWrapEachInBrackets()
+                - hkTransformWrapEachInCurlys()
+                - hkTransformWrapEachInParenthesis()
+                - hkTransformWrapEachInDoubleQuotes()
+                - hkTransformWrapEachInSingleQuotes()
+                - hkTransformWrapEachInTags()
+                - hkTransformWrapInBrackets()
+                - hkTransformWrapInCurlys()
+                - hkTransformWrapInParenthesis()
+                - hkTransformWrapInDoubleQuotes()
+                - hkTransformWrapInSingleQuotes()
+                - hkTransformWrapInTags()
+Miscellaneous
+    - CHANGE: Refined the help screen to show better information (color, symbols, etc) using less space. As
+              a result, the help screen is now a little smaller, allowing it to fit onto laptop displays
+              (1366x768) without being cut off.
+    - CHANGE: Modified the configuration for HotKeys that have more than one HotKey associated to it. The
+              entries were written as "hkWindowLeft-1" and "hkWindowLeft-2", but are now written as
+              "hkWindowLeft-01" and "hkWindowLeft-02" to allow them to be sorted properly in the
+              HotScriptDefault.ini file.
+    - CHANGE: Minor code cleanup.
+
+
 Differences in 1.20170110.1
 ===========================
 Miscellaneous
@@ -36,9 +94,9 @@ Functions
 Differences in 1.20161228.1
 ===========================
 HotStrings
-    - NEW   : Add a constant for menu colors. (hs.const.MENU_COLORS) There are seven pre-defined colors.
     - CHANGE: Fixed comment header for Perl and SQL to use the correct indentation.
 Miscellaneous
+    - NEW   : Add a constant for menu colors. (hs.const.MENU_COLORS) There are seven pre-defined colors.
     - CHANGE: Modified the creation of HotScriptFunctions.ahk, HotScriptKeys.ahk, HotScriptStrings.ahk and
               HotScriptVariables.ahk to use correct Windows line ending characters (CRLF) instead of Unix/Linux
               line-endings (LF).
