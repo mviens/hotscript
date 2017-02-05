@@ -1,7 +1,7 @@
 ![](http://i.imgur.com/hMl5pXg.png)
 # HotScript User Manual - v1.20160406.3
 
-Copyright &copy; 2013-2016
+Copyright &copy; 2013-2017
 
 ---
 

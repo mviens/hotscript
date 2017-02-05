@@ -80,4 +80,4 @@ Documentation is being prepared; please check back soon.
 > Using a computer without HotScript is painful.
 
 ### Copyright
-HotScript is copyrighted 2013-2016.
+HotScript is copyrighted 2013-2017.

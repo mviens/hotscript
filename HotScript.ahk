@@ -474,9 +474,10 @@ hkActionToggleDesktopIcons() {
 }
 
 hkActionWindowsExplorer() {
-    exeStr := "ahk_exe i)explorer.exe"
-    if (WinExist(exeStr) && !WinActive(exeStr)) {
-        WinActivate
+    group := "ahk_group ExplorerGroup"
+    hWnd := getHwnd(group)
+    if (hWnd && !WinActive(group)) {
+        WinActivate, ahk_id %hWnd%
     }
     else {
         runTarget("explore " . EnvGet("SystemDrive") . "\")
@@ -626,8 +627,9 @@ hkHotScriptReload() {
 hkHotScriptRunDebugView() {
     exe := "DbgView.exe"
     exeStr := "ahk_exe i)" . exe
-    if (WinExist(exeStr) && !WinActive(exeStr)) {
-        WinActivate
+    hWnd := getHwnd(exeStr)
+    if (hWnd && !WinActive(exeStr)) {
+        WinActivate, ahk_id %hWnd%
     }
     else {
         dvExe := findOnPath(exe)
@@ -757,7 +759,7 @@ hkMiscZoomWindow() {
 }
 
 hkTextDeleteCurrentLine() {
-    if (WinActive("ahk_exe i)EditPadPro\d*\.exe")) {
+    if (WinActive("ahk_group EditPadGroup")) {
         SendInput, ^!y
     }
     else {
@@ -766,7 +768,7 @@ hkTextDeleteCurrentLine() {
 }
 
 hkTextDeleteToEol() {
-    if (hs.config.user.enableHkEpp && WinActive("ahk_exe i)EditPadPro\d*\.exe")) {
+    if (hs.config.user.enableHkEpp && WinActive("ahk_group EditPadGroup")) {
         hkEppDeleteToEol()
     }
     else if (hs.config.user.enableHkDos && isActiveDos()) {
@@ -778,7 +780,7 @@ hkTextDeleteToEol() {
 }
 
 hkTextDeleteWord() {
-    if (WinActive("ahk_exe i)EditPadPro\d*\.exe")) {
+    if (WinActive("ahk_group EditPadGroup")) {
         SendInput, ^{Delete}
     }
     else if (WinActive("ahk_exe i)p4v.exe")) {
@@ -812,7 +814,7 @@ hkTextDeleteWord() {
 }
 
 hkTextDuplicateCurrentLine() {
-    if (WinActive("ahk_exe i)EditPadPro\d*\.exe")) {
+    if (WinActive("ahk_group EditPadGroup")) {
         SendInput, ^+{Up}
     }
     else {
@@ -821,7 +823,7 @@ hkTextDuplicateCurrentLine() {
 }
 
 hkTextMoveCurrentLineDown() {
-    if (WinActive("ahk_exe i)EditPadPro\d*\.exe")) {
+    if (WinActive("ahk_group EditPadGroup")) {
         SendInput, ^!+{Down}
     }
     else if (WinActive("ahk_group ExplorerGroup")) {
@@ -833,7 +835,7 @@ hkTextMoveCurrentLineDown() {
 }
 
 hkTextMoveCurrentLineUp() {
-    if (WinActive("ahk_exe i)EditPadPro\d*\.exe")) {
+    if (WinActive("ahk_group EditPadGroup")) {
         SendInput, ^!+{Up}
     }
     else if (isActiveDos()) {
@@ -865,7 +867,7 @@ hkTransformInvertCase() {
 }
 
 hkTransformLowerCase() {
-    if (WinActive("ahk_exe i)EditPadPro\d*\.exe")) {
+    if (WinActive("ahk_group EditPadGroup")) {
         SendInput, ^+l
     }
     else {
@@ -923,7 +925,7 @@ hkTransformTagify() {
 }
 
 hkTransformTitleCase() {
-    if (WinActive("ahk_class Chrome_WidgetWin_1") || WinActive("ahk_class MozillaWindowClass")) {
+    if (WinActive("ahk_group BrowserGroup")) {
         SendInput, ^+t
     }
     else {
@@ -936,7 +938,7 @@ hkTransformUnwrapText() {
 }
 
 hkTransformUpperCase() {
-    if (WinActive("ahk_exe i)EditPadPro\d*\.exe")) {
+    if (WinActive("ahk_group EditPadGroup")) {
         SendInput, ^+u
     }
     else {
@@ -2002,8 +2004,8 @@ ask(title, prompt, width:=250, rows:=1, defaultValue:="", monoFont:=false) {
     if (width == 250 && rows > 1) {
         width := 600
     }
-    orig_hWnd := WinExist("A")
-    activeMon := getActiveMonitor()
+    orig_hWnd := getHwnd()
+    activeMon := getMonitorForWindow()
     Gui, AskMulti: New,, %title%
     Gui, AskMulti: -DpiScale -MaximizeBox -MinimizeBox +LabelAskMulti_
     font := (monoFont ? "Consolas" : "")
@@ -2054,7 +2056,7 @@ binToHex(ByRef bytes, num:=0) {
         num := len
     }
     origFormat := A_FormatInteger
-    SetFormat Integer, Hex
+    SetFormat, Integer, Hex
     addr := &bytes
     Loop, % num
     {
@@ -2065,7 +2067,7 @@ binToHex(ByRef bytes, num:=0) {
         result .= b
         addr += 2
     }
-    SetFormat Integer, %origFormat%
+    SetFormat, Integer, %origFormat%
     return result
 }
 
@@ -2109,8 +2111,8 @@ centerControls(title, guiName, hPadding:=10, vPadding:=5, spaceBetween:=30, cont
 }
 
 centerWindow(title:="A", monitor:="") {
-    if (monitor == "") {
-        monitor := getActiveMonitor()
+    if (monitor == "" || equalsIgnoreCase(monitor, "A")) {
+        monitor := getMonitorForWindow()
     }
     WinGetPos, winX, winY, winW, winH, %title%
     coord := getCenter(winW, winH, monitor)
@@ -2236,7 +2238,7 @@ checkVersions(forceCheck:=false) {
 }
 
 clipboardAppend(action:="") {
-    action := (setCase(action, "L") == "cut" ? "x" : "c")
+    action := (equalsIgnoreCase(action, "cut") ? "x" : "c")
     origClipboard := Clipboard
     Clipboard := ""
     SendInput, ^%action%
@@ -2286,33 +2288,46 @@ compareStr(a, b, direction:="A") {
     return result
 }
 
-contains(str, values*) {
+contains(source, items*) {
     result := false
     useCase := toBool(A_StringCaseSense)
-    for index, value in values {
-        if (IsObject(value)) {
-            for key, val in value {
-                if (InStr(str, val, useCase)) {
+    if (isArray(source)) {
+        for key, val in source {
+            result := contains(val, items*)
+            if (result) {
+                break
+            }
+        }
+    }
+    else if (IsObject(source)) {
+        message("contains() for objects has not yet been implemented.")
+    }
+    else {
+        for index, value in items {
+            if (IsObject(value)) {
+                for key, val in value {
+                    if (InStr(source, val, useCase)) {
+                        result := true
+                        break
+                    }
+                }
+            }
+            else {
+                if (InStr(source, value, useCase)) {
                     result := true
                     break
                 }
-            }
-        }
-        else {
-            if (InStr(str, value, useCase)) {
-                result := true
-                break
             }
         }
     }
     return result
 }
 
-containsIgnoreCase(str, values*) {
+containsIgnoreCase(source, items*) {
     origCase := A_StringCaseSense
-    StringCaseSense Off
-    result := contains(str, values*)
-    StringCaseSense %origCase%
+    StringCaseSense, Off
+    result := contains(source, items*)
+    StringCaseSense, %origCase%
     return result
 }
 
@@ -3219,10 +3234,9 @@ createNewInExplorer(type:="file") {
 
 createNewOnDesktop(type:="file") {
     folder := A_Desktop
-    type := setCase(type, "L")
     name := getUniqueNewName(folder, type)
     fullName := folder . name
-    if (type == "folder") {
+    if (equalsIgnoreCase(type, "folder")) {
         FileCreateDir, %fullName%
     }
     else {
@@ -3650,6 +3664,16 @@ debugVar(name, value:="{empty}") {
     debug(name . " = [" . value . "]")
 }
 
+deepCopy(obj) {
+    newObj := ObjClone(obj)
+    for k, v in newObj {
+        if (IsObject(v)) {
+            newObj[k] := deepCopy(v)
+        }
+    }
+    return newObj
+}
+
 deleteCurrentLine() {
     selText := getCurrentLine()
     SendInput, {Delete}
@@ -3674,6 +3698,16 @@ duplicateCurrentLine() {
     }
 }
 
+equals(a, b) {
+    return (a == b)
+}
+
+equalsIgnoreCase(a, b) {
+    a := setCase(a, "L")
+    b := setCase(b, "L")
+    return equals(a, b)
+}
+
 endsWith(str, value, caseInsensitive:="") {
     if (toBool(caseInsensitive)) {
         str := setCase(str, "L")
@@ -3683,8 +3717,28 @@ endsWith(str, value, caseInsensitive:="") {
     return (tmp == value)
 }
 
+escapeText(text:="") {
+    isSelected := false
+    if (text == "") {
+        text := getSelectedText()
+        isSelected := true
+    }
+    if (text != "") {
+        text := StrReplace(text, "``", "````")
+        text := StrReplace(text, "%", "``%")
+        text := StrReplace(text, "(", "``(")
+        text := StrReplace(text, ")", "``)")
+        if (isSelected) {
+            replaceSelected(text)
+        }
+    }
+    if (!isSelected) {
+        return text
+    }
+}
+
 extractLocationAndResize() {
-    curMon := hs.vars.monitors[getActiveMonitor()]
+    curMon := hs.vars.monitors[getMonitorForWindow()]
     self := getSelf(1)
     if (RegexMatch(self, "hkWindowResizeTo(\dx\d)_(\d{1,2})", match)) {
         ; TODO - this should also be for Start Menu, SysTray, and maybe others...
@@ -3722,6 +3776,13 @@ extractLocationAndResize() {
             newH := height33
             newW := curMon.workWidth
         }
+        else if (dimension == "1x4") {
+            ; 100% width, 25% height
+            newX := curMon.workLeft
+            newY := (curMon.workTop + (height25 * (heightCount - position)))
+            newH := height25
+            newW := curMon.workWidth
+        }
         else if (dimension == "2x1") {
             ; 50% width, 100% height
             newX := curMon.workLeft + (width50 * (position - 1))
@@ -3741,6 +3802,14 @@ extractLocationAndResize() {
             newX := curMon.workLeft + (width50 * (1 - Mod(position, widthCount)))
             newY := curMon.workTop + (height33 * (position < 3 ? 2 : position < 5 ? 1 : 0))
             newH := height33
+            newW := width50
+        }
+        else if (dimension == "2x4") {
+            ; 50% width, 25% height
+            newX := curMon.workLeft + (width50 * (1 - Mod(position, widthCount)))
+            ; TODO - this needs to be changed to use the correct values!!!
+            newY := curMon.workTop + (height25 * (position < 3 ? 2 : position < 5 ? 1 : 0))
+            newH := height25
             newW := width50
         }
         else if (dimension == "3x1") {
@@ -3773,6 +3842,22 @@ extractLocationAndResize() {
             newY := curMon.workTop + (height25 * (position < 4 ? 3 : position < 7 ? 2 : position < 10 ? 1 : 0))
             newH := height25
             newW := width33
+        }
+        else if (dimension == "4x1") {
+            ; 25% width, 100% height
+            newX := curMon.workLeft + (width25 * (position - 1))
+            newY := curMon.workTop
+            newH := curMon.workHeight
+            newW := width25
+        }
+        else if (dimension == "4x2") {
+            ; 25% width, 50% height
+            ; TODO - this needs to be changed to use the correct values!!!
+            xMap := {0:3, 1:0, 2:1, 3:2}
+            newX := curMon.workLeft + (width25 * xMap[Mod(position, widthCount)])
+            newY := curMon.workTop + (height50 * (position < 5 ? 2 : position < 9 ? 1 : 0))
+            newH := height50
+            newW := width25
         }
         else if (dimension == "4x3") {
             ; 25% width, 33% height
@@ -3868,32 +3953,12 @@ extractLocationAndResize() {
             return
         }
     }
-    hWnd := WinExist("A")
+    hWnd := getHwnd()
     WinGet, minMaxState, MinMax, ahk_id %hWnd%
     if (minMaxState == 1) {
         WinRestore, ahk_id %hWnd%
     }
     WinMove, ahk_id %hWnd%,, %newX%, %newY%, %newW%, %newH%
-}
-
-escapeText(text:="") {
-    isSelected := false
-    if (text == "") {
-        text := getSelectedText()
-        isSelected := true
-    }
-    if (text != "") {
-        text := StrReplace(text, "``", "````")
-        text := StrReplace(text, "%", "``%")
-        text := StrReplace(text, "(", "``(")
-        text := StrReplace(text, ")", "``)")
-        if (isSelected) {
-            replaceSelected(text)
-        }
-    }
-    if (!isSelected) {
-        return text
-    }
 }
 
 findAndRun(exe) {
@@ -3935,53 +4000,21 @@ findOnPath(filename) {
 findOrRunByExe(name) {
     exe := name . ".exe"
     regExe := "i)" . exe
-    if (WinExist("ahk_exe " . regExe)) {
-        WinActivate
+    hWnd := getHwnd("ahk_exe " . regExe)
+    if (hWnd) {
+        WinActivate, ahk_id %hWnd%
     }
     else {
         runTarget(exe)
     }
 }
 
-getActiveMonitor(hWnd:="A") {
-    hWnd := setCase(Trim(hWnd), "U")
-    if (hWnd == "" || hWnd == "A") {
-        hWnd := WinExist("A")
-    }
-    monIdx := 1
-    VarSetCapacity(monInfo, 40)
-    NumPut(40, monInfo)
-
-    if (monitorHandle := DllCall("MonitorFromWindow", "uint", hWnd, "uint", 0x2))
-        && DllCall("GetMonitorInfo", "uint", monitorHandle, "uint", &monInfo) {
-        monitorLeft   := NumGet(monInfo,  4, "Int")
-        monitorTop    := NumGet(monInfo,  8, "Int")
-        monitorRight  := NumGet(monInfo, 12, "Int")
-        monitorBottom := NumGet(monInfo, 16, "Int")
-        workLeft      := NumGet(monInfo, 20, "Int")
-        workTop       := NumGet(monInfo, 24, "Int")
-        workRight     := NumGet(monInfo, 28, "Int")
-        workBottom    := NumGet(monInfo, 32, "Int")
-        isPrimary     := NumGet(monInfo, 36, "Int") & 1
-        SysGet, monitorCount, MonitorCount
-        Loop, % monitorCount
-        {
-            SysGet, curMon, Monitor, %A_Index%
-            if (monitorLeft == curMonLeft && monitorTop == curMonTop && monitorRight == curMonRight && monitorBottom == curMonBottom) {
-                monIdx := A_Index
-                break
-            }
-        }
-    }
-    return monIdx
-}
-
 getActiveProcessID() {
     WinGet, procName, ProcessName, A
     if (procName == "ApplicationFrameHost.exe") {
-        ControlGet, hwnd, Hwnd,, Windows.UI.Core.CoreWindow1, A
-        if (hwnd) {
-            WinGet, procPID, PID, ahk_id %hwnd%
+        ControlGet, hWnd, hWnd,, Windows.UI.Core.CoreWindow1, A
+        if (hWnd) {
+            WinGet, procPID, PID, ahk_id %hWnd%
         }
     }
     else {
@@ -3993,17 +4026,17 @@ getActiveProcessID() {
 getActiveProcessName() {
     WinGet, procName, ProcessName, A
     if (procName == "ApplicationFrameHost.exe") {
-        ControlGet, hwnd, Hwnd,, Windows.UI.Core.CoreWindow1, A
-        if (hwnd) {
-            WinGet, procName, ProcessName, ahk_id %hwnd%
+        ControlGet, hWnd, hWnd,, Windows.UI.Core.CoreWindow1, A
+        if (hWnd) {
+            WinGet, procName, ProcessName, ahk_id %hWnd%
         }
     }
     return procName
 }
 
-getCenter(winW, winH, monitor:="A") {
-    if (monitor == "A") {
-        monitor := getActiveMonitor()
+getCenter(winW, winH, monitor:="") {
+    if (monitor == "" || equalsIgnoreCase(monitor, "A")) {
+        monitor := getMonitorForWindow()
     }
     else {
         if (monitor < hs.vars.monitors.count) {
@@ -4346,13 +4379,13 @@ getEol(text) {
 getExplorerPath() {
     xPath := ""
     if (WinActive("ahk_group ExplorerGroup")) {
-        hwnd := WinExist("A")
-;        debug("hwnd = " . hwnd)
+        hWnd := getHwnd()
+;        debug("hWnd = " . hWnd)
         url := ""
         if (WinActive("ahk_class #32770")) {
             /*
             debug("Checking dialog...")
-            ;url := ControlGetText("ToolbarWindow322", "ahk_id %hwnd%")
+            ;url := ControlGetText("ToolbarWindow322", "ahk_id %hWnd%")
             ControlGetText, url, ToolbarWindow322, Open ahk_class #32770
             debug("url = " . url)
             ; TODO - is this an issue for non-paths? Such as current user or "My Documents'?
@@ -4367,7 +4400,7 @@ getExplorerPath() {
         else {
 ;            debug("Checking windows...")
             for item in ComObjCreate("Shell.Application").Windows {
-                if (url == "" && item.hwnd == hwnd) {
+                if (url == "" && item.hWnd == hWnd) {
                     url := item.LocationURL
                 }
             }
@@ -4378,6 +4411,18 @@ getExplorerPath() {
         }
     }
     return xPath
+}
+
+getHwnd(hWnd:="") {
+    hWnd := Trim(hWnd)
+    if (hWnd == "") {
+        hWnd := "A"
+    }
+    prefix := ""
+    if (is(hWnd, "number")) {
+        hWnd := "ahk_id " . hWnd
+    }
+    return WinExist(hWnd)
 }
 
 getIndent() {
@@ -4433,6 +4478,36 @@ getMmmString() {
     return A_MMM
 }
 
+getMonitorForWindow(hWnd:="") {
+    hWnd := getHwnd(hWnd)
+    monIdx := 1
+    VarSetCapacity(monInfo, 40)
+    NumPut(40, monInfo)
+
+    if (monitorHandle := DllCall("MonitorFromWindow", "uint", hWnd, "uint", 0x2))
+        && DllCall("GetMonitorInfo", "uint", monitorHandle, "uint", &monInfo) {
+        monitorLeft   := NumGet(monInfo,  4, "Int")
+        monitorTop    := NumGet(monInfo,  8, "Int")
+        monitorRight  := NumGet(monInfo, 12, "Int")
+        monitorBottom := NumGet(monInfo, 16, "Int")
+        workLeft      := NumGet(monInfo, 20, "Int")
+        workTop       := NumGet(monInfo, 24, "Int")
+        workRight     := NumGet(monInfo, 28, "Int")
+        workBottom    := NumGet(monInfo, 32, "Int")
+        isPrimary     := NumGet(monInfo, 36, "Int") & 1
+        SysGet, monitorCount, MonitorCount
+        Loop, % monitorCount
+        {
+            SysGet, curMon, Monitor, %A_Index%
+            if (monitorLeft == curMonLeft && monitorTop == curMonTop && monitorRight == curMonRight && monitorBottom == curMonBottom) {
+                monIdx := A_Index
+                break
+            }
+        }
+    }
+    return monIdx
+}
+
 getMonthString() {
     return A_MMMM
 }
@@ -4456,7 +4531,7 @@ getSelectedText() {
 getSelectedTextOrPrompt(title) {
     selText := getSelectedText()
     if (selText == "") {
-        hWnd := WinExist("A")
+        hWnd := getHwnd()
         selText := ask(title, "Enter a phrase or value...", 500)
         WinActivate, ahk_id %hWnd%
     }
@@ -4508,8 +4583,7 @@ getUniqueNewName(ByRef path, type:="file") {
     if (!endsWith(path, "\")) {
         path .= "\"
     }
-    type := setCase(type, "L")
-    if (type != "folder") {
+    if (!equalsIgnoreCase(type, "folder")) {
         type := "file"
     }
     name :=  "New " . type
@@ -4566,6 +4640,44 @@ getVarType(obj) {
     return result
 }
 
+getWindowInfo(hWnd) {
+    static WS_EX_TOOLWINDOW    := 0x00000080
+    static WS_EX_CONTROLPARENT := 0x00010000
+    static WS_EX_APPWINDOW     := 0x00040000
+    static WS_DISABLED         := 0x08000000
+    static WS_VISIBLE          := 0x10000000
+    static WS_CHILD            := 0x40000000
+    static WS_POPUP            := 0x80000000
+    match := "ahk_id " . hWnd
+    win := {}
+    win.hWnd := hWnd
+    win.pid := WinGet("PID", match)
+    win.class := WinGetClass(match)
+    win.exStyle := WinGet("ExStyle", match)
+    win.isHung := DllCall("IsHungAppWindow", "uint", hWnd)
+    win.isSuspended := isProcessSuspended(win.pid)
+    win.monitor := getMonitorForWindow(hWnd)
+    win.processName := WinGet("ProcessName", match)
+    win.processPath := WinGet("ProcessPath", match)
+    minMax := WinGet("MinMax", match)
+    win.state := (minMax == -1 ? "Minimized" : minMax == 1 ? "Maximized" : "Windowed")
+    win.style := WinGet("Style", match)
+    win.title := WinGetTitle(match)
+    WinGetPos, x, y, w, h, % match
+    win.height := h
+    win.width := w
+    win.x := x
+    win.y := y
+    win.isAppWindow := (win.style & WS_EX_APPWINDOW == WS_EX_APPWINDOW)
+    win.isChild := (win.style & WS_CHILD == WS_CHILD)
+    win.isControlParent := (win.style & WS_EX_CONTROLPARENT == WS_EX_CONTROLPARENT)
+    win.isDisabled := (win.style & WS_DISABLED == WS_DISABLED)
+    win.isPopup := (win.style & WS_POPUP == WS_POPUP)
+    win.isToolWindow := (win.style & WS_EX_TOOLWINDOW == WS_EX_TOOLWINDOW)
+    win.isVisible := (win.style & WS_VISIBLE == WS_VISIBLE)
+    return win
+}
+
 hexToBin(ByRef bytes, hex, num:=0)
 {
     needed := Ceil(StrLen(hex) / 2)
@@ -4589,8 +4701,8 @@ hexToBin(ByRef bytes, hex, num:=0)
     }
 }
 
-hideWindow(title:="A") {
-    hWnd := WinExist(title)
+hideWindow(title:="") {
+    hWnd := getHwnd(title)
     ; TODO - this should be an array and persist across reloads, but not across reboots
     ; may need to capture last reboot date/time, and compare
     hs.vars.hiddenWindows .= (hs.vars.hiddenWindows ? "|" : "") . hWnd
@@ -4599,7 +4711,7 @@ hideWindow(title:="A") {
 }
 
 horizontalScroll(direction:="left") {
-    direction := (setCase(direction, "U") == "RIGHT" ? 1 : 0)
+    direction := (equalsIgnoreCase(direction, "right") ? 1 : 0)
     ControlGetFocus, ctrl, A
     Loop, 8 {
         SendMessage, 0x114, %direction%, 0, %ctrl%, A
@@ -4683,24 +4795,24 @@ hotString(trigger, replace, mode:=1, clearTrigger:=true, condition:= "") {
     static hotStrings := {}
     static typed := ""
     static keys := {
-        (LTrim Join
-            symbols: "!""#$%&'()*+,-./:;<=>?@[\]^_``{|}~",
-            num: "0123456789",
-            alpha: "abcdefghijklmnopqrstuvwxyz",
-            other: "BS,Return,Tab,Space",
-            breakKeys: "Left,Right,Up,Down,Home,End,RButton,LButton,LControl,RControl,LAlt,RAlt,AppsKey,Lwin,Rwin,WheelDown,WheelUp,f1,f2,f3,f4,f5,f6,f7,f8,f9,f6,f7,f9,f10,f11,f12",
+        (LTrim Join,
+            symbols: "!""#$%&'()*+,-./:;<=>?@[\]^_``{|}~"
+            num: "0123456789"
+            alpha: "abcdefghijklmnopqrstuvwxyz"
+            other: "BS,Return,Tab,Space"
+            breakKeys: "Left,Right,Up,Down,Home,End,RButton,LButton,LControl,RControl,LAlt,RAlt,AppsKey,Lwin,Rwin,WheelDown,WheelUp,f1,f2,f3,f4,f5,f6,f7,f8,f9,f6,f7,f9,f10,f11,f12"
             numpad: "Numpad0,Numpad1,Numpad2,Numpad3,Numpad4,Numpad5,Numpad6,Numpad7,Numpad8,Numpad9,NumpadDot,NumpadDiv,NumpadMult,NumpadAdd,NumpadSub,NumpadEnter"
         )}
     static effect := {
-        (LTrim Join
-            Return: "`n",
-            Tab: A_Tab,
-            Space: A_Space,
-            Enter: "`n",
-            Dot: ".",
-            Div: "/",
-            Mult: "*",
-            Add: "+",
+        (LTrim Join,
+            Return: "`n"
+            Tab: A_Tab
+            Space: A_Space
+            Enter: "`n"
+            Dot: "."
+            Div: "/"
+            Mult: "*"
+            Add: "+"
             Sub: "-"
         )}
     if (!keysBound) {
@@ -4867,11 +4979,11 @@ hotString(trigger, replace, mode:=1, clearTrigger:=true, condition:= "") {
         }
         else {
             hotStrings[trigger] := {
-                (LTrim Join
-                    trigger: trigger,
-                    replace: replace,
-                    mode: mode,
-                    clearTrigger: clearTrigger,
+                (LTrim Join,
+                    trigger: trigger
+                    replace: replace
+                    mode: mode
+                    clearTrigger: clearTrigger
                     condition: condition
                 )}
         }
@@ -4906,11 +5018,22 @@ hsUnicode() {
 init() {
     ;debug("DBGVIEWCLEAR")
     initInternalVars()
+
+    GroupAdd, BrowserGroup, ahk_class Chrome_WidgetWin_1
+    GroupAdd, BrowserGroup, ahk_class MozillaWindowClass
+
     GroupAdd, DesktopGroup, ahk_class Progman
     GroupAdd, DesktopGroup, ahk_class WorkerW
-    GroupAdd, ExplorerGroup, ahk_class CabinetWClass
+
+    GroupAdd, DosGroup, ahk_class ConsoleWindowClass
+    GroupAdd, DosGroup, ahk_exe cmd.exe
+
+    GroupAdd, EditPadGroup, ahk_exe i)EditPadPro\d*\.exe
+
+    GroupAdd, ExplorerGroup, ahk_class CabinetWClass ahk_exe i)Explorer.exe
     GroupAdd, ExplorerGroup, ahk_class ExploreWClass
     GroupAdd, ExplorerGroup, ahk_class #32770
+
     ; TODO - add group for DOS / PowerShell?
     refreshMonitors()
     SetTimer("refreshMonitors", 30000)
@@ -5178,66 +5301,65 @@ initHotStrings() {
 }
 
 initInternalVars() {
-    hs.VERSION := "1.20170119.1"
+    hs.VERSION := "1.20170205.1"
     hs.TITLE := "HotScript"
     hs.BASENAME := A_ScriptDir . "\" . hs.TITLE
 
     ; const
     hs.const := {
-        (LTrim Join Comments
-            COMMENT_HEADER_LINE: repeatStr("-", 70),
-            END_CHARS_REGEX: "([``~!@#$%^&*()\-_=+[\]{}\\|;:'"",.<>/?\s\t\r\n])",
-            EOL_MAC: "`r",
-            EOL_NIX: "`n",
-            EOL_WIN: "`r`n",
-            EOL_REGEX: "(\r\n|\n|\r)",
-            INDENT: "    ",
-            LINE_SEP: repeatStr(Chr(183), 157),
+        (LTrim Comments Join,
+            COMMENT_HEADER_LINE: repeatStr("-", 70)
+            END_CHARS_REGEX: "([``~!@#$%^&*()\-_=+[\]{}\\|;:'"",.<>/?\s\t\r\n])"
+            EOL_MAC: "`r"
+            EOL_NIX: "`n"
+            EOL_WIN: "`r`n"
+            EOL_REGEX: "(\r\n|\n|\r)"
+            INDENT: "    "
+            LINE_SEP: repeatStr(Chr(183), 157)
             MENU_COLORS: [
-                {color: "FFFEE3", name: "yellow"},
-                {color: "D7DEEF", name: "blue"},
-                {color: "FFE2E3", name: "red"},
-                {color: "D9F4DC", name: "green"},
-                {color: "E4D6EF", name: "purple"},
-                {color: "D2EAEC", name: "cyan"},
-                {color: "FFE3D1", name: "orange"}
-            ],
-            MENU_SEP: "-",
+                {color: "FFFEE3", name: "yellow"}
+                {color: "D7DEEF", name: "blue"}
+                {color: "FFE2E3", name: "red"}
+                {color: "D9F4DC", name: "green"}
+                {color: "E4D6EF", name: "purple"}
+                {color: "D2EAEC", name: "cyan"}
+                {color: "FFE3D1", name: "orange"}]
+            MENU_SEP: "-"
             VIRTUAL_SPACE: Chr(160)
         )}
 
     hs.const.MARKER := {
-        (LTrim Comments Join
-            always_on_top: Chr(0x16C2) . hs.const.VIRTUAL_SPACE,
-            click_through: Chr(0x16BE) . hs.const.VIRTUAL_SPACE,
-            pinned: Chr(0x1368) . hs.const.VIRTUAL_SPACE,    ; reserved for future use
+        (LTrim Comments Join,
+            always_on_top: Chr(0x16C2) . hs.const.VIRTUAL_SPACE
+            click_through: Chr(0x16BE) . hs.const.VIRTUAL_SPACE
+            pinned: Chr(0x1368) . hs.const.VIRTUAL_SPACE    ; reserved for future use
             transparent: Chr(0x2261) . hs.const.VIRTUAL_SPACE
         )}
 
     ; mode
     hs.const.REPLACE_MODE := {
-        (LTrim Comments Join
-            Normal: 1,
-            Case: 2,
-            Regex: 3,
+        (LTrim Comments Join,
+            Normal: 1
+            Case: 2
+            Regex: 3
             Callback: "!CALLBACK!"    ; not to be used directly, for internal use only
         )}
 
     ; file
     hs.file := {
-        (LTrim Join
-            CONFIG_DEFAULT: hs.BASENAME . "Default.ini",
-            CONFIG_USER: hs.BASENAME . "User.ini",
-            UPDATE: hs.BASENAME . "Update.txt",
-            USER_FUNCTIONS: hs.BASENAME . "Functions.ahk",
-            USER_KEYS: hs.BASENAME . "Keys.ahk",
-            USER_STRINGS: hs.BASENAME . "Strings.ahk",
+        (LTrim Comments Join,
+            CONFIG_DEFAULT: hs.BASENAME . "Default.ini"
+            CONFIG_USER: hs.BASENAME . "User.ini"
+            UPDATE: hs.BASENAME . "Update.txt"
+            USER_FUNCTIONS: hs.BASENAME . "Functions.ahk"
+            USER_KEYS: hs.BASENAME . "Keys.ahk"
+            USER_STRINGS: hs.BASENAME . "Strings.ahk"
             USER_VARIABLES: hs.BASENAME . "Variables.ahk"
         )}
     ; help
     hs.help := {}
     hs.help.width := 1275
-    hs.help.height := 638
+    hs.help.height := 624
     ; HotKeys
     hs.hotkeys := {}
     hs.hotkeys.actions := {}
@@ -5247,13 +5369,13 @@ initInternalVars() {
     ; vars
     urls := {}
     urls.ahk := {
-        (LTrim Join
-            download: "http://ahkscript.org/download/1.1/",
+        (LTrim Comments Join,
+            download: "http://ahkscript.org/download/1.1/"
             install: "https://autohotkey.com/download/ahk-install.exe"
         )}
     urls.ahk.version := urls.ahk.download . "version.txt"
     urls[hs.TITLE] := {
-        (LTrim Join
+        (LTrim Comments Join,
             home: "https://github.com/mviens/" . hs.TITLE
         )}
     homeRaw := urls[hs.TITLE].home . "/raw/master/"
@@ -5261,28 +5383,28 @@ initInternalVars() {
     urls[hs.TITLE].history := homeRaw . "changes.txt"
     urls[hs.TITLE].version := homeRaw . "version.txt"
     myVars := {
-        (LTrim Join
-            ADDRESS: "123 Main Street",
-            DOB: "01/01/1980",
-            EMAIL: "firstlast@mail.com",
-            NAME: "First Last",
-            PASSWORD: Chr(209) . Chr(193) . Chr(165) . Chr(165) . Chr(246) . Chr(177) . Chr(243) . Chr(229) . Chr(190),
-            PHONE: "789-456-0123",
-            SIGNATURE: """Sincerely,``n"" . MY_NAME",
+        (LTrim Comments Join,
+            ADDRESS: "123 Main Street"
+            DOB: "01/01/1980"
+            EMAIL: "firstlast@mail.com"
+            NAME: "First Last"
+            PASSWORD: Chr(209) . Chr(193) . Chr(165) . Chr(165) . Chr(246) . Chr(177) . Chr(243) . Chr(229) . Chr(190)
+            PHONE: "789-456-0123"
+            SIGNATURE: """Sincerely,``n"" . MY_NAME"
             WORK_EMAIL: "firstlast@work.com"
         )}
     hs.vars := {
-        (LTrim Join Comments
-            defaultMyVars: myVars,
-            hiddenWindows: "",   ; TODO - this should persist, because if windows were hidden and the script was reloaded, they would be lost
-            monitors: {},
-            uniqueId: "_" . A_Year . "_" . A_ComputerName,
+        (LTrim Comments Join,
+            defaultMyVars: myVars
+            hiddenWindows: ""   ; TODO - this should persist, because if windows were hidden and the script was reloaded, they would be lost
+            monitors: {}
+            uniqueId: "_" . A_Year . "_" . A_ComputerName
             url: urls
         )}
     ; config
     hs.config := {
-        (LTrim Join
-            default: new Config(hs.TITLE),
+        (LTrim Comments Join,
+            default: new Config(hs.TITLE)
             user: new Config
         )}
     hs.config.default.file := hs.file.CONFIG_DEFAULT
@@ -5316,7 +5438,7 @@ initQuickHelp() {
         [AW]-S`t`tExplore 'Startup'`t
         [W]-X`t`tRun Windows Explorer`t
         [W]-PrintScreen`tRun Snipping tool`t
-        [LC]-[RC]`tRun Control Panel`t
+        [LC]-[RC]`t`tRun Control Panel`t
         [A]-Apps`t`tToggle desktop icons`t
     )
     hkActionHelpDisabled := replaceEachLine(hkActionHelpEnabled, spacer)
@@ -5329,7 +5451,7 @@ initQuickHelp() {
         %colLine%
         [A]-C`t`t"copy "`t`t`t
         [A]-D`t`tPUSHD to Downloads`t
-        [C]-Delete`tDelete to EOL`t`t
+        [C]-Delete`t`tDelete to EOL`t`t
         [C]-End`t`tScroll to bottom`t
         [C]-Home`t`tScroll to top`t`t
         [A]-M`t`t"move "`t`t`t
@@ -5339,11 +5461,9 @@ initQuickHelp() {
         [C]-PgUp`t`tScroll up 1 page`t
         [A]-R`t`tCD to root dir`t`t
         [A]-T`t`t"type "`t`t`t
-        [A]-&#x21e7;   [A]-.`tCD to parent dir`t
+        [A]-[[.&#x21e7;]]`t`tCD to parent dir`t
         [C]-V`t`tPaste clipboard`t`t
         [A]-X`t`tRun 'exit'`t`t
-        %spacer%
-        %spacer%
     )
     hkDosHelpDisabled := replaceEachLine(hkDosHelpEnabled, spacer)
     hkDosHelp := (hs.config.user.enableHkDos ? hkDosHelpEnabled : hkDosHelpDisabled)
@@ -5370,10 +5490,8 @@ initQuickHelp() {
         [AW]-F12`t`tRun function`t`t
         [CW]-F12`t`tShow variable`t`t
         [W]-F12`t`tExit %title%`t`t
-        [W]-Pause`tPause %title%`t`t
+        [W]-Pause`t`tPause %title%`t`t
         [W]-```t`tRun DebugView`t`t
-        %spacer%
-        %spacer%
     )
 
     hkMiscHelpEnabled =
@@ -5381,16 +5499,16 @@ initQuickHelp() {
         Miscellaneous HotKeys`t`t
         %colLine%
         [CA]-A`t`tCopy Append`t`t
-        [CA]-C`t`tSwap to clipboard`t`t
+        [CA]-[[C Insert]]`tSwap to clipboard`t`t
         [CA]-D`t`tCreate directory`t`t
         [CA]-F`t`tCreate file`t`t
         [CA]-V`t`tPaste as text`t`t
         [CA]-X`t`tCut Append`t`t
-        [W]-Enter`tPastes 'enter'`t`t
+        [W]-Enter`t`tPastes 'enter'`t`t
         [W]-Tab`t`tPastes 'tab'`t`t
         [W]-V`t`tPreview clipboard`t`t
         [W]-Z`t`tShow zoom window`t`t
-        [AW]-ARROW`tMove mouse 1px`t`t
+        [AW]-ARROW`t`tMove mouse 1px`t`t
         [CAW]-ARROW`tDrag mouse 1px`t`t
     )
     hkMiscHelpDisabled := replaceEachLine(hkMiscHelpEnabled, spacer)
@@ -5402,10 +5520,9 @@ initQuickHelp() {
         Text HotKeys`t`t`t
         %colLine%
         [C]-D`t`tDelete word`t`t
-        [A]-Delete`tDelete line`t`t
-        [C]-Delete`tDelete to EOL`t`t
-        [A]-&#x21e9;`t`tMove line down`t`t
-        [A]-&#x21e7;`t`tMove line up`t`t
+        [A]-Delete`t`tDelete line`t`t
+        [C]-Delete`t`tDelete to EOL`t`t
+        [A]-[[&#x21e7;&#x21e9;]]`t`tMove line up/down`t
         [CS]-&#x21e7;`t`tDuplicate line`t`t
     )
     hkTextHelpDisabled := replaceEachLine(hkTextHelpEnabled, spacer)
@@ -5433,13 +5550,13 @@ initQuickHelp() {
         [CS]-U`t`tUPPER case`t`t
         [CA]-W`t`tUnwrap wrapped text`t
         [CS]-W`t`tWrap text at width`t
-        [AS]-[[<>]]`tTagify text`t`t
+        [AS]-[[<>]]`t`tTagify text`t`t
         [CW]-KEY`t`tWrap in SYMBOLS`t`t
-        [CAW]-KEY`tWrap each in SYMBOLS`t
-        %A_SPACE%     %pointer% [[``-=[]\;',./]]`t`t`t
+        [CAW]-KEY`t`tWrap each in SYMBOLS`t
+        %A_SPACE%   %pointer% [[``-=[]\;',./]]`t`t`t
         [SW]-KEY`t`tWrap in SYMBOLS`t`t
-        [ASW]-KEY`tWrap each in SYMBOLS`t
-        %A_SPACE%     %pointer% [[~!@#$`%^&&#42;()_+{}|:"<>?]]`t
+        [ASW]-KEY`t`tWrap each in SYMBOLS`t
+        %A_SPACE%   %pointer% [[~!@#$`%^&&#42;()_+{}|:"<>?]]`t`t
     )
     hkTransformHelpDisabled := replaceEachLine(hkTransformHelpEnabled, spacer)
     hkTransformHelp := (hs.config.user.enableHkTransform ? hkTransformHelpEnabled : hkTransformHelpDisabled)
@@ -5448,46 +5565,46 @@ initQuickHelp() {
     (LTrim Comments
         Window HotKeys`t`t`t
         %colLine%
-        [A]-MW&#x21d1;MW`t`tPageUp`t`t`t
-        [A]-MW&#x21d3;MW`t`tPageDown`t`t
-        [C]-MW&#x21d0;MW`t`tScroll left`t`t
-        [C]-MW&#x21d2;MW`t`tScroll right`t`t
-        [W]-+   [W]-MW&#x21d1;MW`tIncrease transparency`t
-        [W]--   [W]-MW&#x21d3;MW`tDecrease transparency`t
-        [W]-/`t`tShow window info`t
-        [W]-Delete`tHide active window`t
-        [W]-&#x21e9;`t`tMinimize the window`t
-        [W]-Insert`tShow hidden windows`t
+        [W]-Delete`t`tHide active window`t
+        [W]-Insert`t`tShow hidden windows`t
         [W]-Home`t`tCenter current window`t
-        [W]-&#x21e6;   MW&#x21d0;MW`tMove to prev monitor`t
         [CW]-M`t`tToggle minimized`t
         [CW]-R`t`tQuick Resolutions`t
-        [W]-&#x21e8;   MW&#x21d2;MW`tMove to next monitor`t
         [W]-T`t`tToggle transparency`t
-        [W]-&#x21e7;`t`tMaximize the window`t
+        [W]-/`t`tShow window info`t
+        [W]-[[+-]]~or~[W]-[[MW&#x21d1;&#x21d3;MW]]`tInc./Dec. transparency`t
+        [A]-[[MW&#x21d1;&#x21d3;MW]]`t`tPageUp / PageDown`t
+        [C]-[[MW&#x21d0;&#x21d2;MW]]`t`tScroll left / right`t
+        [W]-[[&#x21e9;&#x21e7;]]`t`tMinimize / Maximize`t
+        [W]-[[&#x21e6;&#x21e8;]]~or~[[MW&#x21d0;&#x21d2;MW]]`tMove to prev/next mon.`t
         [CW]-[[&#x21e7;&#x21e9;&#x21e6;&#x21e8;]]`tMove to edge`t`t
-        [SW]-[[&#x21e7;&#x21e9;&#x21e6;&#x21e8;]]`tResize to 1x2 or 2x1`t
-        [CW]-[[NP047NP]]`tResize to 1x3`t`t
+        [SW]-&#x21e7;&#x21e9;`t`tResize to max height`t
+        [SW]-&#x21e6;&#x21e8;`t`tResize to max width`t
+        [SW]-[[&#x21e7;&#x21e9;&#x21e6;&#x21e8;]]`tResize to 1x2 / 2x1`t
+        [CW]-[[NP047NP]]`t`tResize to 1x3`t`t
         [SW]-[[&#x21e7;&#x21e9;]]-[[&#x21e6;&#x21e8;]]`tResize to 2x2`t`t
         [AW]-[[NP124578NP]]`tResize to 2x3`t`t
-        [CW]-[[NP1-3NP]]`tResize to 3x1`t`t
-        [SW]-[[NP1-6NP]]`tResize to 3x2`t`t
-        [W]-[[NP1-9NP]]`tResize to 3x3`t`t
+        [CW]-[[NP1-3NP]]`t`tResize to 3x1`t`t
+        [SW]-[[NP1-6NP]]`t`tResize to 3x2`t`t
+        [W]-[[NP1-9NP]]`t`tResize to 3x3`t`t
         [*W]-[[F9-F11]]`tResize to 3x4`t`t
         [*W]-[[F5-F8]]`tResize to 4x3`t`t
         [*W]-[[F1-F4]]`tResize to 4x4`t`t
-        [SW]-&#x21e7;&#x21e9;`t`tResize to max height`t
-        [SW]-&#x21e6;&#x21e8;`t`tResize to max width`t
-        %vspace%   * = Additional Modifier Key`t`t
-        %vspace%       Shift: Row 4`t`t`t
-        %vspace%       Ctrl : Row 3`t`t`t
-        %vspace%       Alt  : Row 2`t`t`t
-        %vspace%       n/a  : Row 1`t`t`t
+        %vspace%   * = Additional modifier key`t`t
+        %vspace%       [S]hift: Row 4`t`t`t
+        %vspace%       [C]trl : Row 3`t`t`t
+        %vspace%       [A]lt  : Row 2`t`t`t
+        %vspace%       none : Row 1`t`t`t
+        %spacer%
+        %spacer%
+        %spacer%
     )
     hkWindowHelpDisabled := replaceEachLine(hkWindowHelpEnabled, spacer)
     hkWindowHelp := (hs.config.user.enableHkWindow ? hkWindowHelpEnabled : hkWindowHelpDisabled)
 
-    hkHeader := vspace . " C = Ctrl  |  A = Alt  |  S = Shift  |  W = Win  |  L = Left  |  R = Right  |  MWMouseWheel directionMW  |  NPNumPad keyNP" . eol . eol
+    hkHeader1 := vspace . " A = Alt  |  C = Ctrl  |  S = Shift  |  MWMouseWheel directionMW  |  [[keys]] = press any ONE of these keys"
+    hkHeader2 := vspace . " W = Win  |  L = Left  |  R = Right  |  NPNumPad keyNP            |"
+    hkHeader := hkHeader1 . eol . hkHeader2 . eol . eol
     hkCol1 := hkActionHelp . eol . hkDosHelp
     hkCol2 := hkWindowHelp
     hkCol3 := hkTransformHelp . eol . hkTextHelp
@@ -5505,17 +5622,19 @@ initQuickHelp() {
     }
     hkResult := RegexReplace(hkResult, "<", "&lt;")
     hkResult := RegexReplace(hkResult, ">", "&gt;")
-    hkResult := RegexReplace(hkResult, "(-)(KEY)", "$1<span class=""explain"">$2</span>")
-    hkResult := RegexReplace(hkResult, "\[\[", "<span class=""mod"">[</span>")
-    hkResult := RegexReplace(hkResult, "\]\]", "<span class=""mod"">]</span>")
+    hkResult := RegexReplace(hkResult, "(-)(KEY)", "$1<span class=""key"">$2</span>")
+    hkResult := RegexReplace(hkResult, "\[\[", "<span class=""keys"">[</span>")
+    hkResult := RegexReplace(hkResult, "\]\]", "<span class=""keys"">]</span>")
     hkResult := RegexReplace(hkResult, "\]-", "]&#x2010;")
-    hkResult := RegexReplace(hkResult, "  \|  ", "  &#x2502;  ")
-    hkResult := RegexReplace(hkResult, " (C|A|S|W|L|R)( =)", "<span class=""mod"">&nbsp;$1</span>$2")
+    hkResult := RegexReplace(hkResult, "  \|", "  &#x2502;")
+    hkResult := RegexReplace(hkResult, " (C|A|S|W|L|R)( =)", "&nbsp;<span class=""mod"">$1</span>$2")
     hkResult := RegexReplace(hkResult, "([A-Z][^\t\n]+ )(Hot)(Keys)", "<span class=""section"">$1$3</span>`t")
-    hkResult := RegexReplace(hkResult, "i)(\[\*?[a-z]+\])", "<span class=""mod"">$1</span>")
+    hkResult := RegexReplace(hkResult, "i)(?:\[)(\*?[a-z]+)(?:\])", "<span class=""mod"">$1</span>")
     hkResult := RegexReplace(hkResult, "U)NP(.*)NP", "<span class=""numpad"">$1</span>")
     hkResult := RegexReplace(hkResult, "U)MW(.*)MW", "<span class=""wheel"">$1</span>")
     hkResult := RegexReplace(hkResult, "\*", "<span class=""star"">*</span>")
+    hkResult := RegexReplace(hkResult, "(ONE)", "<span class=""one"">$1</span>")
+    hkResult := RegexReplace(hkResult, "(~or~)", "<span class=""or""> or </span>")
     hkResult := RegexReplace(hkResult, vspace, "&nbsp;")
 
     hsAliasHelpEnabled =
@@ -5556,18 +5675,18 @@ initQuickHelp() {
         #`%#%vspace%`t percent of number`t`t
         #/#%vspace%`t Common fractions (n/[2-6,8])`t
         [c-z]L`t [c-z]:`t`t`t`t
-        @bullet`t Bullet symbol (&#x2022;)`t`t
-        @club`t Club symbol (&#x2663;)`t`t`t
-        @copy`t Copyright symbol (&#x00A9;)`t`t
-        @diamond Diamond symbol (&#x2666;)`t`t
-        @ellip`t Ellipsis symbol (&#x2026;)`t`t
-        @heart`t Heart symbol (&#x2665;)`t`t
-        @mdash`t MDash symbol (&#x2014;)`t`t
-        @ndash`t NDash symbol (&#x2013;)`t`t
-        @reg`t Registered symbol (&#x00AE;)`t`t
-        @spade`t Spade symbol (&#x2660;)`t`t
-        @tm`t Trademark symbol (&#x2122;)`t`t
-        @uniXXXX Unicode symbol (X=hex 0-F)`t
+        @bullet`t Bullet`t`t&#x2022;`t`t
+        @club`t Club`t`t&#x2663;`t`t
+        @copy`t Copyright`t&#x00A9;`t`t
+        @diamond Diamond`t&#x2666;`t`t
+        @ellip`t Ellipsis`t&#x2026;`t`t
+        @heart`t Heart`t`t&#x2665;`t`t
+        @mdash`t MDash`t`t&#x2014;`t`t
+        @ndash`t NDash`t`t&#x2013;`t`t
+        @reg`t Registered`t&#x00AE;`t`t
+        @spade`t Spade`t`t&#x2660;`t`t
+        @tm`t Trademark`t&#x2122;`t`t
+        @uniXXXX Unicode (X=4-digit hex code)`t
     )
     hsAutoCorrectHelpDisabled := replaceEachLine(hsAutoCorrectHelpEnabled, spacer)
     hsAutoCorrectHelp := (hs.config.user.enableHsAutoCorrect ? hsAutoCorrectHelpEnabled : hsAutoCorrectHelpDisabled)
@@ -5710,7 +5829,7 @@ initQuickHelp() {
     hsResult := RegexReplace(hsResult, "(with )(" . vspace . ")( means)", "$1<span class=""sep"">&nbsp;</span>$3")
     hsResult := RegexReplace(hsResult, "([A-Z][^\t\n]+ )(Hot)(Strings)", "<span class=""section"">$1$3</span>`t")
     hsResult := RegexReplace(hsResult, "(\w|#)(" . vspace . ")(\t)", "$1<span class=""sep"">&nbsp;</span>$3")
-    hsResult := RegexReplace(hsResult, "(&lt;)(TAG)", "$1<span class=""explain"">$2</span>")
+    hsResult := RegexReplace(hsResult, "(&lt;)(TAG)", "$1<span class=""key"">$2</span>")
     hsResult := RegexReplace(hsResult, vspace, "&nbsp;")
 
     hsVersion := hs.VERSION
@@ -5727,14 +5846,17 @@ initQuickHelp() {
                     a {color:inherit;text-decoration:none;}
                     a:hover {color:blue;text-decoration:underline;}
                     .bigger {font-size:18px;}
-                    .explain {background-color:#FFC6FF;padding:0px 1px;}
-                    .sep {background-color:#DEA5A4;padding:0px;}
+                    .key {background-color:#FEBF97;padding:0px;}
+                    .keys {color:#0000FF;font-weight:bold;}
                     .mod {color:#FF6961;font-weight:bold;}
-                    .numpad {background-color:#BAD4F4;padding:0px 1px;}
-                    .section {background-color:#DFE9F6;border-radius:5px;font-weight:bold;padding:2px 3px;border:1px solid #99BCE8;}
-                    .star {background-color:#FFCC66;color:#333;font-weight:normal;padding:0px 1px;}
+                    .numpad {background-color:#C6FFC6;padding:0px;}
+                    .one {font-style:italic;font-weight:bold;text-decoration:underline;}
+                    .or {font-style:italic;font-weight:bold;}
+                    .section {background-color:#D2DDFE;border-radius:5px;font-weight:bold;padding:2px 3px;border:1px solid #99BCE8;}
+                    .sep {background-color:#FF6961;padding:0px;}
+                    .star {background-color:#D2FDFE;color:#333;font-weight:normal;padding:0px;}
                     .title {background:#FFE7E7;border:1px solid #DF9898;border-radius:5px;color:#000;float:right;font-family:Roboto,'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:14px;margin:-12px -7px 0 0;padding:1px 8px;text-align:right;}
-                    .wheel {background-color:#C6FFC6;padding:0px 1px;}
+                    .wheel {background-color:#EED2FE;padding:0px;}
                     pre {-moz-tab-size:8;-o-tab-size:8;tab-size:8;line-height:15px;}
                 </style>
             </head>
@@ -5794,12 +5916,12 @@ is(value, type) {
 }
 
 isActiveDos() {
-    return (WinActive("ahk_class ConsoleWindowClass") || WinActive("ahk_exe cmd.exe"))
+    return (WinActive("ahk_group DosClass"))
 }
 
 isActiveCalculator() {
-    procName := SetCase(getActiveProcessName(), "L")
-    return (procName == "calc.exe" || procName == "calculator.exe")
+    procName := getActiveProcessName()
+    return (equalsIgnoreCase(procName, "calc.exe") || equalsIgnoreCase(procName, "calculator.exe"))
 }
 
 isArray(obj) {
@@ -5835,6 +5957,12 @@ isFile(text) {
     return ((FileExist(text) != "") && !isDirectory(text))
 }
 
+isProcessSuspended(pid) {
+    for thread in ComObjGet("winmgmts:").ExecQuery("SELECT * from Win32_Thread WHERE ProcessHandle = " . pid) {
+        return (thread.ThreadWaitReason == 5)
+    }
+}
+
 isUNC(text) {
     return RegexMatch(text, "\\\\[\\~`!@#$%^&\(\)\-_=+\[\]\{\};',.\d\w ]+")
 }
@@ -5843,6 +5971,10 @@ isUrl(text) {
     ; this does not support mailto urls
     pos := RegExMatch(text, "i)^(?:\b[a-z\d.-]+://[^<>\s]+|\b(?:(?:(?:[^\s!@#$%^&*()_=+[\]{}\|;:'"",.<>/?]+)\.)+(?:ac|ad|aero|ae|af|ag|ai|al|am|an|ao|aq|arpa|ar|asia|as|at|au|aw|ax|az|ba|bb|bd|be|bf|bg|bh|biz|bi|bj|bm|bn|bo|br|bs|bt|bv|bw|by|bz|cat|ca|cc|cd|cf|cg|ch|ci|ck|cl|cm|cn|coop|com|co|cr|cu|cv|cx|cy|cz|de|dj|dk|dm|do|dz|ec|edu|ee|eg|er|es|et|eu|fi|fj|fk|fm|fo|fr|ga|gb|gd|ge|gf|gg|gh|gi|gl|gm|gn|gov|gp|gq|gr|gs|gt|gu|gw|gy|hk|hm|hn|hr|ht|hu|id|ie|il|im|info|int|in|io|iq|ir|is|it|je|jm|jobs|jo|jp|ke|kg|kh|ki|km|kn|kp|kr|kw|ky|kz|la|lb|lc|li|lk|lr|ls|lt|lu|lv|ly|ma|mc|md|me|mg|mh|mil|mk|ml|mm|mn|mobi|mo|mp|mq|mr|ms|mt|museum|mu|mv|mw|mx|my|mz|name|na|nc|net|ne|nf|ng|ni|nl|no|np|nr|nu|nz|om|org|pa|pe|pf|pg|ph|pk|pl|pm|pn|pro|pr|ps|pt|pw|py|qa|re|ro|rs|ru|rw|sa|sb|sc|sd|se|sg|sh|si|sj|sk|sl|sm|sn|so|sr|st|su|sv|sy|sz|tc|td|tel|tf|tg|th|tj|tk|tl|tm|tn|to|tp|travel|tr|tt|tv|tw|tz|ua|ug|uk|um|us|uy|uz|va|vc|ve|vg|vi|vn|vu|wf|ws|xn--0zwm56d|xn--11b5bs3a9aj6g|xn--80akhbyknj4f|xn--9t4b11yi5a|xn--deba0ad|xn--g6w251d|xn--hgbk6aj7f53bba|xn--hlcj6aya9esc7a|xn--jxalpdlp|xn--kgbechtv|xn--zckzah|ye|yt|yu|za|zm|zw)|(?:(?:[0-9]|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5])\.){3}(?:[0-9]|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5]))(?:[;/][^#?<>\s]*)?(?:\?[^#<>\s]*)?(?:#[^<>\s]*)?(?!\w))$", matchStr)
     return (pos == 1)
+}
+
+isWindowVisible(hWnd:="") {
+    return DllCall("IsWindowVisible", UInt, getHwnd(hWnd))
 }
 
 isWord(str) {
@@ -6115,10 +6247,7 @@ loadQuickLookupSites(config) {
 }
 
 maximize(hWnd:="") {
-    hWnd := setCase(Trim(hWnd), "U")
-    if (hWnd == "" || hWnd == "A") {
-        hWnd := WinExist("A")
-    }
+    hWnd := getHwnd(hWnd)
     WinGet, minMaxState, MinMax, ahk_id %hWnd%
     if (minMaxState == 1) {
         WinRestore, ahk_id %hWnd%
@@ -6226,6 +6355,55 @@ menuHandler() {
     }
 }
 
+merge(target, values*) {
+    newTarget := deepCopy(target)
+    if (isArray(target)) {
+        mergeArray(newTarget, values*)
+    }
+    else if (IsObject(target)) {
+        mergeObject(newTarget, values*)
+    }
+    return newTarget
+}
+
+mergeArray(target, values*) {
+    if (isArray(target)) {
+        for i, val in values {
+            if (isArray(val)) {
+                for j, val2 in val {
+                    target.push(val2)
+                }
+            }
+            else {
+                target.push(val)
+            }
+        }
+    }
+    else {
+        throw Exception("`nTarget is not an array: [" . toString(target) . "]")
+    }
+}
+
+mergeObject(target, obj) {
+    if (IsObject(target)) {
+        for k, v in obj {
+            if (IsObject(v)) {
+                if (!target.hasKey(k)) {
+                    message("Creating key '" . k . "' for object: " . toString(target))
+                    target[k] := {}
+                }
+                mergeObject(target[k], v)
+            }
+            else {
+                target[k] := v
+            }
+        }
+    }
+    else {
+        throw Exception("`nTarget is not an object: [" . toString(target) . "]")
+    }
+}
+
 message(msg, title:="", options:="0", timeout:="0") {
     if (title == "") {
         title := hs.TITLE
@@ -6254,10 +6432,7 @@ message(msg, title:="", options:="0", timeout:="0") {
 }
 
 minimize(hWnd:="") {
-    hWnd := setCase(Trim(hWnd), "U")
-    if (hWnd == "" || hWnd == "A") {
-        hWnd := WinExist("A")
-    }
+    hWnd := getHwnd(hWnd)
     WinGet, minMaxState, MinMax, ahk_id %hWnd%
     if (minMaxState == -1) {
         WinRestore, ahk_id %hWnd%
@@ -6306,35 +6481,31 @@ moveCurrentLineUp() {
 }
 
 moveToEdge(edge:="T", hWnd:="") {
-    edge := setCase(edge, "U")
-    hWnd := setCase(Trim(hWnd), "U")
-    if (hWnd == "" || hWnd == "A") {
-        hWnd := WinExist("A")
-    }
-    if (WinExist("ahk_id " . hWnd)) {
+    hWnd := getHwnd(hWnd)
+    if (hWnd) {
         WinGetPos, winX, winY, winW, winH, ahk_id %hWnd%
-        monitor := getActiveMonitor()
+        monitor := getMonitorForWindow()
         targetMon := hs.vars.monitors[monitor]
-        if (edge == "B") {
+        if (equalsIgnoreCase(edge, "B")) {
             winY := (targetMon.workBottom - winH)
         }
-        else if (edge == "L") {
+        else if (equalsIgnoreCase(edge, "L")) {
             winX := targetMon.workLeft
         }
-        else if (edge == "R") {
+        else if (equalsIgnoreCase(edge, "R")) {
             winX := (targetMon.workRight - winW)
         }
         else {
             winY := targetMon.workTop
         }
         if (startsWith(A_OSVersion, "10")) {
-            if (edge == "L") {
+            if (equalsIgnoreCase(edge, "L")) {
                 winX += -7
             }
-            else if (edge == "R") {
+            else if (equalsIgnoreCase(edge, "R")) {
                 winX += 7
             }
-            else if (edge == "B") {
+            else if (equalsIgnoreCase(edge, "B")) {
                 winY += 7
             }
         }
@@ -6343,23 +6514,22 @@ moveToEdge(edge:="T", hWnd:="") {
 }
 
 moveToMonitor(hWnd:="", direction:=1, keepRelativeSize:=true) {
-    hWnd := setCase(Trim(hWnd), "U")
-    if (hWnd == "" || hWnd == "A") {
-        hWnd := WinExist("A")
-    }
-    else if (hWnd == "M") {
+    if (equalsIgnoreCase(hWnd, "M")) {
         MouseGetPos(MouseX, MouseY, hWnd)
+    }
+    else {
+        hWnd := getHwnd(hWnd)
     }
     direction := (direction == -1 ? -1 : 1)
     if (!WinExist("ahk_id " . hWnd)) {
         SoundPlay, *64
         ;MsgBox, 16, moveToMonitor() - Error, Specified window does not exist. Window ID = %hWnd%
-        return false
+        return
     }
     refreshMonitors()
     SysGet, monCount, MonitorCount
     if (monCount <= 1) {
-        return true
+        return
     }
 
     Loop, % monCount
@@ -6370,7 +6540,7 @@ moveToMonitor(hWnd:="", direction:=1, keepRelativeSize:=true) {
     }
     WinGet, origMinMax, MinMax, ahk_id %hWnd%
     if (origMinMax == -1) {
-        return false
+        return
     }
     if (origMinMax == 1) {
         WinRestore, ahk_id %hWnd%
@@ -6386,7 +6556,6 @@ moveToMonitor(hWnd:="", direction:=1, keepRelativeSize:=true) {
             break
         }
     }
-
     nextMonitor := curMonitor + direction
     if (nextMonitor > monCount) {
         nextMonitor := 1
@@ -6394,10 +6563,8 @@ moveToMonitor(hWnd:="", direction:=1, keepRelativeSize:=true) {
     else if (nextMonitor <= 0) {
         nextMonitor := monCount
     }
-
     WinMoveX := (WinX - Monitor%curMonitor%Left) * Monitor%NextMonitor%Width // Monitor%curMonitor%Width + Monitor%NextMonitor%Left
     WinMoveY := (WinY - Monitor%curMonitor%Top) * Monitor%NextMonitor%Height // Monitor%curMonitor%Height + Monitor%NextMonitor%Top
-
     WinGetClass, winClass, A
     if (winClass == "CalcFrame") {
         ; TODO - also for Windows Start menu (check Start Menu for Win10 too)
@@ -6411,12 +6578,10 @@ moveToMonitor(hWnd:="", direction:=1, keepRelativeSize:=true) {
         WinMoveW := WinW
         WinMoveH := WinH
     }
-
     WinMove, ahk_id %hWnd%,, WinMoveX, WinMoveY, WinMoveW, WinMoveH
     if (origMinMax == 1) {
         WinMaximize, ahk_id %hWnd%
     }
-    return true
 }
 
 numberRemoveSelected() {
@@ -6493,8 +6658,7 @@ output(text) {
 }
 
 pad(value, width, type:="R") {
-    type := setCase(type, "L")
-    type := (type == "l" || type == "left" ? "L" : "R")
+    type := (equalsIgnoreCase(type, "l") || equalsIgnoreCase(type, "left") ? "L" : "R")
     Loop % (width - StrLen(value))
     {
         value := (type == "L" ? A_Space . value : value . A_Space)
@@ -6586,10 +6750,10 @@ registerKeys() {
                 if (kvalue != "") {
                     funcName := RegExReplace(action, "-\d+$", "$1")
                     if (section == "hkDos") {
-                        restrict := "ahk_class ConsoleWindowClass"
+                        restrict := "ahk_group DosGroup"
                     }
                     else if (section == "hkEpp") {
-                        restrict := "ahk_exe i)EditPadPro\d*\.exe"
+                        restrict := "ahk_group EditPadGroup"
                     }
                     else {
                         restrict := ""
@@ -6672,19 +6836,20 @@ reverse(str) {
 }
 
 runAhkHelp() {
-    if (WinExist("AutoHotkey Help")) {
-        WinActivate
-    }
-    else {
+    hWnd := getHwnd("AutoHotkey Help")
+    if (!hWnd) {
         SplitPath(A_AhkPath, , ahkPath)
         runTarget(ahkPath . "\AutoHotkey.chm")
+        hWnd := getHwnd("AutoHotkey Help")
     }
+    WinActivate, ahk_id %hWnd%
 }
 
 runDos(path:="") {
-    exeStr := "ahk_exe i)cmd.exe"
-    if (path == "" && WinExist(exeStr) && !WinActive(exeStr)) {
-        WinActivate
+    exeStr := "ahk_group DosGroup"
+    hWnd := getHwnd(exeStr)
+    if (path == "" && hWnd && !WinActive(exeStr)) {
+        WinActivate, ahk_id %hWnd%
     }
     else {
         if (!FileExist(path)) {
@@ -6700,8 +6865,9 @@ runDos(path:="") {
 runEditor(file:="") {
     SplitPath(hs.config.user.editor, editorName, editorPath)
     regExe := "i)" . StrReplace(editorName, ".", "\.")
-    if (WinExist("ahk_exe " . regExe)) {
-        WinActivate
+    hWnd := getHwnd("ahk_exe " . regExe)
+    if (hWnd) {
+        WinActivate, ahk_id %hWnd%
     }
     target := hs.config.user.editor
     if (FileExist(target) == "") {
@@ -6827,7 +6993,7 @@ runQuickResolution() {
 
     doCustomResolution:
         title := "Custom Resolution"
-        activeMon := getActiveMonitor()
+        activeMon := getMonitorForWindow()
         Gui, CustomRes: New,, %title%
         Gui, CustomRes: -DpiScale -MaximizeBox -MinimizeBox +LabelCustomRes_
         Gui, CustomRes: Margin, 5
@@ -6881,8 +7047,9 @@ runSelectedText() {
 }
 
 runServices() {
-    if (WinExist("Services")) {
-        WinActivate
+    hWnd := getHwnd("Services")
+    if (hWnd) {
+        WinActivate, ahk_id %hWnd%
     }
     else {
         runTarget("services.msc")
@@ -7048,18 +7215,17 @@ saveQuickLookupSites(config) {
 }
 
 scrollWindow(direction, title:="A") {
-    direction := setCase(direction, "L")
     ; see https://msdn.microsoft.com/en-us/library/windows/desktop/bb787577(v=vs.85).aspx
-    if (direction == "bottom") {
+    if (equalsIgnoreCase(direction, "bottom")) {
         scroll := 7
     }
-    else if (direction == "pgup") {
+    else if (equalsIgnoreCase(direction, "pgup")) {
         scroll := 2
     }
-    else if (direction == "pgdn") {
+    else if (equalsIgnoreCase(direction, "pgdn")) {
         scroll := 3
     }
-    else if (direction == "top") {
+    else if (equalsIgnoreCase(direction, "top")) {
         scroll := 6
     }
     control := ControlGetFocus("A")
@@ -7078,7 +7244,7 @@ selectCurrentLine() {
 
 selectInExplorer(list) {
     if (WinActive("ahk_group ExplorerGroup")) {
-        hwnd := WinExist("A")
+        hwnd := getHwnd()
         for win in ComObjCreate("Shell.Application").Windows {
             if (win.hwnd != hwnd) {
                 continue
@@ -7171,13 +7337,10 @@ setLastUpdateCheck(date) {
     IniWrite(hs.config.user.file, "config", "lastUpdateCheck", hs.config.user.lastUpdateCheck)
 }
 
-setTransparency(increase:=true, hWnd:="A") {
+setTransparency(increase:=true, hWnd:="") {
     MAX := 255
     MIN := 7
-    hWnd := setCase(Trim(hWnd), "U")
-    if (hWnd == "" || hWnd == "A") {
-        hWnd := WinExist("A")
-    }
+    hWnd := getHwnd(hWnd)
     WinGet, curTrans, Transparent, ahk_id %hWnd%
     if (!curTrans) {
         curTrans := MAX
@@ -7233,7 +7396,7 @@ showQuickHelp(waitforKey) {
         isShowing := false
         return
     }
-    activeMon := getActiveMonitor()
+    activeMon := getMonitorForWindow()
     Gui, QuickHelp: Show, Center w%helpWidth% h%helpHeight%
     centerWindow(, activeMon)
     isShowing := true
@@ -7276,34 +7439,47 @@ showVariable(value:="") {
     output(type . " = " . toString(value))
 }
 
-showWindowInfo(title:="A") {
-    hwnd := WinExist(title)
-    activeMon := getActiveMonitor()
-    WinGet, pid, PID, %title%
-    WinGetClass, class, %title%
-    WinGetActiveStats, title, width, height, x, y
-    process := getActiveProcessName()
-
-    info =
+showWindowInfo(title:="") {
+    hWnd := getHwnd(title)
+    win := getWindowInfo(hWnd)
+    maxLen := StrLen(win.processPath)
+    if (maxLen < StrLen(win.title)) {
+        maxLen := StrLen(win.title)
+    }
+    line := repeatStr(Chr(0x2500), 18 + maxLen)
+    info := "
     (LTrim
-        Resolution : %width%x%height%
-        Coordinates: x:%x%, y:%y%
-
-        Title      : %title%
-        Executable : %process%
-
-        HWND       : %hwnd%
-        Process ID : %pid%
-        Class      : %class%
-    )
+        Resolution      : width=" win.width ", height=" win.height "
+        Coordinates     : x:" win.x ", y:" win.y "
+        Window State    : " win.state "
+        Monitor #       : " win.monitor "
+        " line "
+        Title           : " win.title "
+        Executable      : " win.processPath "
+        " line "
+        hWnd            : " win.hWnd "
+        Process ID      : " win.pid "
+        Class           : " win.class "
+        Style           : " win.style "
+        ExStyle         : " win.exStyle "
+        " line "
+        isAppWindow     : " boolToStr(win.isAppWindow) "
+        isChild         : " boolToStr(win.isChild) "
+        isControlParent : " boolToStr(win.isControlParent) "
+        isDisables      : " boolToStr(win.isDisabled) "
+        isHung          : " boolToStr(win.isHung) "
+        isPopup         : " boolToStr(win.isPopup) "
+        isSuspended     : " boolToStr(win.isSuspended) "
+        isToolWindow    : " boolToStr(win.isToolWindow) "
+        isVisible       : " boolToStr(win.isVisible) "
+    )"
 
     Gui, WinInfo: New
     Gui, WinInfo: +LabelWinInfo_
-    Gui, WinInfo: +ToolWindow
     Gui, WinInfo: Font, s11, Consolas
     Gui, WinInfo: Add, Text,, %info%
     Gui, WinInfo: Show,, Window Information
-    centerWindow("Window Information", activeMon)
+    centerWindow("Window Information", win.monitor)
     return
 
     WinInfo_Close:
@@ -7313,10 +7489,9 @@ showWindowInfo(title:="A") {
 }
 
 sortSelected(direction:="", ignoreCase:=true) {
-    direction := setCase(direction, "L")
     selText := getSelectedText()
     if (selText != "") {
-        Sort(selText, "F compareStr" . (direction == "d" ? "Desc" : "Asc") . (ignoreCase ? "NoCase" : ""))
+        Sort(selText, "F compareStr" . (equalsIgnoreCase(direction, "d") ? "Desc" : "Asc") . (ignoreCase ? "NoCase" : ""))
         replaceSelected(selText)
     }
 }
@@ -7623,11 +7798,9 @@ templateSql() {
     pasteTemplate(template, "", templateKeys)
 }
 
-toBool(value)
-{
+toBool(value) {
     static trueList := "1,active,enabled,on,t,true,y,yes"
-    value := setCase(value, "L")
-    value := Trim(value)
+    value := Trim(setCase(value, "L"))
     result := false
     if (is(value, "Number") && value != 0) {
         result := true
@@ -7645,11 +7818,8 @@ toComma(value) {
     return value
 }
 
-toggleAlwaysOnTop(hWnd:="A") {
-    hWnd := setCase(Trim(hWnd), "U")
-    if (hWnd == "" || hWnd == "A") {
-        hWnd := WinExist("A")
-    }
+toggleAlwaysOnTop(hWnd:="") {
+    hWnd := getHwnd(hWnd)
     WinGet, ExStyle, ExStyle, ahk_id %hWnd%
     currentModeAoT := (ExStyle & 0x8 ? "on" : "off")
     currentModeCT := (ExStyle & 0x20 ? "on" : "off")
@@ -7674,11 +7844,8 @@ toggleAlwaysOnTop(hWnd:="A") {
     showSplash("'Always-on-top' mode is " . newState . "...")
 }
 
-toggleClickThrough(hWnd:="A") {
-    hWnd := setCase(Trim(hWnd), "U")
-    if (hWnd == "" || hWnd == "A") {
-        hWnd := WinExist("A")
-    }
+toggleClickThrough(hWnd:="") {
+    hWnd := getHwnd(hWnd)
     WinGet, ExStyle, ExStyle, ahk_id %hWnd%
     currentModeAoT := (ExStyle & 0x8 ? "on" : "off")
     currentModeCT := (ExStyle & 0x20 ? "on" : "off")
@@ -7710,7 +7877,7 @@ toggleDesktopIcons() {
     if (hWnd == "") {
         hWnd := ControlGet("hWnd", "", "SysListView321", "ahk_class WorkerW")
     }
-    if (DllCall("IsWindowVisible", UInt, hWnd)) {
+    if (isWindowVisible(hWnd)) {
         WinHide, ahk_id %hWnd%
     }
     else {
@@ -7727,7 +7894,7 @@ toggleMinimized() {
         WinActivate, ahk_id %lastWindow%
     }
     else {
-        lastWindow := WinExist("A")
+        lastWindow := getHwnd()
         WinMinimizeAll
     }
     allMinimized := !allMinimized
@@ -7748,11 +7915,8 @@ toggleSuspend() {
     showSplash(msg)
 }
 
-toggleTransparency(hWnd:="A") {
-    hWnd := setCase(Trim(hWnd), "U")
-    if (hWnd == "" || hWnd == "A") {
-        hWnd := WinExist("A")
-    }
+toggleTransparency(hWnd:="") {
+    hWnd := getHwnd(hWnd)
     WinGet, curTrans, Transparent, ahk_id %hWnd%
     WinGetTitle, currentTitle, ahk_id %hWnd%
     if (curTrans) {
@@ -7764,6 +7928,14 @@ toggleTransparency(hWnd:="A") {
         newTitle := hs.const.MARKER.transparent . "(50%) " + currentTitle
     }
     WinSetTitle, ahk_id %hWnd%, , %newTitle%
+}
+
+toHex(value) {
+    origFormat := A_FormatInteger
+    SetFormat, Integer, Hex
+    value += 0
+    SetFormat, Integer, %origFormat%
+    return value
 }
 
 toSafeName(value) {
@@ -7788,7 +7960,7 @@ toString(obj, depth:=0, indent:="") {
         }
         pad := indent . hs.const.INDENT
         for key, value in obj {
-            result .= (depth == 0 && StrLen(result) == 0 && getSize(obj) > 1 ? hs.const.EOL_WIN : "") . pad
+            result .= (depth == 0 && StrLen(result) == 0 && getSize(obj) > 0 ? hs.const.EOL_WIN : "") . pad
             if (IsFunc(value)) {
                 result .= pad(key, keyWidth) . " = <" . (isObject(value) ? value.name : value) . "> --> function()" . hs.const.EOL_WIN
             }
@@ -7833,19 +8005,21 @@ toString(obj, depth:=0, indent:="") {
     return result
 }
 
-transformSelected(type,types:="I|L|R|S|T|U") {
+transformSelected(type) {
+    static types:="I|L|R|S|T|U"
     type := setCase(type, "L")
     if (!InStr(types, type)) {
         message("Illegal value for 'type' specified as: [" . type . "]", "transformSelected() - Invalid parameter", 16)
-        return false
     }
-    selText := getSelectedText()
-    if (selText != "") {
-        if (type == "r") {
-            replaceSelected(reverse(selText))
-        }
-        else {
-            replaceSelected(setCase(selText, type))
+    else {
+        selText := getSelectedText()
+        if (selText != "") {
+            if (type == "r") {
+                replaceSelected(reverse(selText))
+            }
+            else {
+                replaceSelected(setCase(selText, type))
+            }
         }
     }
 }

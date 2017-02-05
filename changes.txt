@@ -1,3 +1,33 @@
+Differences in 1.20170205.1
+===========================
+Functions
+    - NEW   : Added the following new functions:
+                - deepCopy()
+                - equals()
+                - equalsIgnoreCase()
+                - getHwnd()
+                - getWindowInfo()
+                - merge()
+                - mergeArray()
+                - mergeObject()
+                - isWindowVisible()
+                - toHex()
+    - NEW   : Added new window resizing dimensions: 1x4, 2x4, 4x1 and 4x2. There is not a HotKey for
+              these because there are no remaining good combinations to be used. There is however
+              a new feature in the works to allow for easily choosing screens dimensions which will
+              free up most of the HotKeys currently used by window resizing/positioning. Stay tuned!
+    - CHANGE: Added much more information to showWindowInfo().
+    - CHANGE: Fixed a minor formatting bug with toString().
+    - CHANGE: Renamed getActiveMonitor() to getMonitorForWindow().
+    - CHANGE: Modified contains() to handle arrays and objects. This also effects containsIgnoreCase().
+Miscellaneous
+    - CHANGE: Refined the help screen to combine similar HotKeys to use less space. Improved
+              consistency for HotKeys that have more than one combination. Better use of colors. The
+              more complex HotKeys should be easier to understand. It is just a quick help screen,
+              and meant to be full documentation.
+    - CHANGE: Some internal refactoring for consistency and reliablity.
+
+
 Differences in 1.20170119.1
 ===========================
 HotKeys
