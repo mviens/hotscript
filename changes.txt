@@ -1,3 +1,28 @@
+Differences in 1.20170206.3
+===========================
+HotKeys
+    - NEW   : Added Ctrl-Alt-. to delete whitespace at the end of each line of text that is selected.
+              If no text is selected, all text will automatically become selected, then whitespace
+              will be deleted.
+    - NEW   : Added Ctrl-Shift-Space to delete all blanks lines from text that is selected. If no
+              text is selected, all text will automatically become selected, then blank lines will
+              be deleted.
+Functions
+    - NEW   : Added the necessary support functions for resizing windows to 1x4, 2x4, 4x1 and 4x2.
+Miscellaneous
+    - CHANGE: Corrected the dimension calculations associated with 2x4 and 4x2.
+    - CHANGE: Fixed bug introduced in 1.20170205.1 where anything relying on isActiveDos() would not
+              function properly. This was most noticeable with HotStrings not working in DOS.
+    - CHANGE: Fixed bug introduced in 1.20170119.1 where many of the window resizing HotKeys would
+              not move/resize the window, but would instead paste the name of the function related
+              to the HotKey.
+    - CHANGE: Fixed a very old bug where typing the trigger of a HotString that ends with a Tab
+              character, HotScript would go into an infinite loop of holding down the Shift and Left-
+              Arrow keys. This has been changed to ignore the HotString (only when it ends in a Tab
+              character and only when in a DOS window). It seems far more likely the intent from the
+              user would be filename/directory completion.
+
+
 Differences in 1.20170205.1
 ===========================
 Functions

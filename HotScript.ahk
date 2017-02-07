@@ -758,6 +758,10 @@ hkMiscZoomWindow() {
     zoomStart()
 }
 
+hkTextDeleteBlankLines() {
+    deleteBlankLines()
+}
+
 hkTextDeleteCurrentLine() {
     if (WinActive("ahk_group EditPadGroup")) {
         SendInput, ^!y
@@ -846,6 +850,15 @@ hkTextMoveCurrentLineUp() {
     }
     else {
         moveCurrentLineUp()
+    }
+}
+
+hkTextTrimLines() {
+    if (WinActive("ahk_group EditPadGroup")) {
+        SendInput, ^!.
+    }
+    else {
+        trimLines()
     }
 }
 
@@ -1103,179 +1116,227 @@ hkWindowResize() {
     runQuickResolution()
 }
 
-hkWindowResizeTo1x2_1() {
+hkWindowResizeTo1x2_01() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo1x2_2() {
+hkWindowResizeTo1x2_02() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo1x3_1() {
+hkWindowResizeTo1x3_01() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo1x3_2() {
+hkWindowResizeTo1x3_02() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo1x3_3() {
+hkWindowResizeTo1x3_03() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo2x1_1() {
+hkWindowResizeTo1x4_01() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo2x1_2() {
+hkWindowResizeTo1x4_02() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo2x2_1() {
+hkWindowResizeTo1x4_03() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo2x2_2() {
+hkWindowResizeTo1x4_04() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo2x2_3() {
+hkWindowResizeTo2x1_01() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo2x2_4() {
+hkWindowResizeTo2x1_02() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo2x3_1() {
+hkWindowResizeTo2x2_01() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo2x3_2() {
+hkWindowResizeTo2x2_02() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo2x3_3() {
+hkWindowResizeTo2x2_03() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo2x3_4() {
+hkWindowResizeTo2x2_04() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo2x3_5() {
+hkWindowResizeTo2x3_01() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo2x3_6() {
+hkWindowResizeTo2x3_02() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo3x1_1() {
+hkWindowResizeTo2x3_03() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo3x1_2() {
+hkWindowResizeTo2x3_04() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo3x1_3() {
+hkWindowResizeTo2x3_05() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo3x2_1() {
+hkWindowResizeTo2x3_06() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo3x2_2() {
+hkWindowResizeTo2x4_01() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo3x2_3() {
+hkWindowResizeTo2x4_02() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo3x2_4() {
+hkWindowResizeTo2x4_03() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo3x2_5() {
+hkWindowResizeTo2x4_04() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo3x2_6() {
+hkWindowResizeTo2x4_05() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo3x3_1() {
+hkWindowResizeTo2x4_06() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo3x3_2() {
+hkWindowResizeTo2x4_07() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo3x3_3() {
+hkWindowResizeTo2x4_08() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo3x3_4() {
+hkWindowResizeTo3x1_01() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo3x3_5() {
+hkWindowResizeTo3x1_02() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo3x3_6() {
+hkWindowResizeTo3x1_03() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo3x3_7() {
+hkWindowResizeTo3x2_01() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo3x3_8() {
+hkWindowResizeTo3x2_02() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo3x3_9() {
+hkWindowResizeTo3x2_03() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo3x4_1() {
+hkWindowResizeTo3x2_04() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo3x4_2() {
+hkWindowResizeTo3x2_05() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo3x4_3() {
+hkWindowResizeTo3x2_06() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo3x4_4() {
+hkWindowResizeTo3x3_01() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo3x4_5() {
+hkWindowResizeTo3x3_02() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo3x4_6() {
+hkWindowResizeTo3x3_03() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo3x4_7() {
+hkWindowResizeTo3x3_04() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo3x4_8() {
+hkWindowResizeTo3x3_05() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo3x4_9() {
+hkWindowResizeTo3x3_06() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo3x3_07() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo3x3_08() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo3x3_09() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo3x4_01() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo3x4_02() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo3x4_03() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo3x4_04() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo3x4_05() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo3x4_06() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo3x4_07() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo3x4_08() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo3x4_09() {
     extractLocationAndResize()
 }
 
@@ -1291,39 +1352,87 @@ hkWindowResizeTo3x4_12() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo4x3_1() {
+hkWindowResizeTo4x1_01() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo4x3_2() {
+hkWindowResizeTo4x1_02() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo4x3_3() {
+hkWindowResizeTo4x1_03() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo4x3_4() {
+hkWindowResizeTo4x1_04() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo4x3_5() {
+hkWindowResizeTo4x2_01() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo4x3_6() {
+hkWindowResizeTo4x2_02() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo4x3_7() {
+hkWindowResizeTo4x2_03() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo4x3_8() {
+hkWindowResizeTo4x2_04() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo4x3_9() {
+hkWindowResizeTo4x2_05() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo4x2_06() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo4x2_07() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo4x2_08() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo4x3_01() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo4x3_02() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo4x3_03() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo4x3_04() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo4x3_05() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo4x3_06() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo4x3_07() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo4x3_08() {
+    extractLocationAndResize()
+}
+
+hkWindowResizeTo4x3_09() {
     extractLocationAndResize()
 }
 
@@ -1339,39 +1448,39 @@ hkWindowResizeTo4x3_12() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo4x4_1() {
+hkWindowResizeTo4x4_01() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo4x4_2() {
+hkWindowResizeTo4x4_02() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo4x4_3() {
+hkWindowResizeTo4x4_03() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo4x4_4() {
+hkWindowResizeTo4x4_04() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo4x4_5() {
+hkWindowResizeTo4x4_05() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo4x4_6() {
+hkWindowResizeTo4x4_06() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo4x4_7() {
+hkWindowResizeTo4x4_07() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo4x4_8() {
+hkWindowResizeTo4x4_08() {
     extractLocationAndResize()
 }
 
-hkWindowResizeTo4x4_9() {
+hkWindowResizeTo4x4_09() {
     extractLocationAndResize()
 }
 
@@ -1417,28 +1526,28 @@ hkWindowResizeToAnchor() {
     isRight := GetKeyState("Right", "p")
     direction := (isUp ? "T" : "") . (isDown ? "B" : "") . (isLeft ? "L" : "") . (isRight ? "R" : "")
     if (direction == "B") {
-        hkWindowResizeTo1x2_1()
+        hkWindowResizeTo1x2_01()
     }
     else if (direction == "T") {
-        hkWindowResizeTo1x2_2()
+        hkWindowResizeTo1x2_02()
     }
     else if (direction == "L") {
-        hkWindowResizeTo2x1_1()
+        hkWindowResizeTo2x1_01()
     }
     else if (direction == "R") {
-        hkWindowResizeTo2x1_2()
+        hkWindowResizeTo2x1_02()
     }
     else if (direction == "BL") {
-        hkWindowResizeTo2x2_1()
+        hkWindowResizeTo2x2_01()
     }
     else if (direction == "BR") {
-        hkWindowResizeTo2x2_2()
+        hkWindowResizeTo2x2_02()
     }
     else if (direction == "TL") {
-        hkWindowResizeTo2x2_3()
+        hkWindowResizeTo2x2_03()
     }
     else if (direction == "TR") {
-        hkWindowResizeTo2x2_4()
+        hkWindowResizeTo2x2_04()
     }
     else if (direction == "TB") {
         if (contains(A_ThisHotKey, "up")) {
@@ -3674,6 +3783,32 @@ deepCopy(obj) {
     return newObj
 }
 
+deleteBlankLines() {
+    selText := getSelectedText()
+    if (selText == "") {
+        SendInput, ^a
+        selText := getSelectedText()
+    }
+    if (selText != "") {
+        eol := getEol(selText)
+        hasEol := endsWith(selText, eol)
+        if (hasEol) {
+            selText := SubStr(selText, 1, 0 - StrLen(eol))
+        }
+        newText := ""
+        Loop, Parse, selText, % hs.const.EOL_NIX, % hs.const.EOL_MAC
+        {
+            if (A_LoopField != "") {
+                newText .= A_LoopField . eol
+            }
+        }
+        if (!hasEol) {
+            newText := SubStr(newText, 1, 0 - StrLen(eol))
+        }
+        replaceSelected(newText)
+    }
+}
+
 deleteCurrentLine() {
     selText := getCurrentLine()
     SendInput, {Delete}
@@ -3807,8 +3942,7 @@ extractLocationAndResize() {
         else if (dimension == "2x4") {
             ; 50% width, 25% height
             newX := curMon.workLeft + (width50 * (1 - Mod(position, widthCount)))
-            ; TODO - this needs to be changed to use the correct values!!!
-            newY := curMon.workTop + (height25 * (position < 3 ? 2 : position < 5 ? 1 : 0))
+            newY := curMon.workTop + (height25 * (position < 3 ? 3 : position < 5 ? 2 : position < 7 ? 1 : 0))
             newH := height25
             newW := width50
         }
@@ -3852,10 +3986,9 @@ extractLocationAndResize() {
         }
         else if (dimension == "4x2") {
             ; 25% width, 50% height
-            ; TODO - this needs to be changed to use the correct values!!!
             xMap := {0:3, 1:0, 2:1, 3:2}
             newX := curMon.workLeft + (width25 * xMap[Mod(position, widthCount)])
-            newY := curMon.workTop + (height50 * (position < 5 ? 2 : position < 9 ? 1 : 0))
+            newY := curMon.workTop + (height50 * (position < 5 ? 1 : 0))
             newH := height50
             newW := width25
         }
@@ -4159,12 +4292,14 @@ getDefaultHotKeyDefs(type) {
         hk["hkMiscZoomWindow"] := "#z"
     }
     else if (type == "hkText") {
+        hk["hkTextDeleteBlankLines"] := "^+space"
         hk["hkTextDeleteCurrentLine"] := "!delete"
         hk["hkTextDeleteToEol"] := "^delete"
         hk["hkTextDeleteWord"] := "$^d"
         hk["hkTextDuplicateCurrentLine"] := "^+up"
         hk["hkTextMoveCurrentLineDown"] := "!down"
         hk["hkTextMoveCurrentLineUp"] := "!up"
+        hk["hkTextTrimLines"] := "$^!."
     }
     else if (type == "hkTransform") {
         hk["hkTransformEncrypt"] := "$^+e"
@@ -4246,60 +4381,60 @@ getDefaultHotKeyDefs(type) {
         hk["hkWindowResizeToAnchor-02"] := "+#left"
         hk["hkWindowResizeToAnchor-03"] := "+#right"
         hk["hkWindowResizeToAnchor-04"] := "+#up"
-        hk["hkWindowResizeTo1x3_1-01"] := "^#numpad0"
-        hk["hkWindowResizeTo1x3_1-02"] := "^#numpadins"
-        hk["hkWindowResizeTo1x3_2-01"] := "^#numpad4"
-        hk["hkWindowResizeTo1x3_2-02"] := "^#numpadleft"
-        hk["hkWindowResizeTo1x3_3-01"] := "^#numpad7"
-        hk["hkWindowResizeTo1x3_3-02"] := "^#numpadhome"
-        hk["hkWindowResizeTo2x3_1-01"] := "!#numpad1"
-        hk["hkWindowResizeTo2x3_1-02"] := "!#numpadend"
-        hk["hkWindowResizeTo2x3_2-01"] := "!#numpad2"
-        hk["hkWindowResizeTo2x3_2-02"] := "!#numpaddown"
-        hk["hkWindowResizeTo2x3_3-01"] := "!#numpad4"
-        hk["hkWindowResizeTo2x3_3-02"] := "!#numpadleft"
-        hk["hkWindowResizeTo2x3_4-01"] := "!#numpad5"
-        hk["hkWindowResizeTo2x3_4-02"] := "!#numpadclear"
-        hk["hkWindowResizeTo2x3_5-01"] := "!#numpad7"
-        hk["hkWindowResizeTo2x3_5-02"] := "!#numpadhome"
-        hk["hkWindowResizeTo2x3_6-01"] := "!#numpad8"
-        hk["hkWindowResizeTo2x3_6-02"] := "!#numpadup"
-        hk["hkWindowResizeTo3x1_1-01"] := "^#numpad1"
-        hk["hkWindowResizeTo3x1_1-02"] := "^#numpadend"
-        hk["hkWindowResizeTo3x1_2-01"] := "^#numpad2"
-        hk["hkWindowResizeTo3x1_2-02"] := "^#numpaddown"
-        hk["hkWindowResizeTo3x1_3-01"] := "^#numpad3"
-        hk["hkWindowResizeTo3x1_3-02"] := "^#numpadpgdn"
-        hk["hkWindowResizeTo3x2_1-01"] := "+#numpad1"
-        hk["hkWindowResizeTo3x2_1-02"] := "+#numpadend"
-        hk["hkWindowResizeTo3x2_2-01"] := "+#numpad2"
-        hk["hkWindowResizeTo3x2_2-02"] := "+#numpaddown"
-        hk["hkWindowResizeTo3x2_3-01"] := "+#numpad3"
-        hk["hkWindowResizeTo3x2_3-02"] := "+#numpadpgdn"
-        hk["hkWindowResizeTo3x2_4-01"] := "+#numpad4"
-        hk["hkWindowResizeTo3x2_4-02"] := "+#numpadleft"
-        hk["hkWindowResizeTo3x2_5-01"] := "+#numpad5"
-        hk["hkWindowResizeTo3x2_5-02"] := "+#numpadclear"
-        hk["hkWindowResizeTo3x2_6-01"] := "+#numpad6"
-        hk["hkWindowResizeTo3x2_6-02"] := "+#numpadright"
-        hk["hkWindowResizeTo3x3_1-01"] := "#numpad1"
-        hk["hkWindowResizeTo3x3_1-02"] := "#numpadend"
-        hk["hkWindowResizeTo3x3_2-01"] := "#numpad2"
-        hk["hkWindowResizeTo3x3_2-02"] := "#numpaddown"
-        hk["hkWindowResizeTo3x3_3-01"] := "#numpad3"
-        hk["hkWindowResizeTo3x3_3-02"] := "#numpadpgdn"
-        hk["hkWindowResizeTo3x3_4-01"] := "#numpad4"
-        hk["hkWindowResizeTo3x3_4-02"] := "#numpadleft"
-        hk["hkWindowResizeTo3x3_5-01"] := "#numpad5"
-        hk["hkWindowResizeTo3x3_5-02"] := "#numpadclear"
-        hk["hkWindowResizeTo3x3_6-01"] := "#numpad6"
-        hk["hkWindowResizeTo3x3_6-02"] := "#numpadright"
-        hk["hkWindowResizeTo3x3_7-01"] := "#numpad7"
-        hk["hkWindowResizeTo3x3_7-02"] := "#numpadhome"
-        hk["hkWindowResizeTo3x3_8-01"] := "#numpad8"
-        hk["hkWindowResizeTo3x3_8-02"] := "#numpadup"
-        hk["hkWindowResizeTo3x3_9-01"] := "#numpad9"
-        hk["hkWindowResizeTo3x3_9-02"] := "#numpadpgup"
+        hk["hkWindowResizeTo1x3_01-01"] := "^#numpad0"
+        hk["hkWindowResizeTo1x3_01-02"] := "^#numpadins"
+        hk["hkWindowResizeTo1x3_02-01"] := "^#numpad4"
+        hk["hkWindowResizeTo1x3_02-02"] := "^#numpadleft"
+        hk["hkWindowResizeTo1x3_03-01"] := "^#numpad7"
+        hk["hkWindowResizeTo1x3_03-02"] := "^#numpadhome"
+        hk["hkWindowResizeTo2x3_01-01"] := "!#numpad1"
+        hk["hkWindowResizeTo2x3_01-02"] := "!#numpadend"
+        hk["hkWindowResizeTo2x3_02-01"] := "!#numpad2"
+        hk["hkWindowResizeTo2x3_02-02"] := "!#numpaddown"
+        hk["hkWindowResizeTo2x3_03-01"] := "!#numpad4"
+        hk["hkWindowResizeTo2x3_03-02"] := "!#numpadleft"
+        hk["hkWindowResizeTo2x3_04-01"] := "!#numpad5"
+        hk["hkWindowResizeTo2x3_04-02"] := "!#numpadclear"
+        hk["hkWindowResizeTo2x3_05-01"] := "!#numpad7"
+        hk["hkWindowResizeTo2x3_05-02"] := "!#numpadhome"
+        hk["hkWindowResizeTo2x3_06-01"] := "!#numpad8"
+        hk["hkWindowResizeTo2x3_06-02"] := "!#numpadup"
+        hk["hkWindowResizeTo3x1_01-01"] := "^#numpad1"
+        hk["hkWindowResizeTo3x1_01-02"] := "^#numpadend"
+        hk["hkWindowResizeTo3x1_02-01"] := "^#numpad2"
+        hk["hkWindowResizeTo3x1_02-02"] := "^#numpaddown"
+        hk["hkWindowResizeTo3x1_03-01"] := "^#numpad3"
+        hk["hkWindowResizeTo3x1_03-02"] := "^#numpadpgdn"
+        hk["hkWindowResizeTo3x2_01-01"] := "+#numpad1"
+        hk["hkWindowResizeTo3x2_01-02"] := "+#numpadend"
+        hk["hkWindowResizeTo3x2_02-01"] := "+#numpad2"
+        hk["hkWindowResizeTo3x2_02-02"] := "+#numpaddown"
+        hk["hkWindowResizeTo3x2_03-01"] := "+#numpad3"
+        hk["hkWindowResizeTo3x2_03-02"] := "+#numpadpgdn"
+        hk["hkWindowResizeTo3x2_04-01"] := "+#numpad4"
+        hk["hkWindowResizeTo3x2_04-02"] := "+#numpadleft"
+        hk["hkWindowResizeTo3x2_05-01"] := "+#numpad5"
+        hk["hkWindowResizeTo3x2_05-02"] := "+#numpadclear"
+        hk["hkWindowResizeTo3x2_06-01"] := "+#numpad6"
+        hk["hkWindowResizeTo3x2_06-02"] := "+#numpadright"
+        hk["hkWindowResizeTo3x3_01-01"] := "#numpad1"
+        hk["hkWindowResizeTo3x3_01-02"] := "#numpadend"
+        hk["hkWindowResizeTo3x3_02-01"] := "#numpad2"
+        hk["hkWindowResizeTo3x3_02-02"] := "#numpaddown"
+        hk["hkWindowResizeTo3x3_03-01"] := "#numpad3"
+        hk["hkWindowResizeTo3x3_03-02"] := "#numpadpgdn"
+        hk["hkWindowResizeTo3x3_04-01"] := "#numpad4"
+        hk["hkWindowResizeTo3x3_04-02"] := "#numpadleft"
+        hk["hkWindowResizeTo3x3_05-01"] := "#numpad5"
+        hk["hkWindowResizeTo3x3_05-02"] := "#numpadclear"
+        hk["hkWindowResizeTo3x3_06-01"] := "#numpad6"
+        hk["hkWindowResizeTo3x3_06-02"] := "#numpadright"
+        hk["hkWindowResizeTo3x3_07-01"] := "#numpad7"
+        hk["hkWindowResizeTo3x3_07-02"] := "#numpadhome"
+        hk["hkWindowResizeTo3x3_08-01"] := "#numpad8"
+        hk["hkWindowResizeTo3x3_08-02"] := "#numpadup"
+        hk["hkWindowResizeTo3x3_09-01"] := "#numpad9"
+        hk["hkWindowResizeTo3x3_09-02"] := "#numpadpgup"
         hk["hkWindowResizeTo3x4_01"] := "#f9"
         hk["hkWindowResizeTo3x4_02"] := "#f10"
         hk["hkWindowResizeTo3x4_03"] := "#f11"
@@ -4841,7 +4976,6 @@ hotString(trigger, replace, mode:=1, clearTrigger:=true, condition:= "") {
                 Hotkey, %hotkeyPrefix%%A_LoopField%, __hotstring
             }
         }
-        ;keysBound is a static variable, so now the keys won't be bound twice
         keysBound := true
     }
     if (mode == hs.const.REPLACE_MODE.Callback) {
@@ -4923,11 +5057,16 @@ hotString(trigger, replace, mode:=1, clearTrigger:=true, condition:= "") {
                     triggerStr := (v.mode == 3 && local$.count > 0 ? local$.value(0) : returnValue)
                     StringRight, lastChar, triggerStr, 1
                     if (lastChar == A_Tab) {
-                        tmpTrigger := StringTrimRight(triggerStr, 1)
-                        len := StrLen(tmpTrigger)
-                        SendInput, +{Left %len%}
-                        while (!startsWith(getSelectedText(), tmpTrigger)) {
-                            SendInput, +{Left}
+                        if (isActiveDos()) {
+                            return
+                        }
+                        else {
+                            tmpTrigger := StringTrimRight(triggerStr, 1)
+                            len := StrLen(tmpTrigger)
+                            SendInput, +{Left %len%}
+                            while (!startsWith(getSelectedText(), tmpTrigger)) {
+                                SendInput, +{Left}
+                            }
                         }
                     }
                     else {
@@ -5029,6 +5168,9 @@ init() {
     GroupAdd, DosGroup, ahk_exe cmd.exe
 
     GroupAdd, EditPadGroup, ahk_exe i)EditPadPro\d*\.exe
+;    GroupAdd, EditPadGroup, ahk_class TEditPadProEditorMain1
+;    GroupAdd, EditPadGroup, ahk_class TJGFileEditorControl1
+;    GroupAdd, EditPadGroup, ahk_class TJGFileEditorControl2
 
     GroupAdd, ExplorerGroup, ahk_class CabinetWClass ahk_exe i)Explorer.exe
     GroupAdd, ExplorerGroup, ahk_class ExploreWClass
@@ -5301,7 +5443,7 @@ initHotStrings() {
 }
 
 initInternalVars() {
-    hs.VERSION := "1.20170205.1"
+    hs.VERSION := "1.20170206.3"
     hs.TITLE := "HotScript"
     hs.BASENAME := A_ScriptDir . "\" . hs.TITLE
 
@@ -5359,7 +5501,7 @@ initInternalVars() {
     ; help
     hs.help := {}
     hs.help.width := 1275
-    hs.help.height := 624
+    hs.help.height := 654
     ; HotKeys
     hs.hotkeys := {}
     hs.hotkeys.actions := {}
@@ -5464,6 +5606,8 @@ initQuickHelp() {
         [A]-[[.&#x21e7;]]`t`tCD to parent dir`t
         [C]-V`t`tPaste clipboard`t`t
         [A]-X`t`tRun 'exit'`t`t
+        %spacer%
+        %spacer%
     )
     hkDosHelpDisabled := replaceEachLine(hkDosHelpEnabled, spacer)
     hkDosHelp := (hs.config.user.enableHkDos ? hkDosHelpEnabled : hkDosHelpDisabled)
@@ -5492,6 +5636,8 @@ initQuickHelp() {
         [W]-F12`t`tExit %title%`t`t
         [W]-Pause`t`tPause %title%`t`t
         [W]-```t`tRun DebugView`t`t
+        %spacer%
+        %spacer%
     )
 
     hkMiscHelpEnabled =
@@ -5522,6 +5668,8 @@ initQuickHelp() {
         [C]-D`t`tDelete word`t`t
         [A]-Delete`t`tDelete line`t`t
         [C]-Delete`t`tDelete to EOL`t`t
+        [CS]-Space`t`tDelete blank lines`t
+        [CA]-.`t`tTrim EOL whitespace`t
         [A]-[[&#x21e7;&#x21e9;]]`t`tMove line up/down`t
         [CS]-&#x21e7;`t`tDuplicate line`t`t
     )
@@ -5532,7 +5680,6 @@ initQuickHelp() {
     (LTrim Comments
         Transform HotKeys`t`t`t
         %colLine%
-        [CA]-```t`tEscape text for AHK`t
         [CS]-A`t`tSort ascending`t`t
         [CAS]-A`t`tSort ascending (case)`t
         [CS]-D`t`tSort descending`t`t
@@ -5550,6 +5697,7 @@ initQuickHelp() {
         [CS]-U`t`tUPPER case`t`t
         [CA]-W`t`tUnwrap wrapped text`t
         [CS]-W`t`tWrap text at width`t
+        [CA]-```t`tEscape text for AHK`t
         [AS]-[[<>]]`t`tTagify text`t`t
         [CW]-KEY`t`tWrap in SYMBOLS`t`t
         [CAW]-KEY`t`tWrap each in SYMBOLS`t
@@ -5595,6 +5743,8 @@ initQuickHelp() {
         %vspace%       [C]trl : Row 3`t`t`t
         %vspace%       [A]lt  : Row 2`t`t`t
         %vspace%       none : Row 1`t`t`t
+        %spacer%
+        %spacer%
         %spacer%
         %spacer%
         %spacer%
@@ -5916,7 +6066,7 @@ is(value, type) {
 }
 
 isActiveDos() {
-    return (WinActive("ahk_group DosClass"))
+    return (WinActive("ahk_group DosGroup"))
 }
 
 isActiveCalculator() {
@@ -6620,7 +6770,7 @@ numberSelected(start:="1") {
         if (hasEol) {
             selText := SubStr(selText, 1, 0 - StrLen(eol))
         }
-        first := 1
+        ;first := 1
         newText := ""
         count := start
         Loop, Parse, selText, % hs.const.EOL_NIX, % hs.const.EOL_MAC
@@ -8021,6 +8171,30 @@ transformSelected(type) {
                 replaceSelected(setCase(selText, type))
             }
         }
+    }
+}
+
+trimLines() {
+    selText := getSelectedText()
+    if (selText == "") {
+        SendInput, ^a
+        selText := getSelectedText()
+    }
+    if (selText != "") {
+        eol := getEol(selText)
+        hasEol := endsWith(selText, eol)
+        if (hasEol) {
+            selText := SubStr(selText, 1, 0 - StrLen(eol))
+        }
+        newText := ""
+        Loop, Parse, selText, % hs.const.EOL_NIX, % hs.const.EOL_MAC
+        {
+            newText .= Trim(A_LoopField) . eol
+        }
+        if (!hasEol) {
+            newText := SubStr(newText, 1, 0 - StrLen(eol))
+        }
+        replaceSelected(newText)
     }
 }
 
