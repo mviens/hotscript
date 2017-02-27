@@ -4928,6 +4928,7 @@ hotString(trigger, replace, mode:=1, clearTrigger:=true, condition:= "") {
     static keysBound := false
     static hotkeyPrefix := "~$"
     static hotStrings := {}
+    static modes := {}
     static typed := ""
     static keys := {
         (LTrim Join,
@@ -4977,9 +4978,9 @@ hotString(trigger, replace, mode:=1, clearTrigger:=true, condition:= "") {
             }
         }
         keysBound := true
+        modes := hs.const.REPLACE_MODE
     }
-    if (mode == hs.const.REPLACE_MODE.Callback) {
-        ;Callback for the HotKeys
+    if (mode == modes.Callback) {
         Hotkey := SubStr(A_ThisHotkey, 3)
         if (StrLen(Hotkey) == 2 && Substr(Hotkey, 1, 1) == "+" && Instr(keys.alpha, Substr(Hotkey, 2, 1))) {
             Hotkey := Substr(Hotkey, 2)
@@ -4988,9 +4989,9 @@ hotString(trigger, replace, mode:=1, clearTrigger:=true, condition:= "") {
             }
         }
         shiftState := GetKeyState("Shift", "P")
-        uppercase := GetKeyState("Capslock", "T") ? !shiftState : shiftState
+        upperCase := GetKeyState("Capslock", "T") ? !shiftState : shiftState
         ;if capslock is down, shift's function is reversed (pressing shift and a key while capslock is on will provide the lowercase key)
-        if (uppercase && Instr(keys.alpha, Hotkey)) {
+        if (upperCase && Instr(keys.alpha, Hotkey)) {
             HotKey := setCase(HotKey, "U")
         }
         if (Instr("," . keys.breakKeys . ",", "," . Hotkey . ",")) {
@@ -5020,8 +5021,8 @@ hotString(trigger, replace, mode:=1, clearTrigger:=true, condition:= "") {
         matched := false
         for k, v in hotStrings
         {
-            matchRegex := (v.mode == 1 ? "Oi)" : "") . (v.mode == 3 ? RegExReplace(v.trigger, "\$$", "") : "\Q" . v.trigger . "\E") . "$"
-            if (v.mode == 3) {
+            matchRegex := (v.mode == modes.Normal ? "Oi)" : "") . (v.mode == modes.Regex ? RegExReplace(v.trigger, "\$$", "") : "\Q" . v.trigger . "\E") . "$"
+            if (v.mode == modes.Regex) {
                 if (matchRegex ~= "^[^\s\)\(\\]+?\)") {
                     matchRegex := "O" . matchRegex
                 }
@@ -5031,7 +5032,7 @@ hotString(trigger, replace, mode:=1, clearTrigger:=true, condition:= "") {
             }
             if (RegExMatch(typed, matchRegex, local$)) {
                 matched := true
-                if (v.mode == 2) {
+                if (v.mode == modes.Case) {
                     returnValue := (local$ == "" ? local$.value(0) : local$)
                 }
                 else {
@@ -5054,7 +5055,17 @@ hotString(trigger, replace, mode:=1, clearTrigger:=true, condition:= "") {
                 }
                 addHotString()
                 if (v.clearTrigger) {
-                    triggerStr := (v.mode == 3 && local$.count > 0 ? local$.value(0) : returnValue)
+                    if (v.mode == modes.Regex) {
+                        if (local$.count == "" && local$.value(0) == "" && local$ != "") {
+                            triggerStr := local$
+                        }
+                        else {
+                            triggerStr := (local$.count > 0 ? local$.value(0) : returnValue)
+                        }
+                    }
+                    else {
+                        triggerStr := returnValue
+                    }
                     StringRight, lastChar, triggerStr, 1
                     if (lastChar == A_Tab) {
                         if (isActiveDos()) {
@@ -5131,7 +5142,7 @@ hotString(trigger, replace, mode:=1, clearTrigger:=true, condition:= "") {
 
     __hotstring:
         ;this label is triggered every time a key is pressed
-        hotString("", "", hs.const.REPLACE_MODE.Callback)
+        hotString("", "", modes.Callback)
         return
 }
 
@@ -5443,7 +5454,7 @@ initHotStrings() {
 }
 
 initInternalVars() {
-    hs.VERSION := "1.20170206.3"
+    hs.VERSION := "1.20170225.1"
     hs.TITLE := "HotScript"
     hs.BASENAME := A_ScriptDir . "\" . hs.TITLE
 

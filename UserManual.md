@@ -423,7 +423,7 @@ Some text...
 
 ## Contact
 
-If you have questions,need assistance or would like to request new functionality, please send email to <a href="mailto:hotscript.help@gmail.com?Subject=Question%20about%20HotScript">hotscript.help@gmail.com</a>.
+If you have questions, need assistance or would like to request new functionality, please send email to <a href="mailto:hotscript.help@gmail.com?Subject=Question%20about%20HotScript">hotscript.help@gmail.com</a>.
 
 
 ### Professional Services

@@ -1,3 +1,10 @@
+Differences in 1.20170225.1
+===========================
+Miscellaneous
+    - CHANGE: Corrected issue with hotString() where some regex-based HotStrings were not working
+              properly.
+
+
 Differences in 1.20170206.3
 ===========================
 HotKeys
