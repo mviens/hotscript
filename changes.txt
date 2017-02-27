@@ -1,5 +1,20 @@
 Differences in 1.20170225.1
 ===========================
+HotKeys
+    - NEW   : Added Ctrl-Alt-M to uppercase MySQL keywords and functions for any selected text.
+Functions
+    - NEW   : Added the following new functions:
+                - upperCaseMySql()
+                - upperCaseOracle()
+                - upperCaseSqlWords()
+    - CHANGE: Refactored upperCaseOracle() into the common upperCaseSqlWords().
+Miscellaneous
+    - NEW   : Added new configuration option "mySqlTransformRemainderToLower" which will set to
+              lowercase any text that was selected that is not a keyword or function.
+
+
+Differences in 1.20170225.1
+===========================
 Miscellaneous
     - CHANGE: Corrected issue with hotString() where some regex-based HotStrings were not working
               properly.
