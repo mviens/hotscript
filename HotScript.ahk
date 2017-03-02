@@ -500,10 +500,6 @@ hkDosCopy() {
     SendInput, copy{Space}
 }
 
-hkDosDeleteToEol() {
-    SendInput, {Delete 300}
-}
-
 hkDosDownloads() {
     SendInput, pushd `%USERPROFILE`%\Downloads{Enter}
 }
@@ -775,11 +771,24 @@ hkTextDeleteToEol() {
     if (hs.config.user.enableHkEpp && WinActive("ahk_group EditPadGroup")) {
         hkEppDeleteToEol()
     }
-    else if (hs.config.user.enableHkDos && isActiveDos()) {
-        hkDosDeleteToEol()
+    else if (isActiveDos()) {
+        SendInput, {Delete 300}
     }
     else {
-        SendInput, +{End}{Delete}
+        SendInput, +{End}
+        if (WinActive("ahk_group MSWordGroup")) {
+            SendInput, +{Left}
+        }
+        SendInput, {Delete}
+    }
+}
+
+hkTextDeleteToSol() {
+    if (isActiveDos()) {
+        SendInput, {Backspace 300}
+    }
+    else {
+        SendInput, +{Home}{Delete}
     }
 }
 
@@ -826,6 +835,10 @@ hkTextDuplicateCurrentLine() {
     }
 }
 
+hkTextEndBackspaceDown() {
+    SendInput, {End}{Backspace}{Down}
+}
+
 hkTextMoveCurrentLineDown() {
     if (WinActive("ahk_group EditPadGroup")) {
         SendInput, ^!+{Down}
@@ -860,6 +873,10 @@ hkTextTrimLines() {
     else {
         trimLines()
     }
+}
+
+hkTextUpEndDelete() {
+    SendInput, {Up}{End}{Delete}
 }
 
 hkTransformEncrypt() {
@@ -4299,11 +4316,14 @@ getDefaultHotKeyDefs(type) {
         hk["hkTextDeleteBlankLines"] := "^+space"
         hk["hkTextDeleteCurrentLine"] := "!delete"
         hk["hkTextDeleteToEol"] := "^delete"
+        hk["hkTextDeleteToSol"] := "^+delete"
         hk["hkTextDeleteWord"] := "$^d"
         hk["hkTextDuplicateCurrentLine"] := "^+up"
+        hk["hkTextEndBackspaceDown"] := "^+backspace"
         hk["hkTextMoveCurrentLineDown"] := "!down"
         hk["hkTextMoveCurrentLineUp"] := "!up"
         hk["hkTextTrimLines"] := "$^!."
+        hk["hkTextUpEndDelete"] := "^+end"
     }
     else if (type == "hkTransform") {
         hk["hkTransformEncrypt"] := "$^+e"
@@ -5181,7 +5201,8 @@ init() {
     GroupAdd, DesktopGroup, ahk_class WorkerW
 
     GroupAdd, DosGroup, ahk_class ConsoleWindowClass
-    GroupAdd, DosGroup, ahk_exe cmd.exe
+    GroupAdd, DosGroup, ahk_exe i)cmd.exe
+    GroupAdd, DosGroup, ahk_exe i)PowerShell.exe
 
     GroupAdd, EditPadGroup, ahk_exe i)EditPadPro\d*\.exe
 ;    GroupAdd, EditPadGroup, ahk_class TEditPadProEditorMain1
@@ -5192,7 +5213,10 @@ init() {
     GroupAdd, ExplorerGroup, ahk_class ExploreWClass
     GroupAdd, ExplorerGroup, ahk_class #32770
 
-    ; TODO - add group for DOS / PowerShell?
+    GroupAdd, MSExcelGroup, ahk_exe i)Excel.exe
+
+    GroupAdd, MSWordGroup, ahk_exe i)WinWord.exe
+
     refreshMonitors()
     SetTimer("refreshMonitors", 30000)
     createUserFiles()
@@ -5459,7 +5483,7 @@ initHotStrings() {
 }
 
 initInternalVars() {
-    hs.VERSION := "1.20170226.1"
+    hs.VERSION := "1.20170302.1"
     hs.TITLE := "HotScript"
     hs.BASENAME := A_ScriptDir . "\" . hs.TITLE
 
@@ -5517,7 +5541,7 @@ initInternalVars() {
     ; help
     hs.help := {}
     hs.help.width := 1275
-    hs.help.height := 669
+    hs.help.height := 728
     ; HotKeys
     hs.hotkeys := {}
     hs.hotkeys.actions := {}
@@ -5609,22 +5633,15 @@ initQuickHelp() {
         %colLine%
         [A]-C`t`t"copy "`t`t`t
         [A]-D`t`tPUSHD to Downloads`t
-        [C]-Delete`t`tDelete to EOL`t`t
-        [C]-End`t`tScroll to bottom`t
-        [C]-Home`t`tScroll to top`t`t
+        [C]-[[Home End]]`tScroll to top/bottom`t
         [A]-M`t`t"move "`t`t`t
         [A]-P`t`t"pushd "`t`t
-        [C]-P`t`tPOP to last dir`t`t
-        [C]-PgDn`t`tScroll down 1 page`t
-        [C]-PgUp`t`tScroll up 1 page`t
+        [C]-P`t`tPOPD to last dir`t`t
+        [C]-[[PgUp PgDn]`tScroll up/down 1 page`t
         [A]-R`t`tCD to root dir`t`t
         [A]-T`t`t"type "`t`t`t
         [A]-[[.&#x21e7;]]`t`tCD to parent dir`t
-        [C]-V`t`tPaste clipboard`t`t
         [A]-X`t`tRun 'exit'`t`t
-        %spacer%
-        %spacer%
-        %spacer%
     )
     hkDosHelpDisabled := replaceEachLine(hkDosHelpEnabled, spacer)
     hkDosHelp := (hs.config.user.enableHkDos ? hkDosHelpEnabled : hkDosHelpDisabled)
@@ -5647,7 +5664,7 @@ initQuickHelp() {
         [W]-7`t`tEdit user functions`t
         [W]-8`t`tEdit user INI`t`t
         [W]-9`t`tEdit default INI`t
-        [W]-0`t`t%title% home page`t`t
+        [W]-0`t`t%title% home page`t
         [AW]-F12`t`tRun function`t`t
         [CW]-F12`t`tShow variable`t`t
         [W]-F12`t`tExit %title%`t`t
@@ -5656,10 +5673,12 @@ initQuickHelp() {
         %spacer%
         %spacer%
         %spacer%
+        %spacer%
     )
 
     hkMiscHelpEnabled =
     (LTrim Comments
+        %spacer%
         Miscellaneous HotKeys`t`t
         %colLine%
         [CA]-A`t`tCopy Append`t`t
@@ -5680,12 +5699,14 @@ initQuickHelp() {
 
     hkTextHelpEnabled =
     (LTrim Comments
-        %spacer%
         Text HotKeys`t`t`t
         %colLine%
+        [CS]-Backspace`tEnd/Backspace/Down`t
         [C]-D`t`tDelete word`t`t
         [A]-Delete`t`tDelete line`t`t
         [C]-Delete`t`tDelete to EOL`t`t
+        [CS]-Delete`tDelete to SOL`t`t
+        [CS]-End`t`tUp/End/Delete`t`t
         [CS]-Space`t`tDelete blank lines`t
         [CA]-.`t`tTrim EOL whitespace`t
         [A]-[[&#x21e7;&#x21e9;]]`t`tMove line up/down`t
@@ -5768,6 +5789,10 @@ initQuickHelp() {
         %spacer%
         %spacer%
         %spacer%
+        %spacer%
+        %spacer%
+        %spacer%
+        %spacer%
     )
     hkWindowHelpDisabled := replaceEachLine(hkWindowHelpEnabled, spacer)
     hkWindowHelp := (hs.config.user.enableHkWindow ? hkWindowHelpEnabled : hkWindowHelpDisabled)
@@ -5775,10 +5800,10 @@ initQuickHelp() {
     hkHeader1 := vspace . " A = Alt  |  C = Ctrl  |  S = Shift  |  MWMouseWheel directionMW  |  [[keys]] = press any ONE of these keys"
     hkHeader2 := vspace . " W = Win  |  L = Left  |  R = Right  |  NPNumPad keyNP            |"
     hkHeader := hkHeader1 . eol . hkHeader2 . eol . eol
-    hkCol1 := hkActionHelp . eol . hkDosHelp
+    hkCol1 := hkActionHelp . eol . hkHotScriptHelp
     hkCol2 := hkWindowHelp
-    hkCol3 := hkTransformHelp . eol . hkTextHelp
-    hkCol4 := hkMiscHelp . eol . hkHotScriptHelp
+    hkCol3 := hkTransformHelp . eol . hkDosHelp
+    hkCol4 := hkTextHelp . eol . hkMiscHelp
 
     hkArr1 := listToArray(hkCol1)
     hkArr2 := listToArray(hkCol2)

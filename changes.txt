@@ -1,4 +1,31 @@
-Differences in 1.20170225.1
+Differences in 1.20170302.1
+===========================
+HotKeys
+    - NEW   : Added Ctrl-Shift-Delete to delete text to the start of the line. This also works in
+              DOS.
+    - NEW   : Added Ctrl-Shift-Backspace to the last character on a line and move the cursor down
+              one line.
+    - NEW   : Added Ctrl-Shift-End to join lines of text by sending Up/End/Delete. This works if
+              the cursor is on the first line, last line, or any place within text. Pressing the
+              HotKey repeatedly will eventually join all lines.
+    - CHANGE: Modified Ctrl-Delete when used in Microsoft Word to be one character less, which is
+              necessary to avoid deleting a paragraph marker. It should still function as expected
+              even if the current line does not have a paragraph marker.
+    - CHANGE: Removed Ctrl-Delete from "DOS Keys" of help screen. It still works the same, but was
+              redundant to the same entry in "Text Keys".
+Functions
+    - NEW   : Added the following new functions:
+                - hkTextDeleteToSol()
+                - hkTextEndBackspaceDown()
+                - hkTextUpEndDelete()
+    - CHANGE: Removed hkDosDeleteToEol() and moved the functionality into hkTextDeleteToEol().
+Miscellaneous
+    - NEW   : Added new group for Microsoft Word (MSWordGroup) and for Microsoft Excel (MSExcelGroup).
+    - CHANGE: Moved some sections around on the help screen to allow for future entries on some of
+              the more popular/active sections.
+
+
+Differences in 1.20170226.1
 ===========================
 HotKeys
     - NEW   : Added Ctrl-Alt-M to uppercase MySQL keywords and functions for any selected text.
