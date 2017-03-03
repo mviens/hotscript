@@ -228,7 +228,8 @@ KeyWait(key) {
     KeyWait, %key%
 }
 
-MouseClickDrag(button, x1, y1, x2, y2, speed, R:="R") {
+MouseClickDrag(button, x1, y1, x2, y2, speed, relative:=true) {
+    R := (relative ? "R" : "")
     MouseClickDrag, %button%, %x1%, %y1%, %x2%, %y2%, %speed%, %R%
 }
 
@@ -236,7 +237,8 @@ MouseGetPos(ByRef outputX:="", ByRef outputY:="", ByRef outputWin:="", ByRef out
     MouseGetPos, outputX, outputY, outputWin, outputControl, %mode%
 }
 
-MouseMove(x, y, speed:=0, R:="R") {
+MouseMove(x, y, speed:=0, relative:=false) {
+    R := (relative ? "R" : "")
     MouseMove, %x%, %y%, %speed%, %R%
 }
 
@@ -661,6 +663,14 @@ hkHotScriptShowVariable() {
     showVariable()
 }
 
+hkMiscCenterMouseScreen() {
+    centerMouse("screen")
+}
+
+hkMiscCenterMouseWindow() {
+    centerMouse("window")
+}
+
 hkMiscCreateFile() {
     if (WinActive("ahk_group ExplorerGroup")) {
         createNewInExplorer("file")
@@ -710,19 +720,19 @@ hkMiscDragMouseUp() {
 }
 
 hkMiscMouseDown() {
-    MouseMove(0, 1)
+    MouseMove(0, 1,, true)
 }
 
 hkMiscMouseLeft() {
-    MouseMove(-1, 0)
+    MouseMove(-1, 0,, true)
 }
 
 hkMiscMouseRight() {
-    MouseMove(1, 0)
+    MouseMove(1, 0,, true)
 }
 
 hkMiscMouseUp() {
-    MouseMove(0, -1)
+    MouseMove(0, -1,, true)
 }
 
 hkMiscPasteClipboardAsText() {
@@ -2238,6 +2248,29 @@ centerControls(title, guiName, hPadding:=10, vPadding:=5, spaceBetween:=30, cont
         newPos := "x" . nextPos . " w" . newWidth . " h" . newHeight
         GuiControl, Move, %ctrl%, %newPos%
     }
+}
+
+centerMouse(mode:="screen") {
+    origMode := A_CoordMouseMode
+    mode := setCase(mode, "L")
+    if (mode == "window") {
+        CoordMode("Mouse", "Window")
+        hWnd := getHwnd()
+        win := getWindowInfo(hWnd)
+        newX := (win.width / 2)
+        newY := (win.height / 2)
+    }
+    else {
+        CoordMode("Mouse", "Screen")
+        curMon := hs.vars.monitors[getMonitorForWindow()]
+        newX := (curMon.workWidth / 2)
+        newY := (curMon.workHeight / 2)
+    }
+    MouseMove(newX, newY, 5)
+    MouseMove(10, 0, 50, "R")
+    MouseMove(-20, 0, 50, "R")
+    MouseMove(10, 0, 50, "R")
+    CoordMode("Mouse", origMode)
 }
 
 centerWindow(title:="A", monitor:="") {
@@ -4292,6 +4325,8 @@ getDefaultHotKeyDefs(type) {
         hk["hkHotScriptShowVariable"] := "^#f12"
     }
     else if (type == "hkMisc") {
+        hk["hkMiscCenterMouseScreen"] := "^capsLock"
+        hk["hkMiscCenterMouseWindow"] := "+capsLock"
         hk["hkMiscCopyAppend"] := "^!a"
         hk["hkMiscCreateFile"] := "^!f"
         hk["hkMiscCreateFolder"] := "^!d"
@@ -5483,7 +5518,7 @@ initHotStrings() {
 }
 
 initInternalVars() {
-    hs.VERSION := "1.20170302.1"
+    hs.VERSION := "1.20170303.1"
     hs.TITLE := "HotScript"
     hs.BASENAME := A_ScriptDir . "\" . hs.TITLE
 
@@ -5681,6 +5716,8 @@ initQuickHelp() {
         %spacer%
         Miscellaneous HotKeys`t`t
         %colLine%
+        [C]-CapsLock`tCenter mouse (screen)`t`t
+        [S]-CapsLock`tCenter mouse (window)`t`t
         [CA]-A`t`tCopy Append`t`t
         [CA]-[[C Insert]]`tSwap to clipboard`t`t
         [CA]-D`t`tCreate directory`t`t
@@ -7665,7 +7702,7 @@ showWindowInfo(title:="") {
         isAppWindow     : " boolToStr(win.isAppWindow) "
         isChild         : " boolToStr(win.isChild) "
         isControlParent : " boolToStr(win.isControlParent) "
-        isDisables      : " boolToStr(win.isDisabled) "
+        isDisabled      : " boolToStr(win.isDisabled) "
         isHung          : " boolToStr(win.isHung) "
         isPopup         : " boolToStr(win.isPopup) "
         isSuspended     : " boolToStr(win.isSuspended) "

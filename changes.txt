@@ -1,3 +1,18 @@
+Differences in 1.20170303.1
+===========================
+HotKeys
+    - NEW   : Added Ctrl-CapsLock to center the mouse pointer on the current screen.
+    - NEW   : Added Shift-CapsLock to center the mouse pointer in the current window.
+Functions
+    - NEW   : Added the following new functions:
+                - centerMouse()
+                - hkMiscCenterMouseScreen()
+                - hkMiscCenterMouseWindow()
+    - CHANGE: Modified the method signature of MouseClickDrag() and MouseMove() to use "relative"
+              as a boolean flag instead of "R".
+    - CHANGE: Fixed very minor typo in showWindowInfo().
+
+
 Differences in 1.20170302.1
 ===========================
 HotKeys
