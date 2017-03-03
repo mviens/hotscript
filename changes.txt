@@ -1,3 +1,10 @@
+Differences in 1.20170303.2
+===========================
+Functions
+    - CHANGE: Fixed issue with centerMouse() not calculating correct center when using multiple
+              monitors.
+
+
 Differences in 1.20170303.1
 ===========================
 HotKeys

@@ -2254,18 +2254,18 @@ centerMouse(mode:="screen") {
     origMode := A_CoordMouseMode
     mode := setCase(mode, "L")
     if (mode == "window") {
-        CoordMode("Mouse", "Window")
         hWnd := getHwnd()
         win := getWindowInfo(hWnd)
         newX := (win.width / 2)
         newY := (win.height / 2)
     }
     else {
-        CoordMode("Mouse", "Screen")
+        mode := "screen"
         curMon := hs.vars.monitors[getMonitorForWindow()]
-        newX := (curMon.workWidth / 2)
-        newY := (curMon.workHeight / 2)
+        newX := curMon.workLeft + (curMon.workWidth / 2)
+        newY := curMon.workTop + (curMon.workHeight / 2)
     }
+    CoordMode("Mouse", mode)
     MouseMove(newX, newY, 5)
     MouseMove(10, 0, 50, "R")
     MouseMove(-20, 0, 50, "R")
@@ -5518,7 +5518,7 @@ initHotStrings() {
 }
 
 initInternalVars() {
-    hs.VERSION := "1.20170303.1"
+    hs.VERSION := "1.20170303.2"
     hs.TITLE := "HotScript"
     hs.BASENAME := A_ScriptDir . "\" . hs.TITLE
 
