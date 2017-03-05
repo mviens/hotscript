@@ -3,6 +3,7 @@
 HotScript will revolutionize the way you work on a Windows computer.
 
 ## Announcements
+**03/05/2017** - HotScript live chat is now available at: https://gitter.im/hotscript/Lobby
 **03/04/2017** - HotScript forums are now live at: http://hotscript.prophpbb.com/
 
 ## Introduction
@@ -53,6 +54,7 @@ more you embrace using it, the more you will find you don't want to use Windows 
                 <li>Wrap text to width or unwrap</li>
                 <li>Convert to or from HTML/XML tags</li>
             </ul>
+           <br/>
         </td>
         <td>
             <h3>Extend and Customize</h3>
