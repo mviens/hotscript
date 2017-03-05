@@ -2,7 +2,7 @@
 
 # HotScript
 
-HotScript adds more than 250 powerful features to Microsoft Windows, with full support for creating custom functionality.
+HotScript adds more than 250 powerful features to Microsoft Windows, with full support for creating custom functionality. HotScript was created using [AutoHotKey](http://www.ahkscript.org) and was born out of the necessity to do more with less effort.
 
 ## Announcements
 **03/05/2017** - HotScript live chat is now available at: https://gitter.im/hotscript/Lobby
@@ -10,9 +10,7 @@ HotScript adds more than 250 powerful features to Microsoft Windows, with full s
 **03/04/2017** - HotScript forums are now live at: http://hotscript.prophpbb.com/
 
 ## Introduction
-HotScript will allow you to do more in less time, accurately and consistently. It will reduce mistakes. It will increase your productivity. You
-will be able to quickly and easily perform complex tasks and data transformation. Working with HotScript is very easy and natural. The
-more you embrace using it, the more you will find you don't want to use Windows without it.
+HotScript will allow you to do more in less time, accurately and consistently. It will reduce mistakes. It will increase your productivity. You will be able to quickly and easily perform complex tasks and data transformation. Working with HotScript is very easy and natural. The more you embrace using it, the more you will find you don't want to use Windows without it.
 
 <table>
     <tr><th colspan="2">Add new functionality to Windows</th></tr>
@@ -77,7 +75,7 @@ more you embrace using it, the more you will find you don't want to use Windows 
 
 ## Installation
 
-* Download and install <a href="https://autohotkey.com/download/ahk-install.exe">AutoHotKey</a>.
+* Download and install <a href="https://autohotkey.com/download/ahk-install.exe">AutoHotKey</a>.  <img src="https://img.shields.io/badge/AHK-1.0.*-lightgrey.svg" title="Untested" alt="AHK 1.0.* : Untested"/> <img src="https://img.shields.io/badge/AHK-1.1.25+-brightgreen.svg" title="Compatible" alt="AHK 1.1.25+ : Compatible"/> <img src="https://img.shields.io/badge/AHK-2.0--a*-lightgray.svg" title="Untested" alt="AHK 2.0-a* : Untested"/>
 * Download <a href="https://github.com/mviens/hotscript/raw/release/HotScript.ahk">HotScript.ahk</a>.  (Right-click this link and choose "Save as")
 * Create a separate folder for HotScript and move HotScript.ahk (the file downloaded above) into that folder.
 * Double-click HotScript.ahk to launch it for the first time. Setup will occur automatically and several support files will be created.
