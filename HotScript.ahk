@@ -5270,6 +5270,7 @@ init() {
     Menu, Tray, Add
     Menu, Tray, Add, Home Page, customTrayMenu
     Menu, Tray, Add, Forums, customTrayMenu
+    Menu, Tray, Add, Live Chat, customTrayMenu
     Menu, Tray, Add, Help, customTrayMenu
     Menu, Tray, Add, Historical changes, customTrayMenu
     Menu, Tray, Add, Check for new version, customTrayMenu
@@ -5326,6 +5327,9 @@ init() {
         }
         else if (A_ThisMenuItem == "Forums") {
             Run(hs.vars.url[hs.TITLE].forum)
+        }
+        else if (A_ThisMenuItem == "Live Chat") {
+            Run(hs.vars.url[hs.TITLE].chat)
         }
         else if (A_ThisMenuItem == "Help") {
             showQuickHelp(false)
@@ -5522,7 +5526,7 @@ initHotStrings() {
 }
 
 initInternalVars() {
-    hs.VERSION := "1.20170304.1"
+    hs.VERSION := "1.20170305.1"
     hs.TITLE := "HotScript"
     hs.BASENAME := A_ScriptDir . "\" . hs.TITLE
 
@@ -5600,6 +5604,7 @@ initInternalVars() {
             home: "https://github.com/mviens/" . hs.TITLE
         )}
     homeRaw := urls[hs.TITLE].home . "/raw/master/"
+    urls[hs.TITLE].chat := "https://gitter.im/hotscript/Lobby"
     urls[hs.TITLE].download := homeRaw . hs.TITLE . ".ahk"
     urls[hs.TITLE].forum := "http://hotscript.prophpbb.com/"
     urls[hs.TITLE].history := homeRaw . "changes.txt"
