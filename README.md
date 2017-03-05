@@ -80,8 +80,10 @@ more you embrace using it, the more you will find you don't want to use Windows 
 * Download and install <a href="https://autohotkey.com/download/ahk-install.exe">AutoHotKey</a>.
 * Download <a href="https://github.com/mviens/hotscript/raw/release/HotScript.ahk">HotScript.ahk</a>.  (Right-click this link and choose "Save as")
 * Create a separate folder for HotScript and move HotScript.ahk (the file downloaded above) into that folder.
-* Double-click HotScript.ahk to launch it for the first time. Setup will automatically occur and several support files will be created.
-* Press Ctrl-Win-H to show (or hide) the help screen.
+* Double-click HotScript.ahk to launch it for the first time. Setup will occur automatically and several support files will be created.
+* Press <code>Ctrl</code>-<code>Win</code>-<code>H</code> to show (or hide) the help screen.
+  * Alternatively, press and hold <code>Win</code>-<code>H</code> to temporarily show the help screen.
+  * Additionally, the help screen is also available by right-clicking the HotScript tray icon.
 
 ## Contact
 
@@ -91,10 +93,10 @@ You may also try live chat at: https://gitter.im/hotscript/Lobby
 
 ## Status
 
-Documentation is continuously being enhanced but is lagging behind the actual development of HotScript. We know it is important and are working on it. The current user manual is outdated and will be replaced with a full wiki describing every feature of HotScript and will also include a fully documented API. Please check the forum for updates.
+Documentation is being enhanced but is lagging behind the actual development of HotScript. We know it is important and are working on it. The current [user manual](UserManual.md) is outdated and will be replaced with a full wiki describing every feature of HotScript and will also include a fully documented API. Please check the forum for updates.
 
 ### Roadmap 
-HotScript is always growing. The wishlist is huge, containing several hundred new features. 
+HotScript is continuously growing. The wishlist is huge, containing several hundred new features. 
 
 ## Donate
 
@@ -102,7 +104,9 @@ Please consider donating towards the future development and support of HotScript
 
 Donations are the best way to request new features or increase the priority of a planned enhancement.
 
-[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/hotscript)
+<a href="https://www.paypal.me/hotscript" target="_blank">
+    <br/><img src="https://img.shields.io/badge/Donate-PayPal-green.svg"/>
+</a>
 
 ## User Comments
 
