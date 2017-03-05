@@ -10,48 +10,65 @@ HotScript will allow you to do more in less time, accurately and consistently. I
 will be able to quickly and easily perform complex tasks and data transformation. Working with HotScript is very easy and natural. The
 more you embrace using it, the more you will find you don't want to use Windows without it.
 
-### Automate Tasks
-* Perform repetitive tasks easily
-* Assign actions to any keystrokes
-* Easily reproduce repetitive text
-* Produce templates
-* Create aliases for common phrases
-* Eliminate common typing mistakes
-* Quickly search anything, anywhere
-* Automate any functionality within Windows
-
-### Interact with and Control Windows
-* Move/resize windows with simple keystrokes
-* Enhanced Windows clipboard capabilities
-* Excellent multi-monitor support
-* Control the mouse pointer from the keyboard
-* Toggle/change window transparency
-* Force a window to always be on top
-* Zoom any portion of the screen
-* Hide/restore any window
-
-### Transform Text
-* Convert to UPPER/lower/Sentence/iNVERT/Title case
-* Encrypt/decrypt
-* Natural sort ascending or descending
-* Auto-number lines (or remove it)
-* Wrap in quotes, brackets or parenthesis
-* Wrap text to width or unwrap
-* Convert to or from HTML/XML tags
-
-### Extend and Customize
-* Create shortcut keys for any application
-* Create user-defined keys and text
-* Create user-defined variables and functions
-* Create custom templates for anything
-* Create custom UI functionality
-* Fully user extendable and customizable
-* User-defined customizations are kept during upgrades
-
-### Customization
-* Easily create your own features
-* Change default settings / behavior
-* Create modules that can be shared with others
+<table>
+    <tr><th colspan="2">Add new functionality to Windows</th></tr>
+    <tr>
+        <td>
+            <h3>Automate Tasks</h3>
+            <ul>
+                <li>Perform repetitive tasks easily</li>
+                <li>Assign actions to any keystrokes</li>
+                <li>Easily reproduce repetitive text</li>
+                <li>Produce templates</li>
+                <li>Create aliases for common phrases</li>
+                <li>Eliminate common typing mistakes</li>
+                <li>Quickly search anything, anywhere</li>
+                <li>Automate any functionality within Windows</li>
+            </ul>
+        </td>
+        <td>
+            <h3>Interact with and control windows</h3>
+            <ul>
+                <li>Move/resize windows with simple keystrokes</li>
+                <li>Enhanced Windows clipboard capabilities</li>
+                <li>Excellent multi-monitor support</li>
+                <li>Control the mouse pointer from the keyboard</li>
+                <li>Toggle/change window transparency</li>
+                <li>Force a window to always be on top</li>
+                <li>Zoom any portion of the screen</li>
+                <li>Hide/restore any window</li>
+            </ul>
+        </td>
+    </tr>
+    <tr><th colspan="2"></th></tr>
+    <tr>
+        <td>
+            <h3>Transform Text</h3>
+            <ul>
+                <li>Convert to UPPER/lower/Sentence/iNVERT/Title case</li>
+                <li>Encrypt/decrypt</li>
+                <li>Natural sort ascending or descending</li>
+                <li>Auto-number lines (or remove it)</li>
+                <li>Wrap in quotes, brackets or parenthesis</li>
+                <li>Wrap text to width or unwrap</li>
+                <li>Convert to or from HTML/XML tags</li>
+            </ul>
+        </td>
+        <td>
+            <h3>Extend and Customize</h3>
+            <ul>
+                <li>Assign shortcut keys for any application</li>
+                <li>Define user-defined keys, text, variables and functions</li>
+                <li>Create custom macros</li>
+                <li>Create templates for anything</li>
+                <li>Create custom UI functionality</li>
+                <li>Create modules that can be shared with others</li>
+                <li>Completely user extendable and customizable</li>
+                <li>User-defined customizations are retained during upgrades</li>
+            </ul>
+        </td>
+    </tr>
+</table>
 
 ## Installation
 
@@ -65,9 +82,9 @@ more you embrace using it, the more you will find you don't want to use Windows 
 
 Primary support for HotScript is via the forums, located at: http://hotscript.prophpbb.com/
 
-## TODO
+## Status
 
-Documentation is continuously being enhanced but is lagging behind the actual development of HotScript. We know it is important and are working on it. The current User Manual is very outdated and will be replaced with a full wiki describing every feature of HotScript and will include a fully documented API. Please check the forum for updates.
+Documentation is continuously being enhanced but is lagging behind the actual development of HotScript. We know it is important and are working on it. The current user manual is outdated and will be replaced with a full wiki describing every feature of HotScript and will also include a fully documented API. Please check the forum for updates.
 
 ### Roadmap 
 HotScript is always growing. The wishlist is huge, containing several hundred new features. 
