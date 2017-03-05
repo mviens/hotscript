@@ -102,7 +102,7 @@ Please consider donating towards the future development and support of HotScript
 
 Donations are the best way to request new features or increase the priority of a planned enhancement.
 
-[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/hotscript/25)
+[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/hotscript)
 
 ## User Comments
 
