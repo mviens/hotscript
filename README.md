@@ -1,6 +1,8 @@
-﻿# HotScript
+﻿![](http://i.imgur.com/hMl5pXg.png)
 
-HotScript will revolutionize the way you work on a Windows computer.
+# HotScript
+
+HotScript - Revolutionizing how Windows works.
 
 ## Announcements
 **03/05/2017** - HotScript live chat is now available at: https://gitter.im/hotscript/Lobby
@@ -85,12 +87,22 @@ more you embrace using it, the more you will find you don't want to use Windows 
 
 Primary support for HotScript is via the forums, located at: http://hotscript.prophpbb.com/
 
+You may also try live chat at: https://gitter.im/hotscript/Lobby
+
 ## Status
 
 Documentation is continuously being enhanced but is lagging behind the actual development of HotScript. We know it is important and are working on it. The current user manual is outdated and will be replaced with a full wiki describing every feature of HotScript and will also include a fully documented API. Please check the forum for updates.
 
 ### Roadmap 
 HotScript is always growing. The wishlist is huge, containing several hundred new features. 
+
+## Donate
+
+Please consider donating towards the future development and support of HotScript.
+
+Donations are the best way to request new features or increase the priority of a planned enhancement.
+
+[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/hotscript/25)
 
 ## User Comments
 
