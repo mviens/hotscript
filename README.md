@@ -2,7 +2,7 @@
 
 # HotScript
 
-HotScript - Revolutionizing how Windows works.
+HotScript adds more than 250 powerful features to Microsoft Windows, with full support for creating custom functionality.
 
 ## Announcements
 **03/05/2017** - HotScript live chat is now available at: https://gitter.im/hotscript/Lobby
