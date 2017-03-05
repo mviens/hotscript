@@ -1,3 +1,9 @@
+Differences in 1.20170304.1
+===========================
+Miscellaneous
+    - NEW   : Added tray menu option for launching the new HotScript forums in the default browser.
+
+
 Differences in 1.20170303.2
 ===========================
 Functions
