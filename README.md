@@ -4,6 +4,7 @@ HotScript will revolutionize the way you work on a Windows computer.
 
 ## Announcements
 **03/05/2017** - HotScript live chat is now available at: https://gitter.im/hotscript/Lobby
+
 **03/04/2017** - HotScript forums are now live at: http://hotscript.prophpbb.com/
 
 ## Introduction
