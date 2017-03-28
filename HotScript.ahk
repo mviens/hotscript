@@ -35,8 +35,7 @@ StringCaseSense, on
 ;__________________________________________________
 ;Initialization
 if (!A_IsAdmin) {
-    if A_OSVersion not in WIN_2003,WIN_XP,WIN_2000
-    {
+    if (!(A_OSVersion ~= "i)WIN_(2000|2003|XP)")) {
         ; possible fix for win10
         ; RunWait, %A_WinDir%\System32\schtasks.exe /create /TN [TaskName] /TR [Path\To\MyScript.exe] OR ["c:\program files\AutoHotkey\autohotkey.exe" "PathTo\MyScript.ahk"] /RL HIGHEST /SC ONLOGON
         ; https://autohotkey.com/boards/viewtopic.php?f=5&t=21434
@@ -2087,6 +2086,10 @@ hsJiraTable() {
     )
     template := RegExReplace(template, hs.const.EOL_NIX, hs.const.EOL_WIN)
     pasteTemplate(template, "", "{Home}{Up}{Right 3}^+{Right}")
+}
+
+hsRepeatString($) {
+    sendText(repeatStr($.value(3), $.value(1)))
 }
 
 ;__________________________________________________
@@ -4325,8 +4328,10 @@ getDefaultHotKeyDefs(type) {
         hk["hkHotScriptShowVariable"] := "^#f12"
     }
     else if (type == "hkMisc") {
-        hk["hkMiscCenterMouseScreen"] := "^capsLock"
-        hk["hkMiscCenterMouseWindow"] := "+capsLock"
+        hk["hkMiscCenterMouseScreen-01"] := "^capsLock"
+        hk["hkMiscCenterMouseScreen-02"] := "^#lbutton"
+        hk["hkMiscCenterMouseWindow-01"] := "+capsLock"
+        hk["hkMiscCenterMouseWindow-02"] := "+#lbutton"
         hk["hkMiscCopyAppend"] := "^!a"
         hk["hkMiscCreateFile"] := "^!f"
         hk["hkMiscCreateFolder"] := "^!d"
@@ -4348,17 +4353,17 @@ getDefaultHotKeyDefs(type) {
         hk["hkMiscZoomWindow"] := "#z"
     }
     else if (type == "hkText") {
-        hk["hkTextDeleteBlankLines"] := "^+space"
+        hk["hkTextDeleteBlankLines"] := "^!space"
         hk["hkTextDeleteCurrentLine"] := "!delete"
         hk["hkTextDeleteToEol"] := "^delete"
         hk["hkTextDeleteToSol"] := "^+delete"
         hk["hkTextDeleteWord"] := "$^d"
         hk["hkTextDuplicateCurrentLine"] := "^+up"
-        hk["hkTextEndBackspaceDown"] := "^+backspace"
+        hk["hkTextEndBackspaceDown"] := "^!backspace"
         hk["hkTextMoveCurrentLineDown"] := "!down"
         hk["hkTextMoveCurrentLineUp"] := "!up"
         hk["hkTextTrimLines"] := "$^!."
-        hk["hkTextUpEndDelete"] := "^+end"
+        hk["hkTextUpEndDelete"] := "!end"
     }
     else if (type == "hkTransform") {
         hk["hkTransformEncrypt"] := "$^+e"
@@ -4797,8 +4802,7 @@ getVar(name) {
     tmp := %varName%
     if (IsObject(tmp)) {
         tmpName := varName
-        for idx, key in keyArray
-        {
+        for idx, key in keyArray {
             if (!ObjHasKey(tmp, key)) {
                 throw, Exception("The object '" . tmpName . "' does not contain the key '" . key . "'.")
             }
@@ -4863,13 +4867,13 @@ getWindowInfo(hWnd) {
     win.width := w
     win.x := x
     win.y := y
-    win.isAppWindow := (win.style & WS_EX_APPWINDOW == WS_EX_APPWINDOW)
-    win.isChild := (win.style & WS_CHILD == WS_CHILD)
-    win.isControlParent := (win.style & WS_EX_CONTROLPARENT == WS_EX_CONTROLPARENT)
-    win.isDisabled := (win.style & WS_DISABLED == WS_DISABLED)
-    win.isPopup := (win.style & WS_POPUP == WS_POPUP)
-    win.isToolWindow := (win.style & WS_EX_TOOLWINDOW == WS_EX_TOOLWINDOW)
-    win.isVisible := (win.style & WS_VISIBLE == WS_VISIBLE)
+    win.isAppWindow := (win.style & WS_EX_APPWINDOW > 0)
+    win.isChild := (win.style & WS_CHILD > 0)
+    win.isControlParent := (win.style & WS_EX_CONTROLPARENT > 0)
+    win.isDisabled := (win.style & WS_DISABLED > 0)
+    win.isPopup := (win.style & WS_POPUP > 0)
+    win.isToolWindow := (win.style & WS_EX_TOOLWINDOW > 0)
+    win.isVisible := (win.style & WS_VISIBLE > 0)
     return win
 }
 
@@ -4996,7 +5000,7 @@ hotString(trigger, replace, mode:=1, clearTrigger:=true, condition:= "") {
             num: "0123456789"
             alpha: "abcdefghijklmnopqrstuvwxyz"
             other: "BS,Return,Tab,Space"
-            breakKeys: "Left,Right,Up,Down,Home,End,RButton,LButton,LControl,RControl,LAlt,RAlt,AppsKey,Lwin,Rwin,WheelDown,WheelUp,f1,f2,f3,f4,f5,f6,f7,f8,f9,f6,f7,f9,f10,f11,f12"
+            breakKeys: "Escape,Left,Right,Up,Down,Home,End,RButton,LButton,LControl,RControl,LAlt,RAlt,AppsKey,Lwin,Rwin,WheelDown,WheelUp,f1,f2,f3,f4,f5,f6,f7,f8,f9,f6,f7,f9,f10,f11,f12"
             numpad: "Numpad0,Numpad1,Numpad2,Numpad3,Numpad4,Numpad5,Numpad6,Numpad7,Numpad8,Numpad9,NumpadDot,NumpadDiv,NumpadMult,NumpadAdd,NumpadSub,NumpadEnter"
         )}
     static effect := {
@@ -5013,8 +5017,7 @@ hotString(trigger, replace, mode:=1, clearTrigger:=true, condition:= "") {
         )}
     if (!keysBound) {
         ;Binds the keys to watch for triggers
-        for k, v in ["symbols", "num", "alpha"]
-        {
+        for k, v in ["symbols", "num", "alpha"] {
             ;alphanumeric/symbols
             v := keys[v]
             Loop, Parse, v
@@ -5028,8 +5031,7 @@ hotString(trigger, replace, mode:=1, clearTrigger:=true, condition:= "") {
         {
             Hotkey, %hotkeyPrefix%+%A_Loopfield%, __hotstring
         }
-        for k, v in ["other", "breakKeys", "numpad"]
-        {
+        for k, v in ["other", "breakKeys", "numpad"] {
             ;comma separated values
             v := keys[v]
             Loop, Parse, v, `,
@@ -5058,8 +5060,7 @@ hotString(trigger, replace, mode:=1, clearTrigger:=true, condition:= "") {
             typed := ""
             return
         }
-        else if Hotkey in Return,Tab,Space
-        {
+        else if (Hotkey ~= "i)Return|Tab|Space") {
             typed .= effect[Hotkey]
         }
         else if (Hotkey == "BS") {
@@ -5079,8 +5080,7 @@ hotString(trigger, replace, mode:=1, clearTrigger:=true, condition:= "") {
             typed .= Hotkey
         }
         matched := false
-        for k, v in hotStrings
-        {
+        for k, v in hotStrings {
             matchRegex := (v.mode == modes.Normal ? "Oi)" : "") . (v.mode == modes.Regex ? RegExReplace(v.trigger, "\$$", "") : "\Q" . v.trigger . "\E") . "$"
             if (v.mode == modes.Regex) {
                 if (matchRegex ~= "^[^\s\)\(\\]+?\)") {
@@ -5399,6 +5399,8 @@ initHotStrings() {
         hotString("\b5\/6" . endChars, Chr(0x215A), mode.Regex,, "isNotActiveCalculator")
         hotString("\b7\/8" . endChars, Chr(0x215E), mode.Regex,, "isNotActiveCalculator")
         hotString("\b([a-z])L", "$1:", mode.Regex)
+        hotString("\brc(\d{1,7})(?:" . hs.const.END_CHARS_REGEX . ")(.)", "hsRepeatString", mode.Regex)
+        hotString("\brs(\d{1,6})(?:" . hs.const.END_CHARS_REGEX . ")(.*)~", "hsRepeatString", mode.Regex)
         hotString("@bullet", Chr(0x2022))
         hotString("@club", Chr(0x2663))
         hotString("@copy", Chr(0x00A9))
@@ -5526,7 +5528,7 @@ initHotStrings() {
 }
 
 initInternalVars() {
-    hs.VERSION := "1.20170305.1"
+    hs.VERSION := "1.20170328.1"
     hs.TITLE := "HotScript"
     hs.BASENAME := A_ScriptDir . "\" . hs.TITLE
 
@@ -5727,7 +5729,9 @@ initQuickHelp() {
         Miscellaneous HotKeys`t`t
         %colLine%
         [C]-CapsLock`tCenter mouse (screen)`t`t
+        [CW]-MOUSELeftMOUSE`t`tCenter mouse (screen)`t`t
         [S]-CapsLock`tCenter mouse (window)`t`t
+        [SW]-MOUSELeftMOUSE`t`tCenter mouse (window)`t`t
         [CA]-A`t`tCopy Append`t`t
         [CA]-[[C Insert]]`tSwap to clipboard`t`t
         [CA]-D`t`tCreate directory`t`t
@@ -5748,13 +5752,13 @@ initQuickHelp() {
     (LTrim Comments
         Text HotKeys`t`t`t
         %colLine%
-        [CS]-Backspace`tEnd/Backspace/Down`t
+        [CA]-Backspace`tEnd/Backspace/Down`t
         [C]-D`t`tDelete word`t`t
         [A]-Delete`t`tDelete line`t`t
         [C]-Delete`t`tDelete to EOL`t`t
         [CS]-Delete`tDelete to SOL`t`t
-        [CS]-End`t`tUp/End/Delete`t`t
-        [CS]-Space`t`tDelete blank lines`t
+        [A]-End`t`tUp/End/Delete`t`t
+        [CA]-Space`t`tDelete blank lines`t
         [CA]-.`t`tTrim EOL whitespace`t
         [A]-[[&#x21e7;&#x21e9;]]`t`tMove line up/down`t
         [CS]-&#x21e7;`t`tDuplicate line`t`t
@@ -5809,8 +5813,8 @@ initQuickHelp() {
         [W]-/`t`tShow window info`t
         [W]-[[+-]]~or~[W]-[[MW&#x21d1;&#x21d3;MW]]`tInc./Dec. transparency`t
         [A]-[[MW&#x21d1;&#x21d3;MW]]`t`tPageUp / PageDown`t
-        [C]-[[MW&#x21d0;&#x21d2;MW]]`t`tScroll left / right`t
-        [W]-[[&#x21e9;&#x21e7;]]`t`tMinimize / Maximize`t
+        [C]-[[MW&#x21d1;&#x21d3;MW]]`t`tScroll left / right`t
+        [W]-[[&#x21e7;&#x21e9;]]`t`tMinimize / Maximize`t
         [W]-[[&#x21e6;&#x21e8;]]~or~[[MW&#x21d0;&#x21d2;MW]]`tMove to prev/next mon.`t
         [CW]-[[&#x21e7;&#x21e9;&#x21e6;&#x21e8;]]`tMove to edge`t`t
         [SW]-&#x21e7;&#x21e9;`t`tResize to max height`t
@@ -5825,7 +5829,7 @@ initQuickHelp() {
         [*W]-[[F9-F11]]`tResize to 3x4`t`t
         [*W]-[[F5-F8]]`tResize to 4x3`t`t
         [*W]-[[F1-F4]]`tResize to 4x4`t`t
-        %vspace%   * = Additional modifier key`t`t
+        %pointer% Additional modifier key`t`t
         %vspace%       [S]hift: Row 4`t`t`t
         %vspace%       [C]trl : Row 3`t`t`t
         %vspace%       [A]lt  : Row 2`t`t`t
@@ -5844,8 +5848,8 @@ initQuickHelp() {
     hkWindowHelpDisabled := replaceEachLine(hkWindowHelpEnabled, spacer)
     hkWindowHelp := (hs.config.user.enableHkWindow ? hkWindowHelpEnabled : hkWindowHelpDisabled)
 
-    hkHeader1 := vspace . " A = Alt  |  C = Ctrl  |  S = Shift  |  MWMouseWheel directionMW  |  [[keys]] = press any ONE of these keys"
-    hkHeader2 := vspace . " W = Win  |  L = Left  |  R = Right  |  NPNumPad keyNP            |"
+    hkHeader1 := vspace . " A = Alt  |  C = Ctrl  |  S = Shift  |  MOUSEMouse buttonMOUSE  |  MWMouseWheelMW (Scroll:MW&#x21d1;&#x21d3;MW  Tilt:MW&#x21d0;&#x21d2;MW)"
+    hkHeader2 := vspace . " W = Win  |  L = Left  |  R = Right  |  NPNumPad keyNP    |  [[keys]] = press any ONE of these keys"
     hkHeader := hkHeader1 . eol . hkHeader2 . eol . eol
     hkCol1 := hkActionHelp . eol . hkHotScriptHelp
     hkCol2 := hkWindowHelp
@@ -5858,8 +5862,7 @@ initQuickHelp() {
     hkArr4 := listToArray(hkCol4)
 
     hkResult := hkHeader
-    for key, value in hkArr1
-    {
+    for key, value in hkArr1 {
         hkResult .= LTrim(RTrim(value . hkArr2[key] . hkArr3[key] . hkArr4[key], trimChars)) . eol
     }
     hkResult := RegexReplace(hkResult, "<", "&lt;")
@@ -5874,6 +5877,7 @@ initQuickHelp() {
     hkResult := RegexReplace(hkResult, "i)(?:\[)(\*?[a-z]+)(?:\])", "<span class=""mod"">$1</span>")
     hkResult := RegexReplace(hkResult, "U)NP(.*)NP", "<span class=""numpad"">$1</span>")
     hkResult := RegexReplace(hkResult, "U)MW(.*)MW", "<span class=""wheel"">$1</span>")
+    hkResult := RegexReplace(hkResult, "U)MOUSE(.*)MOUSE", "<span class=""mouse"">$1</span>")
     hkResult := RegexReplace(hkResult, "\*", "<span class=""star"">*</span>")
     hkResult := RegexReplace(hkResult, "(ONE)", "<span class=""one"">$1</span>")
     hkResult := RegexReplace(hkResult, "(~or~)", "<span class=""or""> or </span>")
@@ -5917,6 +5921,8 @@ initQuickHelp() {
         #`%#%vspace%`t percent of number`t`t
         #/#%vspace%`t Common fractions (n/[2-6,8])`t
         [c-z]L`t [c-z]:`t`t`t`t
+        rc#%vspace%X`t Repeat character X, # times`t
+        rs#%vspace%XYZ~ Repeat string XYZ, # times`t
         @bullet`t Bullet`t`t&#x2022;`t`t
         @club`t Club`t`t&#x2663;`t`t
         @copy`t Copyright`t&#x00A9;`t`t
@@ -6070,7 +6076,7 @@ initQuickHelp() {
     hsResult := RegexReplace(hsResult, ">", "&gt;")
     hsResult := RegexReplace(hsResult, "(with )(" . vspace . ")( means)", "$1<span class=""sep"">&nbsp;</span>$3")
     hsResult := RegexReplace(hsResult, "([A-Z][^\t\n]+ )(Hot)(Strings)", "<span class=""section"">$1$3</span>`t")
-    hsResult := RegexReplace(hsResult, "(\w|#)(" . vspace . ")(\t)", "$1<span class=""sep"">&nbsp;</span>$3")
+    hsResult := RegexReplace(hsResult, "(\w|\#)(" . vspace . ")", "$1<span class=""sep"">&nbsp;</span>$3")
     hsResult := RegexReplace(hsResult, "(&lt;)(TAG)", "$1<span class=""key"">$2</span>")
     hsResult := RegexReplace(hsResult, vspace, "&nbsp;")
 
@@ -6084,25 +6090,26 @@ initQuickHelp() {
                 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
                 <meta charset="UTF-8"/>
                 <style type="text/css">
-                    body {background-color:#FFFEE3;color:#333;font-size:13px;margin-top:2px;}
+                    body {background-color:#F4F1DE;color:#39434A;font-size:13px;margin-top:2px;}
                     a {color:inherit;text-decoration:none;}
                     a:hover {color:blue;text-decoration:underline;}
                     .bigger {font-size:18px;}
-                    .key {background-color:#FEBF97;padding:0px;}
+                    .key {background-color:#FFBAA5;padding:0px;}
                     .keys {color:#0000FF;font-weight:bold;}
-                    .mod {color:#FF6961;font-weight:bold;}
-                    .numpad {background-color:#C6FFC6;padding:0px;}
+                    .mod {color:#E14854;font-weight:bold;}
+                    .mouse {background-color:#72D4FF;}
+                    .numpad {background-color:#9DF29D;padding:0px;}
                     .one {font-style:italic;font-weight:bold;text-decoration:underline;}
                     .or {font-style:italic;font-weight:bold;}
                     .section {background-color:#D2DDFE;border-radius:5px;font-weight:bold;padding:2px 3px;border:1px solid #99BCE8;}
                     .sep {background-color:#FF6961;padding:0px;}
-                    .star {background-color:#D2FDFE;color:#333;font-weight:normal;padding:0px;}
+                    .star {background-color:#FFCC26;color:#333;font-weight:normal;padding:0px;}
                     .title {background:#FFE7E7;border:1px solid #DF9898;border-radius:5px;color:#000;float:right;font-family:Roboto,'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:14px;margin:-12px -7px 0 0;padding:1px 8px;text-align:right;}
-                    .wheel {background-color:#EED2FE;padding:0px;}
+                    .wheel {background-color:#F2B5E6;padding:0px;}
                     pre {-moz-tab-size:8;-o-tab-size:8;tab-size:8;line-height:15px;}
                 </style>
             </head>
-        <body>
+        <body onContextMenu="return false">
             <div class="title"><a href="%homeUrl%">HotScript</a> v%hsVersion% &nbsp; <span class="bigger">&copy;</span> 2013-%A_YYYY%</div>
             <pre>${help}</pre>
         </body>
@@ -6200,8 +6207,8 @@ isFile(text) {
 }
 
 isProcessSuspended(pid) {
-    for thread in ComObjGet("winmgmts:").ExecQuery("SELECT * from Win32_Thread WHERE ProcessHandle = " . pid) {
-        return (thread.ThreadWaitReason == 5)
+    for thread in ComObjGet("winmgmts:").ExecQuery("SELECT ThreadWaitReason from Win32_Thread WHERE ProcessHandle = " . pid) {
+        return (thread.ThreadWaitReason == 5 || thread.ThreadWaitReason == 12)
     }
 }
 
@@ -6328,11 +6335,11 @@ loadConfig() {
             -
             -
             &Google
-            http://www.google.com/search?q=@selection@
+            https://www.google.com/search?q=@selection@
             Google &Images
-            http://images.google.com/images?q=@selection@
+            https://www.google.com/search?q=@selection@&tbm=isch
             Google &Maps
-            http://www.google.com/maps/search/@selection@
+            https://www.google.com/maps/search/@selection@
             Google Trans&late
             https://translate.google.com/#auto/en/@selection@
             -
@@ -6350,7 +6357,7 @@ loadConfig() {
             IMD&B
             http://www.imdb.com/find?q=@selection@
             &YouTube
-            http://www.youtube.com/results?search_query=@selection@
+            https://www.youtube.com/results?search_query=@selection@
             -
             -
             As &Application
@@ -6537,8 +6544,7 @@ menuBuilder(menu, parent:="") {
             menuBuilder(menu.entries, toSafeName(menu.name))
             Menu, % menu.name, Add
             Menu, % menu.name, Add, &Cancel, %handler%
-            for name, color in colors
-            {
+            for name, color in colors {
                 Menu, %name%, Color, %color%, Single
             }
             Menu, % menu.name, Show
@@ -6555,8 +6561,7 @@ menuBuilder(menu, parent:="") {
             }
             else {
                 ; iterate over the actual values
-                for i, entry in menu
-                {
+                for i, entry in menu {
                     menuBuilder(entry, parent)
                 }
             }
@@ -7089,6 +7094,16 @@ runAhkHelp() {
     WinActivate, ahk_id %hWnd%
 }
 
+runCapture(command, includeStdErr:=false) {
+    prevClipboard := ClipboardAll
+    redirect := " " . (includeStdErr ? "2>&1 " : "")
+    cmd := ComSpec . " /c " . command . redirect . "| clip"
+    RunWait, %cmd%,, Hide
+    result := Trim(Clipboard, " `t`r`n")
+    Clipboard := prevClipboard
+    return result
+}
+
 runDos(path:="") {
     exeStr := "ahk_group DosGroup"
     hWnd := getHwnd(exeStr)
@@ -7303,10 +7318,10 @@ runServices() {
 runTarget(target, workDir:="") {
     pid := Run(target, workDir)
     if (pid != "") {
-        WinWait, ahk_pid %pid%,, 1
-        Sleep(250)
+        WinWait, ahk_pid %pid%
         WinActivate, ahk_pid %pid%
     }
+    return pid
 }
 
 saveConfig(config, defaultConfig:=-1) {

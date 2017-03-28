@@ -1,3 +1,61 @@
+Differences in 1.20170328.1
+===========================
+HotKeys
+    - NEW   : Added Ctrl-Win-LeftButton to center the mouse pointer on the current screen.
+    - NEW   : Added Shift-Win-LeftButton to center the mouse pointer on the current screen.
+    - CHANGE: Changed Ctrl-Shift-Space to be Ctrl-Alt-Space for deleting blank lines.
+    - CHANGE: Changed Ctrl-Shift-Backspace to be Ctrl-Alt-Backspace for End/Backspace/Down.
+    - CHANGE: Changed Ctrl-Shift-End to be Alt-End for Up/End/Delete.
+HotStrings
+    - NEW   : Added new HotString "rc#-X" to repeat a character any number of times. The HotString
+              trigger breaks down as follows:
+                    rc  -->  repeat charcter
+                    #   -->  any positive number 1..9999999
+                    -   -->  any symbol or whitespace
+                    X   -->  the letter to be repeated
+              It is necessary to have some type of separator between the number and the character
+              because the character itself may be a number and there would be no way to distinguish
+              between the number of times to repeat and the actual character to repeat.
+
+           ***Note: when repeating values above 1 million times, it will take longer to produce the
+              string, which depends on the speed of your computer -- be patient.
+    - NEW   : Added new HotString "rs#-XYZ~" to repeat a string any number of times. The HotString
+              trigger breaks down as follows:
+                    rs  -->  repeat string
+                    #   -->  any positive number 1..9999999
+                    -   -->  any symbol or whitespace
+                    X   -->  the letter to be repeated
+              It is necessary to have some type of separator between the number and the start of the
+              string because the string itself may start with a number and there would be no way to
+              distinguish between the number of times to repeat and the first character of the string.
+
+           ***Note: when repeating values, that larger the string, the longer it will take to produce
+              the final string, which depends on the speed of your computer -- be patient. Also, it is
+              easy to run out of memory trying to repeat a large string many times.
+    - CHANGE: For HotStrings in DOS, they were not getting properly reset when ESC was pressed which
+              would result in the HotString not being executed when it should.
+Functions
+    - NEW   : Added the following new functions:
+                - hsRepeatString()
+                - runCapture()
+    - CHANGE: Modified isProcessSuspended() to hopefully execute slightly faster.
+    - CHANGE: Modified runTarget() to more often be successful in activating the newly launched
+              application. The PID for the launched application will now be returned by the function.
+Miscellaneous
+    - NEW   : Added additional information to help screen to differentiate when to scroll the mouse wheel
+              and when to tilt the mouse wheel. Arrows used to reference mouse wheel activity are open-
+              ended arrows, whereas arrows representing keys to be pressed are close-ended.
+    - CHANGE: Modified for URL for Google Image Quick Lookup from
+                    http://images.google.com/images?q=@selection@
+              to
+                    https://www.google.com/search?q=@selection@&tbm=isch
+    - CHANGE: Modified all Google/YouTube URLs for Quick Lookup to use HTTPS.
+    - CHANGE: Corrected the arrows on the help screen for scrolling left/right (Ctrl-WheelUp/WheelDown).
+              The previous arrows were pointing in the wrong direction.
+    - CHANGE: Adjusted some of the colors of the help screen.
+    - CHANGE: Minor code cleanup for consistency.
+
+
 Differences in 1.20170305.1
 ===========================
 Miscellaneous
