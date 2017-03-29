@@ -11,11 +11,16 @@ HotStrings
               trigger breaks down as follows:
                     rc  -->  repeat charcter
                     #   -->  any positive number 1..9999999
-                    -   -->  any symbol or whitespace
+                    -   -->  any symbol or whitespace separator (see below for valid choices)
                     X   -->  the letter to be repeated
               It is necessary to have some type of separator between the number and the character
               because the character itself may be a number and there would be no way to distinguish
               between the number of times to repeat and the actual character to repeat.
+
+              Valid Separators
+              ----------------
+              symbols   :  `~!@#$%^&*()-_=+[]{};:'",.<>/?
+              whitespace:  Space, Tab, or Enter
 
            ***Note: when repeating values above 1 million times, it will take longer to produce the
               string, which depends on the speed of your computer -- be patient.
@@ -23,11 +28,14 @@ HotStrings
               trigger breaks down as follows:
                     rs  -->  repeat string
                     #   -->  any positive number 1..9999999
-                    -   -->  any symbol or whitespace
-                    X   -->  the letter to be repeated
+                    -   -->  any symbol or whitespace separator (see above for valid choices)
+                    XYZ -->  the string to be repeated (may contain any characters, except ~)
+                    ~   -->  To signal the end of the string, the ~ character was chosen
               It is necessary to have some type of separator between the number and the start of the
               string because the string itself may start with a number and there would be no way to
               distinguish between the number of times to repeat and the first character of the string.
+
+              It is not possible to paste any text into this HotString.
 
            ***Note: when repeating values, that larger the string, the longer it will take to produce
               the final string, which depends on the speed of your computer -- be patient. Also, it is
