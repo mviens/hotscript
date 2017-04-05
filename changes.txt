@@ -1,3 +1,24 @@
+Differences in 1.20170405.1
+===========================
+HotStrings
+    - CHANGE: Changed the order of repeat character from "rc#-X" to "rcX#-" which types more naturally.
+    - CHANGE: Changed the order of repeat string from "rs#-XYZ" to "rsXYZ~#-" which types more naturally.
+Functions
+    - NEW   : Added the following new functions:
+                - getSelfHwnd()
+    - CHANGE: Added optimizations to repeatStr() that allow it to run more faster and more efficiently
+              when the repeat count of the string is greater than 10.
+Miscellaneous
+    - CHANGE: Fixed an issue with auto-updating AutoHotkey, which was caused by a change to their website.
+    - CHANGE: Added safety checking for auto-updates of both AutoHotkey and HotScript which should prevent
+              future errors from occuring, which at times would leave HotScript not fully functional. If
+              HotScript detects there is something wrong with the update of either, a window will be
+              displayed indicating the issue and a request to post a message to the forum (so it is
+              brought to our attention and can be fixed).
+    - CHANGE: Modified some URLs from "http" to "https".
+    - CHANGE: Minor code cleanup for consistency.
+
+
 Differences in 1.20170328.1
 ===========================
 HotKeys
@@ -319,15 +340,15 @@ Functions
 Differences in 1.20161014.1
 ===========================
 HotKeys
-    - CHANGE: Modified the behavior of checkVersions(), because as of version 1.1.24.02, AutoHotKey has changed the
+    - CHANGE: Modified the behavior of checkVersions(), because as of version 1.1.24.02, AutoHotkey has changed the
               filename of their installation file. This was causing HotScript to fail when it detected a new version
-              of AutoHotKey to be installed. Previously, new version of AutoHotKey were named like
+              of AutoHotkey to be installed. Previously, new version of AutoHotkey were named like
               "AutoHotkey112401_Install.exe" but are now available as "AutoHotkey_1.1.24.02_setup.exe". For existing
               users of HotScript, the best solution for now is to manually download and install the new version of
-              AutoHotKey and then manually install the new version of HotScript. While this should only affect a
+              AutoHotkey and then manually install the new version of HotScript. While this should only affect a
               small number of users, it is inconvenient. This should no longer happen regardless of the name of the
-              AutoHotKey installation. Further verification checks are being done to validate that any new version of
-              AutoHotKey that is downloaded is a valid file.
+              AutoHotkey installation. Further verification checks are being done to validate that any new version of
+              AutoHotkey that is downloaded is a valid file.
     - CHANGE: Changed action for DOS HotKey Alt-Up (or Alt-.) to run "cd .." instead of "cd..".  Linux/Unix wants the
               space between the 'd' and '.' whereas DOS did not care. This is helpful for DOS windows running SSH to
               access a Linux/Unix server.
@@ -662,7 +683,7 @@ Functions
                 - moveToEdge()
                 - pad()
                 - parseTemplate()
-    - NEW   : Added support for user-defined initialization function called userInit(). Because of how AutoHotKey
+    - NEW   : Added support for user-defined initialization function called userInit(). Because of how AutoHotkey
               works, do not define HotKeys or HotStrings within the userInit() function. These should be placed in
               HotScriptKeys.ahk or HotScriptStrings.ahk. Failure to do so will almost certainly cause significant
               parts of HotScript to stop functioning.
@@ -726,7 +747,7 @@ Miscellaneous
     - CHANGE: Added missing reference to "@#" HotString on the help screen
     - CHANGE: Minor internal changes to how the headers of the HotScript-*.ahk include scripts are written
     - CHANGE: Added additional information to the headers of HotScript-Strings.ahk to include dynamic HotStrings
-    - REMOVE: GetKeyState() because it now conflicts with AutoHotKey's internal function with the same name
+    - REMOVE: GetKeyState() because it now conflicts with AutoHotkey's internal function with the same name
     - REMOVE: getHotKeySections() because it was an obsolete function from a very old version
     - CHANGE: Minor change within hotString() to call addHotString() only if any conditional function returns true
     - CHANGE: Minor renaming of variables and optimization within hotString()
@@ -798,7 +819,7 @@ Differences in 1.20150907.1
     - this means HotStrings will now be defined via a regex, which adds tremendous power
     - while it can also mean slightly more work to setup very complex HotStrings, now many more things can be achieved
     - this functionality is only in the beginning stages - much more work needs to be done here
-- Added version checking and simple updating (at startup/reload) for both AutoHotKey and HotScript
+- Added version checking and simple updating (at startup/reload) for both AutoHotkey and HotScript
     - prompts the user with the current/new versions and asks for permission to download/install the new version
     - new configuration setting to disable version checking (enableVersionCheck)
 - Added version checking of HotScript at startup/reload
@@ -829,8 +850,8 @@ Differences in 20131211.2 through 1.20150821.2
         CtrlShiftP
         CtrlShiftQ
 - At startup, the following registry settings will be changed:
-    - the default editor for AutoHotKey script files is changed to the configured editor.
-    - the taskbar grouping of AutoHotKey scripts is turned off, to allow each script to display its own icon.
+    - the default editor for AutoHotkey script files is changed to the configured editor.
+    - the taskbar grouping of AutoHotkey scripts is turned off, to allow each script to display its own icon.
 - Added 467 new Oracle keywords.
 - Added DECODE and STDDEV to the Oracle keywords.
 - Removed certain hotkeys that are fairly specialized and of little interest to the typical users of HotScript

@@ -565,7 +565,7 @@ hkEppPrevFile() {
     SendInput, +{F6}
 }
 
-hkHotScriptAutoHotKeyHelp() {
+hkHotScriptAutoHotkeyHelp() {
     runAhkHelp()
 }
 
@@ -2089,7 +2089,7 @@ hsJiraTable() {
 }
 
 hsRepeatString($) {
-    sendText(repeatStr($.value(3), $.value(1)))
+    sendText(repeatStr($.value(1), $.value(2)))
 }
 
 ;__________________________________________________
@@ -2201,8 +2201,7 @@ binToHex(ByRef bytes, num:=0) {
     origFormat := A_FormatInteger
     SetFormat, Integer, Hex
     addr := &bytes
-    Loop, % num
-    {
+    Loop, %num% {
         b := *addr
         StringTrimLeft b, b, 2
         b := "0" . b
@@ -2287,116 +2286,148 @@ centerWindow(title:="A", monitor:="") {
 
 checkVersions(forceCheck:=false) {
     today := getDtsString()
+    forum := hs.vars.url[hs.TITLE].forum
     if (forceCheck || (hs.config.user.enableVersionCheck && hs.config.user.lastUpdateCheck < today)) {
         ahkAvailable := urlToVar(hs.vars.url.ahk.version)
+        Sleep(1000)
         if (ahkAvailable == "") {
-            debug("Unable to obtain AutoHotKey version information from:`n    " . hs.vars.url.ahk.version)
+            message("Unable to obtain AutoHotkey version information from:`n    " . hs.vars.url.ahk.version)
             return
         }
-        else if (ahkAvailable > A_AhkVersion) {
-            doUpdate := false
-            if (hs.config.user.enableAutoUpdate) {
-                doUpdate := true
-                showSplash("Updating AutoHotKey to version: " . ahkAvailable, 2000)
-            }
-            else {
+        else {
+            if (StrLen(ahkAvailable) > 20) {
                 msg =
-                    (LTrim
-                        The version of AutoHotKey in use is out-dated.
+                (LTrim Join`r`n
+                    An unexpected response occurred while checking for a new version of AutoHotkey.
 
-                        %A_Tab%Current`t: %A_AhkVersion%
-                        %A_Tab%Latest`t: %ahkAvailable%
+                    Please consider posting a message (with the response below) to the forums at: %forum%
 
-                        Would you like to download the new version and install it?
-                    )
-                if (message(msg, hs.TITLE . ": New AHK version available", 36, 30) == "Yes") {
-                    doUpdate := true
-                }
+                    Response:
+                    %ahkAvailable%
+                )
+                output(msg)
             }
-            if (doUpdate) {
-                dlFile := hs.vars.url.ahk.install
-                fullPath := A_ScriptDir . "\AutoHotKey_" . ahkAvailable . "_Setup.exe"
-                UrlDownloadToFile, % dlFile, % fullPath
-                if (ErrorLevel == 0) {
-                    size := FileGetSize(fullPath, "M")
-                    header := FileRead(fullPath, "*m1024")
-                    if (size < 2 || containsIgnoreCase(header, "<html", "<body", "<div", "error")) {
-                        message("The downloaded AutoHotKey update file is not valid.`n`nReview: " . fullPath)
-                        return
-                    }
-                    else {
-                        Run(fullPath)
-                    }
-
+            else if (ahkAvailable > A_AhkVersion) {
+                doUpdate := false
+                if (hs.config.user.enableAutoUpdate) {
+                    doUpdate := true
+                    showSplash("Updating AutoHotkey to version: " . ahkAvailable, 2000)
                 }
                 else {
-                    message("Failed to download AutoHotKey installer from:`n" . dlFile . "`n`nError: " . ErrorLevel)
-                    return
+                    msg =
+                        (LTrim
+                            The version of AutoHotkey in use is out-dated.
+
+                            %A_Tab%Current`t: %A_AhkVersion%
+                            %A_Tab%Latest`t: %ahkAvailable%
+
+                            Would you like to download the new version and install it?
+                        )
+                    if (message(msg, hs.TITLE . ": New AHK version available", 36, 30) == "Yes") {
+                        doUpdate := true
+                    }
+                }
+                if (doUpdate) {
+                    dlFile := hs.vars.url.ahk.install
+                    fullPath := A_ScriptDir . "\AutoHotkey_" . ahkAvailable . "_Setup.exe"
+                    UrlDownloadToFile, % dlFile, % fullPath
+                    if (ErrorLevel == 0) {
+                        size := FileGetSize(fullPath, "M")
+                        header := FileRead(fullPath, "*m1024")
+                        if (size < 2 || containsIgnoreCase(header, "<html", "<body", "<div", "error")) {
+                            message("The downloaded AutoHotkey update file is not valid.`n`nReview: " . fullPath)
+                            return
+                        }
+                        else {
+                            Run(fullPath)
+                        }
+
+                    }
+                    else {
+                        message("Failed to download AutoHotkey installer from:`n" . dlFile . "`n`nError: " . ErrorLevel)
+                        return
+                    }
                 }
             }
         }
         hsAvailable := urlToVar(hs.vars.url[hs.TITLE].version)
+        Sleep(1000)
         if (hsAvailable == "") {
             message("Unable to obtain " . hs.TITLE . " version information from:`n    " . hs.vars.url[hs.TITLE].version)
             return
         }
-        else if (hsAvailable > hs.VERSION) {
-            doUpdate := false
-            if (hs.config.user.enableAutoUpdate) {
-                doUpdate := true
-                showSplash("Updating " . hs.TITLE . " to version: " . hsAvailable, 2000)
+        else {
+            if (StrLen(hsAvailable) > 20) {
+                title := hs.TITLE
+                msg =
+                (LTrim Join`r`n
+                    An unexpected response occurred while checking for a new version of %title%.
+
+                    Please consider posting a message (with the response below) to the forums at: %forum%
+
+                    Response:
+                    %hsAvailable%
+                )
+                output(msg)
             }
-            else {
-                msg := "
-                    (LTrim
-                        The version of " . hs.TITLE . " in use is out-dated.
-
-                        " . A_Tab . "Current`t: " . hs.VERSION . "
-                        " . A_Tab . "Latest`t: " . hsAvailable . "
-
-                        Would you like to download the new version and install it?
-                    )"
-                if (message(msg, hs.TITLE . ": New version available", 36, 30) == "Yes") {
+            else if (hsAvailable > hs.VERSION) {
+                doUpdate := false
+                if (hs.config.user.enableAutoUpdate) {
                     doUpdate := true
+                    showSplash("Updating " . hs.TITLE . " to version: " . hsAvailable, 2000)
                 }
-            }
-            if (doUpdate) {
-                ver := RegexReplace(ahkAvailable, "\.", "")
-                dlFile := hs.vars.url[hs.TITLE].download
-                newPath := A_ScriptFullPath . ".new"
-                UrlDownloadToFile, % dlFile, % newPath
-                if (ErrorLevel == 0) {
-                    header := FileRead(newPath, "*m1024")
-                    if (contains(header, "There should be no reason to edit this file directly.")) {
-                        FileMove, %newPath%, %A_ScriptFullPath%, true
-                        setLastUpdateCheck(today)
-                        output := "last: " . hs.VERSION . "`nnew: " . hsAvailable . "`n"
-                        FileDelete, % hs.file.UPDATE
-                        FileAppend, %output%, % hs.file.UPDATE
-                        selfReload()
+                else {
+                    msg := "
+                        (LTrim
+                            The version of " . hs.TITLE . " in use is out-dated.
+    
+                            " . A_Tab . "Current`t: " . hs.VERSION . "
+                            " . A_Tab . "Latest`t: " . hsAvailable . "
+    
+                            Would you like to download the new version and install it?
+                        )"
+                    if (message(msg, hs.TITLE . ": New version available", 36, 30) == "Yes") {
+                        doUpdate := true
+                    }
+                }
+                if (doUpdate) {
+                    ver := RegexReplace(ahkAvailable, "\.", "")
+                    dlFile := hs.vars.url[hs.TITLE].download
+                    newPath := A_ScriptFullPath . ".new"
+                    UrlDownloadToFile, % dlFile, % newPath
+                    if (ErrorLevel == 0) {
+                        header := FileRead(newPath, "*m1024")
+                        if (contains(header, "There should be no reason to edit this file directly.")) {
+                            FileMove, %newPath%, %A_ScriptFullPath%, true
+                            setLastUpdateCheck(today)
+                            output := "last: " . hs.VERSION . "`nnew: " . hsAvailable . "`n"
+                            FileDelete, % hs.file.UPDATE
+                            FileAppend, %output%, % hs.file.UPDATE
+                            selfReload()
+                        }
+                        else {
+                            message("The downloaded " . hs.TITLE . " update file is not valid.`n`nReview: " . newPath)
+                            return
+                        }
                     }
                     else {
-                        message("The downloaded " . hs.TITLE . " update file is not valid.`n`nReview: " . newPath)
+                        message("Failed to download " . hs.TITLE . " from:`n`n" . dlFile . "`n`nError: " . ErrorLevel)
                         return
                     }
                 }
-                else {
-                    message("Failed to download " . hs.TITLE . " from:`n`n" . dlFile . "`n`nError: " . ErrorLevel)
-                    return
-                }
             }
-        }
-        else {
-            setLastUpdateCheck(today)
-            if (forceCheck) {
-                message(hs.TITLE . " is already running the latest version.")
+            else {
+                setLastUpdateCheck(today)
+                if (forceCheck) {
+                    message(hs.TITLE . " is already running the latest version.")
+                }
             }
         }
     }
     else {
         setLastUpdateCheck(today)
     }
-    path := A_ScriptDir . "\AutoHotKey*.exe"
+    path := A_ScriptDir . "\AutoHotkey*.exe"
     Loop, Files, % path
     {
         FileDelete(A_LoopFileLongPath)
@@ -3697,7 +3728,7 @@ createUserFiles() {
             %A_Space%                       - hs.const.REPLACE_MODE.Regex  `(or 3`)  -  `(regular expression`)
             %A_Space%       restrict  - `(optional`) either a function name that must return true or false if the action should be
             %A_Space%                   executed OR a string in the format of "ahk_xxx yyy" that must match the current window
-            %A_Space%                       - See AutoHotKey help for: ahk_class, ahk_exe_ ahk_group, ahk_id, ahk_pid
+            %A_Space%                       - See AutoHotkey help for: ahk_class, ahk_exe_ ahk_group, ahk_id, ahk_pid
             %A_Space%                       - Example: "ahk_class ConsoleWindowClass"
             %A_Space%                           - This would restrict the action to executing only for windows that are a "console"
             %A_Space%                             application such as DOS or PowerShell.  Information on any window can be found by
@@ -4086,8 +4117,7 @@ extractLocationAndResize() {
             if (Abs(w - curMon.workWidth) <= GAP) {
                 top := ""
                 height := ""
-                Loop, % hs.vars.monitors.count
-                {
+                Loop, % hs.vars.monitors.count {
                     mon := hs.vars.monitors[A_Index]
                     if (top == "" || mon.workTop < top) {
                         top := mon.workTop
@@ -4115,8 +4145,7 @@ extractLocationAndResize() {
             if (Abs(w - curMon.workWidth) <= GAP) {
                 left := ""
                 width := ""
-                Loop, % hs.vars.monitors.count
-                {
+                Loop, % hs.vars.monitors.count {
                     mon := hs.vars.monitors[A_Index]
                     if (left == "" || mon.workLeft < left) {
                         left := mon.workLeft
@@ -4175,8 +4204,7 @@ findOnPath(filename) {
         SplitPath(filename, findName)
         paths := EnvGet("Path")
         StringSplit, pathArray, paths, `;
-        Loop, % pathArray0
-        {
+        Loop, %pathArray0% {
             file := StrReplace(pathArray%A_Index% . "\", "\\", "\") . findName
             if (FileExist(file) != "") {
                 target := file
@@ -4309,7 +4337,7 @@ getDefaultHotKeyDefs(type) {
         hk["hkEppPrevFile"] := "xbutton1"
     }
     else if (type == "hkHotScript") {
-        hk["hkHotScriptAutoHotKeyHelp"] := "#1"
+        hk["hkHotScriptAutoHotkeyHelp"] := "#1"
         hk["hkHotScriptEditDefaultIni"] := "#9"
         hk["hkHotScriptEditHotScript"] := "#3"
         hk["hkHotScriptEditUserIni"] := "#8"
@@ -4613,6 +4641,10 @@ getExplorerPath() {
     return xPath
 }
 
+getSelfHwnd() {
+    return WinExist("ahk_pid " . DllCall("GetCurrentProcessId"))
+}
+
 getHwnd(hWnd:="") {
     hWnd := Trim(hWnd)
     if (hWnd == "") {
@@ -4696,8 +4728,7 @@ getMonitorForWindow(hWnd:="") {
         workBottom    := NumGet(monInfo, 32, "Int")
         isPrimary     := NumGet(monInfo, 36, "Int") & 1
         SysGet, monitorCount, MonitorCount
-        Loop, % monitorCount
-        {
+        Loop, %monitorCount% {
             SysGet, curMon, Monitor, %A_Index%
             if (monitorLeft == curMonLeft && monitorTop == curMonTop && monitorRight == curMonRight && monitorBottom == curMonBottom) {
                 monIdx := A_Index
@@ -4891,8 +4922,7 @@ hexToBin(ByRef bytes, hex, num:=0)
     }
     StringLeft bytes, bytes, num
     addr := &bytes
-    Loop, % num
-    {
+    Loop, %num% {
        StringLeft ch, hex, 2
        StringTrimLeft hex, hex, 2
        DllCall("RtlFillMemory", "UInt", addr, "UInt", 1, "UChar", "0x" . ch)
@@ -5168,8 +5198,7 @@ hotString(trigger, replace, mode:=1, clearTrigger:=true, condition:= "") {
                     if (local$.count() == 0) {
                         str := StrReplace(str, "$0", local$.value(0))
                     }
-                    Loop, % local$.count()
-                    {
+                    Loop, % local$.count() {
                         str := StrReplace(str, "$" . A_Index, local$.value(A_Index))
                     }
                     pasteText(str)
@@ -5399,8 +5428,8 @@ initHotStrings() {
         hotString("\b5\/6" . endChars, Chr(0x215A), mode.Regex,, "isNotActiveCalculator")
         hotString("\b7\/8" . endChars, Chr(0x215E), mode.Regex,, "isNotActiveCalculator")
         hotString("\b([a-z])L", "$1:", mode.Regex)
-        hotString("\brc(\d{1,7})(?:" . hs.const.END_CHARS_REGEX . ")(.)", "hsRepeatString", mode.Regex)
-        hotString("\brs(\d{1,6})(?:" . hs.const.END_CHARS_REGEX . ")(.*)~", "hsRepeatString", mode.Regex)
+        hotString("\brc(.)(\d{1,7})(" . hs.const.END_CHARS_REGEX . ")", "hsRepeatString", mode.Regex)
+        hotString("\brs(.*)~(\d{1,7})(" . hs.const.END_CHARS_REGEX . ")", "hsRepeatString", mode.Regex)
         hotString("@bullet", Chr(0x2022))
         hotString("@club", Chr(0x2663))
         hotString("@copy", Chr(0x00A9))
@@ -5528,7 +5557,7 @@ initHotStrings() {
 }
 
 initInternalVars() {
-    hs.VERSION := "1.20170328.1"
+    hs.VERSION := "1.20170405.1"
     hs.TITLE := "HotScript"
     hs.BASENAME := A_ScriptDir . "\" . hs.TITLE
 
@@ -5594,11 +5623,12 @@ initInternalVars() {
     hs.hotkeys.functions := {}
     hs.hotkeys.params := {}
     ; vars
+    ahkHome := "https://autohotkey.com/"
     urls := {}
     urls.ahk := {
         (LTrim Comments Join,
-            download: "http://ahkscript.org/download/1.1/"
-            install: "https://autohotkey.com/download/ahk-install.exe"
+            download: ahkHome . "download/1.1/"
+            install: ahkHome . "download/ahk-install.exe"
         )}
     urls.ahk.version := urls.ahk.download . "version.txt"
     urls[hs.TITLE] := {
@@ -5608,7 +5638,7 @@ initInternalVars() {
     homeRaw := urls[hs.TITLE].home . "/raw/master/"
     urls[hs.TITLE].chat := "https://gitter.im/hotscript/Lobby"
     urls[hs.TITLE].download := homeRaw . hs.TITLE . ".ahk"
-    urls[hs.TITLE].forum := "http://hotscript.prophpbb.com/"
+    urls[hs.TITLE].forum := "https://hotscript.prophpbb.com/"
     urls[hs.TITLE].history := homeRaw . "changes.txt"
     urls[hs.TITLE].version := homeRaw . "version.txt"
     myVars := {
@@ -5921,8 +5951,8 @@ initQuickHelp() {
         #`%#%vspace%`t percent of number`t`t
         #/#%vspace%`t Common fractions (n/[2-6,8])`t
         [c-z]L`t [c-z]:`t`t`t`t
-        rc#%vspace%X`t Repeat character X, # times`t
-        rs#%vspace%XYZ~ Repeat string XYZ, # times`t
+        rcX#%vspace%`t Repeat character X, # times`t
+        rsXYZ~#%vspace% Repeat string XYZ, # times`t
         @bullet`t Bullet`t`t&#x2022;`t`t
         @club`t Club`t`t&#x2663;`t`t
         @copy`t Copyright`t&#x00A9;`t`t
@@ -6057,7 +6087,7 @@ initQuickHelp() {
     hsVariableHelpDisabled := replaceEachLine(hsVariableHelpEnabled, spacer)
     hsVariableHelp := (hs.config.user.enableHsVariables ? hsVariableHelpEnabled : hsVariableHelpDisabled)
 
-    hsHeader := vspace . "`t`t`t`tHotStrings ending with " . vspace . " means any whitespace or punctuation character is required." . eol . eol
+    hsHeader := "!BLANK!" . vspace . " = any whitespace/punctuation (required)" . eol . eol
     hsCol1 := hsAliasHelp . eol . hsVariableHelp
     hsCol2 := hsAutoCorrectHelp . eol . hsHtmlHelp
     hsCol3 := hsDatesHelp . eol . hsCodeHelp
@@ -6074,11 +6104,12 @@ initQuickHelp() {
     }
     hsResult := RegexReplace(hsResult, "<", "&lt;")
     hsResult := RegexReplace(hsResult, ">", "&gt;")
-    hsResult := RegexReplace(hsResult, "(with )(" . vspace . ")( means)", "$1<span class=""sep"">&nbsp;</span>$3")
+    hsResult := RegexReplace(hsResult, "(" . vspace . ")( = any)", "<span class=""sep"">&nbsp;</span>$2")
     hsResult := RegexReplace(hsResult, "([A-Z][^\t\n]+ )(Hot)(Strings)", "<span class=""section"">$1$3</span>`t")
     hsResult := RegexReplace(hsResult, "(\w|\#)(" . vspace . ")", "$1<span class=""sep"">&nbsp;</span>$3")
     hsResult := RegexReplace(hsResult, "(&lt;)(TAG)", "$1<span class=""key"">$2</span>")
     hsResult := RegexReplace(hsResult, vspace, "&nbsp;")
+    hsResult := RegexReplace(hsResult, "!BLANK!", "<span></span>")
 
     hsVersion := hs.VERSION
     homeUrl := hs.vars.url.HotScript.home
@@ -6349,7 +6380,7 @@ loadConfig() {
             &Thesaurus
             http://thesaurus.com/browse/@selection@
             &Wikipedia
-            http://en.wikipedia.org/w/wiki.phtml?search=@selection@
+            https://en.wikipedia.org/w/wiki.phtml?search=@selection@
             &Urban Dictionary
             http://www.urbandictionary.com/define.php?term=@selection@
             -
@@ -6365,9 +6396,9 @@ loadConfig() {
             -
             -
             AutoHotkey Manual
-            http://ahkscript.org/docs/commands/@selection@.htm
-            AutoHotKey Forum
-            http://ahkscript.org/boards/search.php?keywords=@selection@
+            https://autohotkey.com/docs/commands/@selection@.htm
+            AutoHotkey Forum
+            https://autohotkey.com/boards/search.php?keywords=@selection@
             -
             -
             Cancel
@@ -6781,8 +6812,7 @@ moveToMonitor(hWnd:="", direction:=1, keepRelativeSize:=true) {
         return
     }
 
-    Loop, % monCount
-    {
+    Loop, %monCount% {
         SysGet, Monitor%A_Index%, MonitorWorkArea, %A_Index%
         Monitor%A_Index%Width := Monitor%A_Index%Right - Monitor%A_Index%Left
         Monitor%A_Index%Height := Monitor%A_Index%Bottom - Monitor%A_Index%Top
@@ -6798,8 +6828,7 @@ moveToMonitor(hWnd:="", direction:=1, keepRelativeSize:=true) {
     WinCenterX := WinX + WinW / 2
     WinCenterY := WinY + WinH / 2
     curMonitor := 0
-    Loop, % monCount
-    {
+    Loop, %monCount% {
         if ((WinCenterX >= Monitor%A_Index%Left) && (WinCenterX < Monitor%A_Index%Right) && (WinCenterY >= Monitor%A_Index%Top) && (WinCenterY < Monitor%A_Index%Bottom)) {
             curMonitor := A_Index
             break
@@ -6967,8 +6996,7 @@ refreshMonitors() {
     hs.vars.monitors.primary := monPrimary
     hs.vars.monitors.desktopHeight := virtualHeight
     hs.vars.monitors.desktopWidth := virtualWidth
-    Loop, % hs.vars.monitors.count
-    {
+    Loop, % hs.vars.monitors.count {
         SysGet, monName, MonitorName, %A_Index%
         SysGet, mon, Monitor, %A_Index%
         SysGet, monWork, MonitorWorkArea, %A_Index%
@@ -7015,10 +7043,65 @@ registerKeys() {
 }
 
 repeatStr(value, count) {
+    start := A_TickCount
     result := ""
-    Loop, % count
-    {
-        result .= value
+    if (count <= 10) {
+        Loop, %count% {
+            result .= value
+        }
+    }
+    else {
+        remainder := count
+        millions := Floor(remainder / 1000000)
+        remainder -= (millions * 1000000)
+        thousands := Floor(remainder / 1000)
+        remainder -= (thousands * 1000)
+        hundreds := Floor(remainder / 100)
+        remainder -= (hundreds * 100)
+        tens := Floor(remainder / 10)
+        remainder -= (tens * 10)
+        ones := remainder
+        Loop, 10 {
+            tenStr .= value
+        }
+        if (count >= 100) {
+            Loop, 10 {
+                hundredStr .= tenStr
+            }
+        }
+        if (count >= 1000) {
+            Loop, 10 {
+                thousandStr .= hundredStr
+            }
+        }
+        if (count >= 1000000) {
+            Loop, 1000 {
+                millionStr .= thousandStr
+            }
+        }
+        Loop, %millions% {
+            result .= millionStr
+        }
+        millionStr := ""
+        Loop, %thousands% {
+            result .= thousandStr
+        }
+        thousandStr := ""
+        Loop, %hundreds% {
+            result .= hundredStr
+        }
+        hundredStr := ""
+        Loop, %tens% {
+            result .= tenStr
+        }
+        tenStr := ""
+        Loop, %ones% {
+            result .= value
+        }
+    }
+    end := A_TickCount
+    if (count > 500) {
+        message("Duration: " . (end-start))
     }
     return result
 }
@@ -7299,7 +7382,7 @@ runSelectedText() {
             }
             else {
                 searchText := urlEncode(selText)
-                Run("http://www.google.com/search?q=" . searchText)
+                Run("https://www.google.com/search?q=" . searchText)
             }
         }
     }
