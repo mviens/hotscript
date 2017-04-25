@@ -1,3 +1,28 @@
+Differences in 1.20170425.1
+===========================
+HotStrings
+    - CHANGE: Changed "rcX#-" and "rsXYZ~#-" to properly capture the typed number.
+Functions
+    - NEW   : Added new mouse HotKey (Back button) for going up one folder level while in Explorer.
+    - NEW   : Added new mouse HotKey (Forward button) for going to the previous folder while in
+              Explorer.
+    - NEW   : Added the following new functions:
+                - containsEol()
+                - getHwndForPid()
+                - group()
+                - isActiveExplorer()
+Miscellaneous
+    - CHANGE: Fixed issue with Shift-Win-NumPad7/8/9 keys being triggered as though they were
+              Shift-Win-NumPad4/5/6 even though the actual keys were never defined as a HotKey. This
+              deals with a limitation of AutoHotkey itself. Because of this issue, it will be difficult
+              to assign user-defined HotKeys to these particular combinations.
+    - CHANGE: Fixed issue with using Win-G when the active window is a DOS window and a process was
+              running. The process would be terminated because HotScript tries to determine any selected
+              text by issuing a Ctrl-C.
+    - CHANGE: Code refactoring using the new functions.
+    - CHANGE: Minor code cleanup for consistency.
+
+
 Differences in 1.20170405.1
 ===========================
 HotStrings

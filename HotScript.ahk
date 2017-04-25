@@ -475,9 +475,8 @@ hkActionToggleDesktopIcons() {
 }
 
 hkActionWindowsExplorer() {
-    group := "ahk_group ExplorerGroup"
-    hWnd := getHwnd(group)
-    if (hWnd && !WinActive(group)) {
+    hWnd := getHwnd(group("Explorer"))
+    if (hWnd && !isActiveExplorer()) {
         WinActivate, ahk_id %hWnd%
     }
     else {
@@ -671,10 +670,10 @@ hkMiscCenterMouseWindow() {
 }
 
 hkMiscCreateFile() {
-    if (WinActive("ahk_group ExplorerGroup")) {
+    if (isActiveExplorer()) {
         createNewInExplorer("file")
     }
-    else if (WinActive("ahk_group DesktopGroup")) {
+    else if (WinActive(group("Desktop"))) {
         createNewOnDesktop("file")
     }
     else {
@@ -683,10 +682,10 @@ hkMiscCreateFile() {
 }
 
 hkMiscCreateFolder() {
-    if (WinActive("ahk_group ExplorerGroup")) {
+    if (isActiveExplorer()) {
         createNewInExplorer("folder")
     }
-    else if (WinActive("ahk_group DesktopGroup")) {
+    else if (WinActive(group("Desktop"))) {
         createNewOnDesktop("folder")
     }
     else {
@@ -716,6 +715,14 @@ hkMiscDragMouseRight() {
 
 hkMiscDragMouseUp() {
     MouseClickDrag("Left", 0, 0, 0, -1, 0)
+}
+
+hkMiscExplorerBack() {
+    SendInput, !{Left}
+}
+
+hkMiscExplorerUpOneLevel() {
+    SendInput, !{Up}
 }
 
 hkMiscMouseDown() {
@@ -768,7 +775,7 @@ hkTextDeleteBlankLines() {
 }
 
 hkTextDeleteCurrentLine() {
-    if (WinActive("ahk_group EditPadGroup")) {
+    if (WinActive(group("EditPad"))) {
         SendInput, ^!y
     }
     else {
@@ -777,7 +784,7 @@ hkTextDeleteCurrentLine() {
 }
 
 hkTextDeleteToEol() {
-    if (hs.config.user.enableHkEpp && WinActive("ahk_group EditPadGroup")) {
+    if (hs.config.user.enableHkEpp && WinActive(group("EditPad"))) {
         hkEppDeleteToEol()
     }
     else if (isActiveDos()) {
@@ -785,7 +792,7 @@ hkTextDeleteToEol() {
     }
     else {
         SendInput, +{End}
-        if (WinActive("ahk_group MSWordGroup")) {
+        if (WinActive(group("MSWord"))) {
             SendInput, +{Left}
         }
         SendInput, {Delete}
@@ -802,7 +809,7 @@ hkTextDeleteToSol() {
 }
 
 hkTextDeleteWord() {
-    if (WinActive("ahk_group EditPadGroup")) {
+    if (WinActive(group("EditPad"))) {
         SendInput, ^{Delete}
     }
     else if (WinActive("ahk_exe i)p4v.exe")) {
@@ -836,7 +843,7 @@ hkTextDeleteWord() {
 }
 
 hkTextDuplicateCurrentLine() {
-    if (WinActive("ahk_group EditPadGroup")) {
+    if (WinActive(group("EditPad"))) {
         SendInput, ^+{Up}
     }
     else {
@@ -849,10 +856,10 @@ hkTextEndBackspaceDown() {
 }
 
 hkTextMoveCurrentLineDown() {
-    if (WinActive("ahk_group EditPadGroup")) {
+    if (WinActive(group("EditPad"))) {
         SendInput, ^!+{Down}
     }
-    else if (WinActive("ahk_group ExplorerGroup")) {
+    else if (isActiveExplorer()) {
         SendInput, !{Down}
     }
     else {
@@ -861,13 +868,13 @@ hkTextMoveCurrentLineDown() {
 }
 
 hkTextMoveCurrentLineUp() {
-    if (WinActive("ahk_group EditPadGroup")) {
+    if (WinActive(group("EditPad"))) {
         SendInput, ^!+{Up}
     }
     else if (isActiveDos()) {
         hkDosCdParent()
     }
-    else if (WinActive("ahk_group ExplorerGroup")) {
+    else if (isActiveExplorer()) {
         SendInput, !{Up}
     }
     else {
@@ -876,7 +883,7 @@ hkTextMoveCurrentLineUp() {
 }
 
 hkTextTrimLines() {
-    if (WinActive("ahk_group EditPadGroup")) {
+    if (WinActive(group("EditPad"))) {
         SendInput, ^!.
     }
     else {
@@ -889,7 +896,7 @@ hkTextUpEndDelete() {
 }
 
 hkTransformEncrypt() {
-    if (WinActive("ahk_group ExplorerGroup")) {
+    if (isActiveExplorer()) {
         Send, ^+e
     }
     else {
@@ -906,7 +913,7 @@ hkTransformInvertCase() {
 }
 
 hkTransformLowerCase() {
-    if (WinActive("ahk_group EditPadGroup")) {
+    if (WinActive(group("EditPad"))) {
         SendInput, ^+l
     }
     else {
@@ -919,7 +926,7 @@ hkTransformMySqlUpper() {
 }
 
 hkTransformNumberPrepend() {
-    if (WinActive("ahk_group ExplorerGroup")) {
+    if (isActiveExplorer()) {
         SendInput, ^+n
     }
     else {
@@ -968,7 +975,7 @@ hkTransformTagify() {
 }
 
 hkTransformTitleCase() {
-    if (WinActive("ahk_group BrowserGroup")) {
+    if (WinActive(group("Browser"))) {
         SendInput, ^+t
     }
     else {
@@ -981,7 +988,7 @@ hkTransformUnwrapText() {
 }
 
 hkTransformUpperCase() {
-    if (WinActive("ahk_group EditPadGroup")) {
+    if (WinActive(group("EditPad"))) {
         SendInput, ^+u
     }
     else {
@@ -2201,7 +2208,7 @@ binToHex(ByRef bytes, num:=0) {
     origFormat := A_FormatInteger
     SetFormat, Integer, Hex
     addr := &bytes
-    Loop, %num% {
+    Loop, % num {
         b := *addr
         StringTrimLeft b, b, 2
         b := "0" . b
@@ -2518,6 +2525,10 @@ contains(source, items*) {
         }
     }
     return result
+}
+
+containsEol(text) {
+    return (stripEol(text) != text)
 }
 
 containsIgnoreCase(source, items*) {
@@ -3973,8 +3984,11 @@ extractLocationAndResize() {
         dimension := match1
         position := match2
         if (dimension == "3x3" && GetKeyState("Shift", "p")) {
-            ; necessary because AHK does not register Alt-Win-NumPad keys but instead it fires as though Win-NumPad key was pressed with the NumLock being toggled
+            ; necessary because AHK does not register Shift-Win-NumPad keys but instead it fires as though Win-NumPad key was pressed with the NumLock being toggled
             dimension := "3x2"
+            if (position > 6) {
+                return
+            }
         }
         RegexMatch(dimension, "(\d)x(\d)", dimCount)
         widthCount := dimCount1
@@ -4204,7 +4218,7 @@ findOnPath(filename) {
         SplitPath(filename, findName)
         paths := EnvGet("Path")
         StringSplit, pathArray, paths, `;
-        Loop, %pathArray0% {
+        Loop, % pathArray0 {
             file := StrReplace(pathArray%A_Index% . "\", "\\", "\") . findName
             if (FileExist(file) != "") {
                 target := file
@@ -4368,6 +4382,8 @@ getDefaultHotKeyDefs(type) {
         hk["hkMiscDragMouseLeft"] := "^!#left"
         hk["hkMiscDragMouseRight"] := "^!#right"
         hk["hkMiscDragMouseUp"] := "^!#up"
+        hk["hkMiscExplorerBack"] := "xbutton2"
+        hk["hkMiscExplorerUpOneLevel"] := "xbutton1"
         hk["hkMiscMouseDown"] := "!#down"
         hk["hkMiscMouseLeft"] := "!#left"
         hk["hkMiscMouseRight"] := "!#right"
@@ -4606,7 +4622,7 @@ getEol(text) {
 
 getExplorerPath() {
     xPath := ""
-    if (WinActive("ahk_group ExplorerGroup")) {
+    if (isActiveExplorer()) {
         hWnd := getHwnd()
 ;        debug("hWnd = " . hWnd)
         url := ""
@@ -4655,6 +4671,12 @@ getHwnd(hWnd:="") {
         hWnd := "ahk_id " . hWnd
     }
     return WinExist(hWnd)
+}
+
+getHwndForPid(pid) {
+    pidStr := "ahk_pid " . pid
+    WinGet, hWnd, ID, %pidStr%
+    return hWnd
 }
 
 getIndent() {
@@ -4728,7 +4750,7 @@ getMonitorForWindow(hWnd:="") {
         workBottom    := NumGet(monInfo, 32, "Int")
         isPrimary     := NumGet(monInfo, 36, "Int") & 1
         SysGet, monitorCount, MonitorCount
-        Loop, %monitorCount% {
+        Loop, % monitorCount {
             SysGet, curMon, Monitor, %A_Index%
             if (monitorLeft == curMonLeft && monitorTop == curMonTop && monitorRight == curMonRight && monitorBottom == curMonBottom) {
                 monIdx := A_Index
@@ -4760,7 +4782,10 @@ getSelectedText() {
 }
 
 getSelectedTextOrPrompt(title) {
-    selText := getSelectedText()
+    selText := ""
+    if (!isActiveDos()) {
+        selText := getSelectedText()
+    }
     if (selText == "") {
         hWnd := getHwnd()
         selText := ask(title, "Enter a phrase or value...", 500)
@@ -4908,6 +4933,10 @@ getWindowInfo(hWnd) {
     return win
 }
 
+group(name) {
+    return ("ahk_group " . name . "Group")
+}
+
 hexToBin(ByRef bytes, hex, num:=0)
 {
     needed := Ceil(StrLen(hex) / 2)
@@ -4922,7 +4951,7 @@ hexToBin(ByRef bytes, hex, num:=0)
     }
     StringLeft bytes, bytes, num
     addr := &bytes
-    Loop, %num% {
+    Loop, % num {
        StringLeft ch, hex, 2
        StringTrimLeft hex, hex, 2
        DllCall("RtlFillMemory", "UInt", addr, "UInt", 1, "UChar", "0x" . ch)
@@ -5428,8 +5457,8 @@ initHotStrings() {
         hotString("\b5\/6" . endChars, Chr(0x215A), mode.Regex,, "isNotActiveCalculator")
         hotString("\b7\/8" . endChars, Chr(0x215E), mode.Regex,, "isNotActiveCalculator")
         hotString("\b([a-z])L", "$1:", mode.Regex)
-        hotString("\brc(.)(\d{1,7})(" . hs.const.END_CHARS_REGEX . ")", "hsRepeatString", mode.Regex)
-        hotString("\brs(.*)~(\d{1,7})(" . hs.const.END_CHARS_REGEX . ")", "hsRepeatString", mode.Regex)
+        hotString("\brc(.)(\d{1,7})" . hs.const.END_CHARS_REGEX, "hsRepeatString", mode.Regex)
+        hotString("\brs(.*)~(\d{1,7})" . hs.const.END_CHARS_REGEX, "hsRepeatString", mode.Regex)
         hotString("@bullet", Chr(0x2022))
         hotString("@club", Chr(0x2663))
         hotString("@copy", Chr(0x00A9))
@@ -5557,7 +5586,7 @@ initHotStrings() {
 }
 
 initInternalVars() {
-    hs.VERSION := "1.20170405.1"
+    hs.VERSION := "1.20170425.1"
     hs.TITLE := "HotScript"
     hs.BASENAME := A_ScriptDir . "\" . hs.TITLE
 
@@ -5565,7 +5594,7 @@ initInternalVars() {
     hs.const := {
         (LTrim Comments Join,
             COMMENT_HEADER_LINE: repeatStr("-", 70)
-            END_CHARS_REGEX: "([``~!@#$%^&*()\-_=+[\]{}\\|;:'"",.<>/?\s\t\r\n])"
+            END_CHARS_REGEX: "([``~!@#$%^&*\(\)\-_=+[\]{}\\|;:'"",.<>/?\s\t\r\n])"
             EOL_MAC: "`r"
             EOL_NIX: "`n"
             EOL_WIN: "`r`n"
@@ -5758,6 +5787,8 @@ initQuickHelp() {
         %spacer%
         Miscellaneous HotKeys`t`t
         %colLine%
+        MOUSEBackMOUSE`t`tExplorer: Up 1 level`t`t
+        MOUSEForwardMOUSE`t`tExplorer: Prev folder`t`t
         [C]-CapsLock`tCenter mouse (screen)`t`t
         [CW]-MOUSELeftMOUSE`t`tCenter mouse (screen)`t`t
         [S]-CapsLock`tCenter mouse (window)`t`t
@@ -6195,13 +6226,17 @@ is(value, type) {
     return result
 }
 
-isActiveDos() {
-    return (WinActive("ahk_group DosGroup"))
-}
-
 isActiveCalculator() {
     procName := getActiveProcessName()
     return (equalsIgnoreCase(procName, "calc.exe") || equalsIgnoreCase(procName, "calculator.exe"))
+}
+
+isActiveDos() {
+    return (WinActive(group("Dos")))
+}
+
+isActiveExplorer() {
+    return (WinActive(group("Explorer")))
 }
 
 isArray(obj) {
@@ -6812,7 +6847,7 @@ moveToMonitor(hWnd:="", direction:=1, keepRelativeSize:=true) {
         return
     }
 
-    Loop, %monCount% {
+    Loop, % monCount {
         SysGet, Monitor%A_Index%, MonitorWorkArea, %A_Index%
         Monitor%A_Index%Width := Monitor%A_Index%Right - Monitor%A_Index%Left
         Monitor%A_Index%Height := Monitor%A_Index%Bottom - Monitor%A_Index%Top
@@ -6828,7 +6863,7 @@ moveToMonitor(hWnd:="", direction:=1, keepRelativeSize:=true) {
     WinCenterX := WinX + WinW / 2
     WinCenterY := WinY + WinH / 2
     curMonitor := 0
-    Loop, %monCount% {
+    Loop, % monCount {
         if ((WinCenterX >= Monitor%A_Index%Left) && (WinCenterX < Monitor%A_Index%Right) && (WinCenterY >= Monitor%A_Index%Top) && (WinCenterY < Monitor%A_Index%Bottom)) {
             curMonitor := A_Index
             break
@@ -7025,17 +7060,19 @@ registerKeys() {
         if (section == "hkHotScript" || hs.config.user[(category)]) {
             for action, kvalue in hs.config.user.hotkeys[(section)] {
                 if (kvalue != "") {
-                    funcName := RegExReplace(action, "-\d+$", "$1")
                     if (section == "hkDos") {
-                        restrict := "ahk_group DosGroup"
+                        condition := group("Dos")
                     }
                     else if (section == "hkEpp") {
-                        restrict := "ahk_group EditPadGroup"
+                        condition := group("EditPad")
+                    }
+                    else if (action == "hkActionDosPromptInExplorer" || action == "hkMiscExplorerBack" || action == "hkMiscExplorerUpOneLevel") {
+                        condition := group("Explorer")
                     }
                     else {
-                        restrict := ""
+                        condition := ""
                     }
-                    hotKey(kvalue, funcName, restrict)
+                    hotKey(kvalue, RegExReplace(action, "-\d+$", "$1"), condition)
                 }
             }
         }
@@ -7046,7 +7083,7 @@ repeatStr(value, count) {
     start := A_TickCount
     result := ""
     if (count <= 10) {
-        Loop, %count% {
+        Loop, % count {
             result .= value
         }
     }
@@ -7061,6 +7098,10 @@ repeatStr(value, count) {
         tens := Floor(remainder / 10)
         remainder -= (tens * 10)
         ones := remainder
+        tenStr := ""
+        hundredStr := ""
+        thousandStr := ""
+        millionStr := ""
         Loop, 10 {
             tenStr .= value
         }
@@ -7079,23 +7120,23 @@ repeatStr(value, count) {
                 millionStr .= thousandStr
             }
         }
-        Loop, %millions% {
+        Loop, % millions {
             result .= millionStr
         }
         millionStr := ""
-        Loop, %thousands% {
+        Loop, % thousands {
             result .= thousandStr
         }
         thousandStr := ""
-        Loop, %hundreds% {
+        Loop, % hundreds {
             result .= hundredStr
         }
         hundredStr := ""
-        Loop, %tens% {
+        Loop, % tens {
             result .= tenStr
         }
         tenStr := ""
-        Loop, %ones% {
+        Loop, % ones {
             result .= value
         }
     }
@@ -7188,7 +7229,7 @@ runCapture(command, includeStdErr:=false) {
 }
 
 runDos(path:="") {
-    exeStr := "ahk_group DosGroup"
+    exeStr := group("Dos")
     hWnd := getHwnd(exeStr)
     if (path == "" && hWnd && !WinActive(exeStr)) {
         WinActivate, ahk_id %hWnd%
@@ -7587,7 +7628,7 @@ selectCurrentLine() {
 }
 
 selectInExplorer(list) {
-    if (WinActive("ahk_group ExplorerGroup")) {
+    if (isActiveExplorer()) {
         hwnd := getHwnd()
         for win in ComObjCreate("Shell.Application").Windows {
             if (win.hwnd != hwnd) {
@@ -7604,7 +7645,7 @@ selectInExplorer(list) {
 }
 
 selectOnDesktop(list) {
-    if (WinActive("ahk_group DesktopGroup")) {
+    if (WinActive(group("Desktop"))) {
         shellWindows := ComObjCreate("Shell.Application").Windows
         VarSetCapacity(hwnd, 4, 0)
         desktop := shellWindows.FindWindowSW(0, "", 8, ComObj(0x4003, &hwnd), 1)
