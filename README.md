@@ -1,4 +1,4 @@
-﻿![](http://i.imgur.com/hMl5pXg.png)
+![](http://i.imgur.com/hMl5pXg.png)
 
 # HotScript
 
@@ -110,6 +110,9 @@ Donations are the best way to request new features or increase the priority of a
 
 **Paul P.**
 > The elegance of what you have built here is in the simplicity of being able to use it.
+
+**Dave V.**
+> I can honestly say that if I have to go without HotScript I will be a very unhappy camper. The custom tasks that I have it do make my life so much simpler. Just being able to change to all caps or titles alone is worth having it. I use it every day, all day. It would be like telling me I can no longer drive and have to go back to horse and carriage.
 
 **Anonymous**
 > The amount of time HotScript saves me during the week is remarkable.
