@@ -12,7 +12,7 @@ To override any default settings, copy the section header and value(s) from HotS
 
 For further information, assistance or bug-reporting, contact support at: hotscript.help@gmail.com
 
-HotScript is copyrighted 2013-2016.
+HotScript is copyrighted 2013-2017.
 */
 
 #Include %A_ScriptDir%
@@ -426,16 +426,8 @@ WinGetTitle(winTitle:="", winText:="", excludeTitle:="", excludeText:="") {
 
 ;__________________________________________________
 ;HotKey functions
-hkActionAlwaysOnTop() {
-    toggleAlwaysOnTop()
-}
-
 hkActionCalculator() {
     findOrRunByExe("calc")
-}
-
-hkActionClickThrough() {
-    toggleClickThrough()
 }
 
 hkActionCharacterMap() {
@@ -468,10 +460,6 @@ hkActionQuickLookup() {
 
 hkActionStartupFolder() {
     runTarget("explore " . A_AppData . "\Microsoft\Windows\Start Menu\Programs\Startup")
-}
-
-hkActionToggleDesktopIcons() {
-    toggleDesktopIcons()
 }
 
 hkActionWindowsExplorer() {
@@ -512,14 +500,6 @@ hkDosMove() {
     SendInput, move{Space}
 }
 
-hkDosPageDown() {
-    scrollWindow("pgdn")
-}
-
-hkDosPageUp() {
-    scrollWindow("pgup")
-}
-
 hkDosPaste() {
     SendInput, {RAW}%ClipBoard%
 }
@@ -536,12 +516,28 @@ hkDosRoot() {
     SendInput, cd\{Enter}
 }
 
+hkDosScrollBottom() {
+    SendInput, {Space}{Backspace}
+}
+
+hkDosScrollDown() {
+    scrollWindow("down")
+}
+
+hkDosScrollPageDown() {
+    scrollWindow("pgdn")
+}
+
+hkDosScrollPageUp() {
+    scrollWindow("pgup")
+}
+
 hkDosScrollTop() {
     scrollWindow("top")
 }
 
-hkDosScrollBottom() {
-    scrollWindow("bottom")
+hkDosScrollUp() {
+    scrollWindow("up")
 }
 
 hkDosType() {
@@ -764,6 +760,10 @@ hkMiscSwapToClipboard() {
     ClipWait()
     Sleep(50)
     pasteText(origClipboard)
+}
+
+hkMiscToggleDesktopIcons() {
+    toggleDesktopIcons()
 }
 
 hkMiscZoomWindow() {
@@ -1089,8 +1089,16 @@ hkTransformWrapText() {
     lineWrapSelected()
 }
 
+hkWindowAlwaysOnTop() {
+    toggleAlwaysOnTop()
+}
+
 hkWindowCenter() {
     centerWindow()
+}
+
+hkWindowClickThrough() {
+    toggleClickThrough()
 }
 
 hkWindowDecreaseTransparency() {
@@ -2510,6 +2518,8 @@ contains(source, items*) {
         for index, value in items {
             if (IsObject(value)) {
                 for key, val in value {
+                    ; TODO - it may make sense to check either key or val here
+                    ; TODO - check whole words or partial?
                     if (InStr(source, val, useCase)) {
                         result := true
                         break
@@ -2517,6 +2527,7 @@ contains(source, items*) {
                 }
             }
             else {
+                ; TODO - check whole words or partial?
                 if (InStr(source, value, useCase)) {
                     result := true
                     break
@@ -4307,10 +4318,8 @@ getDddString() {
 getDefaultHotKeyDefs(type) {
     hk := {}
     if (type == "hkAction") {
-        hk["hkActionAlwaysOnTop"] := "#a"
         hk["hkActionCalculator"] := "#c"
         hk["hkActionCharacterMap"] := "#m"
-        hk["hkActionClickThrough"] := "^#a"
         hk["hkActionControlPanel"] := "^rctrl"
         hk["hkActionDosPrompt"] := "#d"
         hk["hkActionDosPromptInExplorer"] := "!#d"
@@ -4318,7 +4327,6 @@ getDefaultHotKeyDefs(type) {
         hk["hkActionGoogleSearch"] := "#g"
         hk["hkActionQuickLookup"] := "#q"
         hk["hkActionStartupFolder"] := "!#s"
-        hk["hkActionToggleDesktopIcons"] := "!appskey"
         hk["hkActionWindowsExplorer"] := "#x"
         hk["hkActionWindowsServices"] := "#s"
         hk["hkActionWindowsSnip"] := "#printscreen"
@@ -4330,19 +4338,17 @@ getDefaultHotKeyDefs(type) {
         hk["hkDosDownloads"] := "!d"
         hk["hkDosExit"] := "!x"
         hk["hkDosMove"] := "!m"
-        hk["hkDosPageDown-01"] := "+pgdn"
-        hk["hkDosPageDown-02"] := "^pgdn"
-        hk["hkDosPageDown-03"] := "!pgdn"
-        hk["hkDosPageUp-01"] := "+pgup"
-        hk["hkDosPageUp-02"] := "^pgup"
-        hk["hkDosPageUp-03"] := "!pgup"
         hk["hkDosPaste-01"] := "^v"
         hk["hkDosPaste-02"] := "+insert"
         hk["hkDosPopd"] := "^p"
         hk["hkDosPushd"] := "!p"
         hk["hkDosRoot"] := "!r"
-        hk["hkDosScrollTop"] := "^home"
         hk["hkDosScrollBottom"] := "^end"
+        hk["hkDosScrollDown"] := "^down"
+        hk["hkDosScrollPageDown"] := "^pgdn"
+        hk["hkDosScrollPageUp"] := "^pgup"
+        hk["hkDosScrollTop"] := "^home"
+        hk["hkDosScrollUp"] := "^up"
         hk["hkDosType"] := "!t"
     }
     else if (type == "hkEpp") {
@@ -4394,6 +4400,7 @@ getDefaultHotKeyDefs(type) {
         hk["hkMiscPreviewClipboard"] := "#v"
         hk["hkMiscSwapToClipboard-01"] := "^!c"
         hk["hkMiscSwapToClipboard-02"] := "^!insert"
+        hk["hkMiscToggleDesktopIcons"] := "!appskey"
         hk["hkMiscZoomWindow"] := "#z"
     }
     else if (type == "hkText") {
@@ -4465,7 +4472,9 @@ getDefaultHotKeyDefs(type) {
         hk["hkTransformWrapText"] := "^+w"
     }
     else if (type == "hkWindow") {
+        hk["hkWindowAlwaysOnTop"] := "#a"
         hk["hkWindowCenter"] := "#home"
+        hk["hkWindowClickThrough"] := "^#a"
         hk["hkWindowDecreaseTransparency-01"] := "#-"
         hk["hkWindowDecreaseTransparency-02"] := "#numpadsub"
         hk["hkWindowDecreaseTransparency-03"] := "#wheeldown"
@@ -5586,7 +5595,7 @@ initHotStrings() {
 }
 
 initInternalVars() {
-    hs.VERSION := "1.20170425.1"
+    hs.VERSION := "1.20170525.1"
     hs.TITLE := "HotScript"
     hs.BASENAME := A_ScriptDir . "\" . hs.TITLE
 
@@ -5644,7 +5653,7 @@ initInternalVars() {
     ; help
     hs.help := {}
     hs.help.width := 1275
-    hs.help.height := 728
+    hs.help.height := 743
     ; HotKeys
     hs.hotkeys := {}
     hs.hotkeys.actions := {}
@@ -5713,8 +5722,6 @@ initQuickHelp() {
     (LTrim Comments
         Action HotKeys`t`t`t
         %colLine%
-        [W]-A`t`tToggle always-on-top`t
-        [CW]-A`t`tToggle click-through`t
         [W]-C`t`tRun Calculator`t`t
         [W]-D`t`tRun DOS`t`t`t
         [AW]-D`t`tRun DOS from Explorer`t
@@ -5727,7 +5734,6 @@ initQuickHelp() {
         [W]-X`t`tRun Windows Explorer`t
         [W]-PrintScreen`tRun Snipping tool`t
         [LC]-[RC]`t`tRun Control Panel`t
-        [A]-Apps`t`tToggle desktop icons`t
     )
     hkActionHelpDisabled := replaceEachLine(hkActionHelpEnabled, spacer)
     hkActionHelp := (hs.config.user.enableHkAction ? hkActionHelpEnabled : hkActionHelpDisabled)
@@ -5743,9 +5749,10 @@ initQuickHelp() {
         [A]-M`t`t"move "`t`t`t
         [A]-P`t`t"pushd "`t`t
         [C]-P`t`tPOPD to last dir`t`t
-        [C]-[[PgUp PgDn]`tScroll up/down 1 page`t
+        [C]-[[PgUp PgDn]]`tScroll up/down 1 page`t
         [A]-R`t`tCD to root dir`t`t
         [A]-T`t`t"type "`t`t`t
+        [C]-[[&#x21e7;&#x21e9;]]`t`tScroll up/down 1 line`t
         [A]-[[.&#x21e7;]]`t`tCD to parent dir`t
         [A]-X`t`tRun 'exit'`t`t
     )
@@ -5780,6 +5787,10 @@ initQuickHelp() {
         %spacer%
         %spacer%
         %spacer%
+        %spacer%
+        %spacer%
+        %spacer%
+        %spacer%
     )
 
     hkMiscHelpEnabled =
@@ -5789,6 +5800,7 @@ initQuickHelp() {
         %colLine%
         MOUSEBackMOUSE`t`tExplorer: Up 1 level`t`t
         MOUSEForwardMOUSE`t`tExplorer: Prev folder`t`t
+        [A]-Apps`t`tToggle desktop icons`t
         [C]-CapsLock`tCenter mouse (screen)`t`t
         [CW]-MOUSELeftMOUSE`t`tCenter mouse (screen)`t`t
         [S]-CapsLock`tCenter mouse (window)`t`t
@@ -5865,6 +5877,8 @@ initQuickHelp() {
     (LTrim Comments
         Window HotKeys`t`t`t
         %colLine%
+        [W]-A`t`tToggle always-on-top`t
+        [CW]-A`t`tToggle click-through`t
         [W]-Delete`t`tHide active window`t
         [W]-Insert`t`tShow hidden windows`t
         [W]-Home`t`tCenter current window`t
@@ -5904,7 +5918,6 @@ initQuickHelp() {
         %spacer%
         %spacer%
         %spacer%
-        %spacer%
     )
     hkWindowHelpDisabled := replaceEachLine(hkWindowHelpEnabled, spacer)
     hkWindowHelp := (hs.config.user.enableHkWindow ? hkWindowHelpEnabled : hkWindowHelpDisabled)
@@ -5929,9 +5942,9 @@ initQuickHelp() {
     hkResult := RegexReplace(hkResult, "<", "&lt;")
     hkResult := RegexReplace(hkResult, ">", "&gt;")
     hkResult := RegexReplace(hkResult, "(-)(KEY)", "$1<span class=""key"">$2</span>")
+    hkResult := RegexReplace(hkResult, "\]-", "]&#x2010;")
     hkResult := RegexReplace(hkResult, "\[\[", "<span class=""keys"">[</span>")
     hkResult := RegexReplace(hkResult, "\]\]", "<span class=""keys"">]</span>")
-    hkResult := RegexReplace(hkResult, "\]-", "]&#x2010;")
     hkResult := RegexReplace(hkResult, "  \|", "  &#x2502;")
     hkResult := RegexReplace(hkResult, " (C|A|S|W|L|R)( =)", "&nbsp;<span class=""mod"">$1</span>$2")
     hkResult := RegexReplace(hkResult, "([A-Z][^\t\n]+ )(Hot)(Keys)", "<span class=""section"">$1$3</span>`t")
@@ -7604,6 +7617,9 @@ scrollWindow(direction, title:="A") {
     if (equalsIgnoreCase(direction, "bottom")) {
         scroll := 7
     }
+    else if (equalsIgnoreCase(direction, "down")) {
+        scroll := 1
+    }
     else if (equalsIgnoreCase(direction, "pgup")) {
         scroll := 2
     }
@@ -7612,6 +7628,9 @@ scrollWindow(direction, title:="A") {
     }
     else if (equalsIgnoreCase(direction, "top")) {
         scroll := 6
+    }
+    else if (equalsIgnoreCase(direction, "up")) {
+        scroll := 0
     }
     control := ControlGetFocus("A")
     SendMessage, 0x115, %scroll%, 0, %control%, A

@@ -76,7 +76,7 @@ HotScript will allow you to do more in less time, accurately and consistently. I
 ## Installation
 
 * Download and install <a href="https://autohotkey.com/download/ahk-install.exe">AutoHotKey</a>.  <img src="https://img.shields.io/badge/AHK-1.0.*-lightgrey.svg" title="Untested" alt="AHK 1.0.* : Untested"/> <img src="https://img.shields.io/badge/AHK-1.1.25+-brightgreen.svg" title="Compatible" alt="AHK 1.1.25+ : Compatible"/> <img src="https://img.shields.io/badge/AHK-2.0--a*-lightgray.svg" title="Untested" alt="AHK 2.0-a* : Untested"/>
-* Download <a href="https://github.com/mviens/hotscript/raw/release/HotScript.ahk">HotScript.ahk</a>.  (Right-click this link and choose "Save as")
+* Download <a href="https://github.com/mviens/hotscript/raw/master/HotScript.ahk">HotScript.ahk</a>.  (Right-click this link and choose "Save as")
 * Create a separate folder for HotScript and move HotScript.ahk (the file downloaded above) into that folder.
 * Double-click HotScript.ahk to launch it for the first time. Setup will occur automatically and several support files will be created.
 * Press <code>Ctrl</code>-<code>Win</code>-<code>H</code> to show (or hide) the help screen.

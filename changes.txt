@@ -1,3 +1,20 @@
+Differences in 1.20170525.1
+===========================
+HotKeys:
+    - NEW   : Added the following HotKeys for DOS (to scroll the screen up/down one line):
+                - Ctrl-Down
+                - Ctrl-Up
+    - CHANGE: Moved the following HotKeys out of the "Action Keys" group:
+                - Win-A (Toggle always-on-top) to the "Window Keys" group
+                - Ctrl-Win-A (Toggle click-through) to the "Window Keys" group
+                - Alt-Apps (Toggle desktop icons) to the "Miscellaneous Keys" group
+    - REMOVE: Removed the following HotKeys for DOS (these were duplicates of Ctrl-PgUp and Ctrl-PgDn):
+                - Alt-PgDn (Scroll down one page)
+                - Shift-PgDn (Scroll down one page)
+                - Alt-PgUp (Scroll up one page)
+                - Shift-PgUp (Scroll up one page)
+
+
 Differences in 1.20170425.1
 ===========================
 HotStrings
