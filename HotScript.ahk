@@ -459,7 +459,7 @@ hkActionQuickLookup() {
 }
 
 hkActionStartupFolder() {
-    runTarget("explore " . A_AppData . "\Microsoft\Windows\Start Menu\Programs\Startup")
+    runTarget("explore " . A_Startup)
 }
 
 hkActionWindowsExplorer() {
@@ -1122,7 +1122,7 @@ hkWindowIncreaseTransparency() {
 }
 
 hkWindowLeft() {
-    moveToMonitor("A", -1)
+    moveWindow("", -1)
 }
 
 hkWindowMaximize() {
@@ -1640,7 +1640,7 @@ hkWindowRestoreHidden() {
 }
 
 hkWindowRight() {
-    moveToMonitor("A", 1)
+    moveWindow("", 1)
 }
 
 hkWindowShowInfo() {
@@ -2144,6 +2144,81 @@ addMissingVariables() {
     }
 }
 
+arrangeToGrid(winMatch, dimension) {
+    static allPositions := {
+        (LTrim Comments Join,
+            1x2: [2, 1]
+            1x3: [3, 2, 1]
+            1x4: [4, 3, 2, 1]
+            2x1: [1, 2]
+            2x2: [3, 4, 1, 2]
+            2x3: [5, 6, 3, 4, 1, 2]
+            2x4: [7, 8, 5, 6, 3, 4, 1, 2]
+            3x1: [1, 2, 3]
+            3x2: [4, 5, 6, 1, 2, 3]
+            3x3: [7, 8, 9, 4, 5, 6, 1, 2, 3]
+            3x4: [10, 11, 12, 7, 8, 9, 4, 5, 6, 1, 2, 3]
+            4x1: [1, 2, 3, 4]
+            4x2: [5, 6, 7, 8, 1, 2, 3, 4]
+            4x3: [9, 10, 11, 12, 5, 6, 7, 8, 1, 2, 3, 4]
+            4x4: [13, 14, 15, 16, 9, 10, 11, 12, 5, 6, 7, 8, 1, 2, 3, 4]
+        )}
+    if (!RegexMatch(Trim(dimension), "^(\d)x(\d)$", dimCount)) {
+        throw, Exception("The dimension must be in the format of 'CxR' (Columns and Rows).")
+    }
+    columns := dimCount1
+    rows := dimCount2
+    if (columns < 1) {
+        columns := 1
+    }
+    else if (columns > 4) {
+        columns := 4
+    }
+    if (rows < 1) {
+        rows := 1
+    }
+    else if (rows > 4) {
+        rows := 4
+    }
+    gridPositions := (columns * rows)
+    monitors := hs.vars.monitors.MaxIndex()
+    availablePositions := (gridPositions * monitors)
+    WinGet, matchList, List, % winMatch
+    winList := []
+    Loop, % matchList {
+        hWnd := matchList%A_Index%
+        if (isWindowVisible(hWnd)) {
+            winList.push(hWnd)
+        }
+    }
+    if (winList.MaxIndex() == 1) {
+        maximize(winList[1])
+    }
+    else {
+        positions := allPositions[(dimension)]
+        curMonitor := 1
+        curPosition := 1
+        for i, win in winList {
+            if (i <= availablePositions) {
+                WinActivate, ahk_id %win%
+                whichMon := getMonitorForWindow(win)
+                if (whichMon <> curMonitor) {
+                    moveToMonitor(win, curMonitor)
+                }
+                func := Func("hkWindowResizeTo" . dimension . "_" . pad(positions[curPosition], 2, "0", "L"))
+                func.call()
+                curPosition++
+                if (Mod(i, gridPositions) == 0) {
+                    curMonitor++
+                    curPosition := 1
+                }
+            }
+            else {
+                break
+            }
+        }
+    }
+}
 
 arrayToList(arr, delim:=",", trim:="") {
     delim := (delim == "" ? "," : delim)
@@ -4746,7 +4821,6 @@ getMonitorForWindow(hWnd:="") {
     monIdx := 1
     VarSetCapacity(monInfo, 40)
     NumPut(40, monInfo)
-
     if (monitorHandle := DllCall("MonitorFromWindow", "uint", hWnd, "uint", 0x2))
         && DllCall("GetMonitorInfo", "uint", monitorHandle, "uint", &monInfo) {
         monitorLeft   := NumGet(monInfo,  4, "Int")
@@ -5595,7 +5669,7 @@ initHotStrings() {
 }
 
 initInternalVars() {
-    hs.VERSION := "1.20170525.1"
+    hs.VERSION := "1.20170606.1"
     hs.TITLE := "HotScript"
     hs.BASENAME := A_ScriptDir . "\" . hs.TITLE
 
@@ -6841,7 +6915,32 @@ moveToEdge(edge:="T", hWnd:="") {
     }
 }
 
-moveToMonitor(hWnd:="", direction:=1, keepRelativeSize:=true) {
+moveToMonitor(hWnd:="", monitor:="") {
+    hWnd := getHwnd(hWnd)
+    if (is(monitor, "number")) {
+        if (monitor < 1) {
+            monitor := 1
+        }
+        else if (monitor > hs.vars.monitors.count) {
+            monitor := hs.vars.monitors.count
+        }
+    }
+    else {
+        monitor := getMonitorForWindow(hWnd)
+    }
+    targetMon := hs.vars.monitors[monitor]
+    win := getWindowInfo(hWnd)
+    if (win.state == "Minimized") {
+        WinRestore, ahk_id %hWnd%
+    }
+    newX := targetMon.workLeft
+    newY := targetMon.workTop
+    newW := win.width
+    newH := win.height
+    WinMove, ahk_id %hWnd%,, %newX%, %newY%, %newW%, %newH%
+}
+
+moveWindow(hWnd:="", direction:=1, keepRelativeSize:=true) {
     if (equalsIgnoreCase(hWnd, "M")) {
         MouseGetPos(MouseX, MouseY, hWnd)
     }
@@ -6851,15 +6950,14 @@ moveToMonitor(hWnd:="", direction:=1, keepRelativeSize:=true) {
     direction := (direction == -1 ? -1 : 1)
     if (!WinExist("ahk_id " . hWnd)) {
         SoundPlay, *64
-        ;MsgBox, 16, moveToMonitor() - Error, Specified window does not exist. Window ID = %hWnd%
+        ;MsgBox, 16, moveWindow() - Error, Specified window does not exist. Window ID = %hWnd%
         return
     }
     refreshMonitors()
-    SysGet, monCount, MonitorCount
+    monCount := hs.vars.monitors.count
     if (monCount <= 1) {
         return
     }
-
     Loop, % monCount {
         SysGet, Monitor%A_Index%, MonitorWorkArea, %A_Index%
         Monitor%A_Index%Width := Monitor%A_Index%Right - Monitor%A_Index%Left
@@ -6983,13 +7081,13 @@ output(text) {
     ControlSetText, Edit1, %text%
 }
 
-pad(value, width, type:="R") {
-    type := (equalsIgnoreCase(type, "l") || equalsIgnoreCase(type, "left") ? "L" : "R")
-    Loop % (width - StrLen(value))
-    {
-        value := (type == "L" ? A_Space . value : value . A_Space)
+pad(value, width, char:=" ", type:="R") {
+    if (StrLen(char) != 1) {
+        char := A_Space
     }
-    return value
+    type := (equalsIgnoreCase(type, "l") || equalsIgnoreCase(type, "left") ? "L" : "R")
+    spaces := repeatStr(char, width - StrLen(value))
+    return (type == "L" ? spaces . value : value . spaces)
 }
 
 parseTemplate(template, tokens:="") {

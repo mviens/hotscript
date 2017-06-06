@@ -83,6 +83,10 @@ HotScript will allow you to do more in less time, accurately and consistently. I
   * Alternatively, press and hold <code>Win</code>-<code>H</code> to temporarily show the help screen.
   * Additionally, the help screen is also available by right-clicking the HotScript tray icon.
 
+## Usage
+
+HotScript is free for personal use. If you wish to use it for business purposes, you must send an email to hotscript.help@gmail.com to discuss licensing options.
+
 ## Contact
 
 Primary support for HotScript is via the forums, located at: http://hotscript.prophpbb.com/
@@ -94,6 +98,7 @@ You may also try live chat at: https://gitter.im/hotscript/Lobby
 Documentation is being enhanced but is lagging behind the actual development of HotScript. We know it is important and are working on it. The current [user manual](UserManual.md) is outdated and will be replaced with a full wiki describing every feature of HotScript and will also include a fully documented API. Please check the forum for updates.
 
 ### Roadmap 
+
 HotScript is continuously growing. The wishlist is huge, containing several hundred new features. 
 
 ## Donate

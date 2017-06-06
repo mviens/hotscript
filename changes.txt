@@ -1,6 +1,56 @@
+Differences in 1.20170606.1
+===========================
+Functions
+    - NEW   : Added the following new functions:
+                - arrangeToGrid()
+                - moveToMonitor()
+    - CHANGE: Renamed moveToMonitor() to moveWindow().
+    - CHANGE: Added a new parameter to pad() to allow the padding character to be specified.
+Miscellaneous
+    - CHANGE: Minor code cleanup for consistency.
+Notes
+    - To use the new arrangeToGrid() function, a new HotKey will need to be created. This function takes
+      two parameters: winMatch and dimension
+
+            winMatch is any legal syntax for "WinTitle". See the AutoHotkey help for "WinTitle".
+                https://autohotkey.com/docs/misc/WinTitle.htm
+                HotScript uses the "RegEx" mode of searching for WinTitle values.
+
+            dimension is in the format of CxR (Columns and Rows) with a minimum of 1 and maximum of 4
+                Any value less than 1 will be set to 1.
+                Any value greater than 4 will be set to 4.
+                Any values not conforming to the format of CxR will result in an exception being thrown.
+
+      Typically, this function would be used to arrange a group of similiar windows, such as Notepad.
+      Below is some sample code that would arrange all instance of Notepad in a 3x2 grid across all
+      monitors, if necessary.
+
+      First, define a new HotKey (put this in HotScriptKeys.ahk):
+
+            hotKey("^#n", "arrangeNotepad")
+
+      Next, create the function (put this in HotScriptFunctions.ahk):
+
+            arrangeNotepad() {
+                arrangeToGrid("ahk_exe i)Notepad.exe", "3x2")
+            }
+
+      arrangeToGrid() will start arranging windows on the first monitor. If more windows are found than
+      will fit the specified grid, if other monitors are attached, they will also be used. If the number
+      of windows found exceeds all available grid positions for all monitors, the remaining windows will
+      not be moved/resized and will remain exactly as they were.
+
+      The order in which the windows will be arranged is from top-to-bottom and left-to-right, starting
+      with the monitor that Windows identifies as being the primary. Additionally, Windows maintains the
+      order of the windows themselves (called z-order). The windows will be arranged according to that
+      z-order. The z-order may be influenced by click on each of the windows to be arranged in the reverse
+      order of how you would like them to be arranged. This is because the last window touched is the first
+      to be acted upon.
+
+
 Differences in 1.20170525.1
 ===========================
-HotKeys:
+HotKeys
     - NEW   : Added the following HotKeys for DOS (to scroll the screen up/down one line):
                 - Ctrl-Down
                 - Ctrl-Up
