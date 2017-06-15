@@ -68,7 +68,7 @@ init()
 
 ;__________________________________________________
 ;wrapper functions
-ClipWait(seconds:=0.05, mode:="") {
+ClipWait(seconds:=2, mode:="") {
     ClipWait, %seconds%, %mode%
 }
 
@@ -276,8 +276,9 @@ RegWrite(rootKey, subKey, valueName:="", value:="", valueType:="REG_SZ") {
 }
 
 Run(target, workingDir:="", mode:="") {
-    Run, %target%, %workingDir%, %mode%, v
-    return v
+    Run, %target%, %workingDir%, %mode%, pid
+    WinWaitActive, ahk_pid %pid%,, 2
+    return pid
 }
 
 SetTimer(label:="", mode:="", priority:=0) {
@@ -2144,7 +2145,7 @@ addMissingVariables() {
     }
 }
 
-arrangeToGrid(winMatch, dimension) {
+arrangeToGrid(winMatch, dimension, sortByTitle:=true) {
     static allPositions := {
         (LTrim Comments Join,
             1x2: [2, 1]
@@ -2183,38 +2184,57 @@ arrangeToGrid(winMatch, dimension) {
     gridPositions := (columns * rows)
     monitors := hs.vars.monitors.MaxIndex()
     availablePositions := (gridPositions * monitors)
-    WinGet, matchList, List, % winMatch
-    winList := []
-    Loop, % matchList {
-        hWnd := matchList%A_Index%
-        if (isWindowVisible(hWnd)) {
-            winList.push(hWnd)
-        }
-    }
-    if (winList.MaxIndex() == 1) {
-        maximize(winList[1])
+    if (IsObject(winMatch)) {
+        winList := winMatch
     }
     else {
-        positions := allPositions[(dimension)]
-        curMonitor := 1
-        curPosition := 1
-        for i, win in winList {
-            if (i <= availablePositions) {
-                WinActivate, ahk_id %win%
-                whichMon := getMonitorForWindow(win)
-                if (whichMon <> curMonitor) {
-                    moveToMonitor(win, curMonitor)
+        WinGet, matchList, List, % winMatch
+        winList := (sortByTitle ? {} : [])
+        Loop, % matchList {
+            hWnd := matchList%A_Index%
+            if (isWindowVisible(hWnd)) {
+                WinGetTitle, title, ahk_id %hWnd%
+                if (sortByTitle) {
+                    winList[title] := hWnd
                 }
-                func := Func("hkWindowResizeTo" . dimension . "_" . pad(positions[curPosition], 2, "0", "L"))
-                func.call()
-                curPosition++
-                if (Mod(i, gridPositions) == 0) {
-                    curMonitor++
-                    curPosition := 1
+                else {
+                    winList.push(hWnd)
                 }
             }
-            else {
-                break
+        }
+    }
+    winCount := getSize(winList)
+    if (winCount > 0) {
+        if (winCount == 1) {
+            for key, hWnd in winList {
+                maximize(hWnd)
+            }
+        }
+        else {
+            positions := allPositions[(dimension)]
+            curMonitor := 1
+            curPosition := 1
+            idx := 1
+            msg := ""
+            for key, hWnd in winList {
+                if (idx <= availablePositions) {
+                    WinActivate, ahk_id %hWnd%
+                    whichMonitor := getMonitorForWindow(hWnd)
+                    if (whichMonitor <> curMonitor) {
+                        moveToMonitor(hWnd, curMonitor)
+                    }
+                    func := Func("hkWindowResizeTo" . dimension . "_" . pad(positions[curPosition], 2, "0", "L"))
+                    func.call()
+                    curPosition++
+                    if (Mod(idx, gridPositions) == 0) {
+                        curMonitor++
+                        curPosition := 1
+                    }
+                    idx++
+                }
+                else {
+                    break
+                }
             }
         }
     }
@@ -2569,6 +2589,7 @@ compareStr(a, b, direction:="A") {
             result := a1 > b1 ? 1 : a1 < b1 ? -1 : compareStr(a2, b2, direction)
         }
         else {
+            ; TODO - should the final compareStr() here be (b2, a2) since it is in descending order?
             result := a1 > b1 ? -1 : a1 < b1 ? 1 : compareStr(a2, b2, direction)
         }
     }
@@ -4286,7 +4307,7 @@ findAndRun(exe) {
         winVer := RegRead("HKEY_LOCAL_MACHINE", "SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ProductName")
         msg := ""
         if (contains(winVer, "2008", "2012")) {
-            msg := "`n`nFor Windows Server 2008 or 2012, you may need to install 'Themes' or 'Desktop Experience'"
+            msg := "`n`nFor Windows Server 2008 or 2012, you may need to install 'Themes' or 'Desktop Experience'."
         }
         message("Unable to locate " . exe . " on the PATH." . msg, "File not found", 48)
     }
@@ -4317,8 +4338,7 @@ findOnPath(filename) {
 
 findOrRunByExe(name) {
     exe := name . ".exe"
-    regExe := "i)" . exe
-    hWnd := getHwnd("ahk_exe " . regExe)
+    hWnd := getHwnd("ahk_exe i)" . exe)
     if (hWnd) {
         WinActivate, ahk_id %hWnd%
     }
@@ -4750,8 +4770,7 @@ getHwnd(hWnd:="") {
     if (hWnd == "") {
         hWnd := "A"
     }
-    prefix := ""
-    if (is(hWnd, "number")) {
+    else if (is(hWnd, "number")) {
         hWnd := "ahk_id " . hWnd
     }
     return WinExist(hWnd)
@@ -5376,7 +5395,8 @@ init() {
     GroupAdd, DesktopGroup, ahk_class Progman
     GroupAdd, DesktopGroup, ahk_class WorkerW
 
-    GroupAdd, DosGroup, ahk_class ConsoleWindowClass
+,     ; Apntex.exe is a Dell utility that identifies itself as ConsoleWindowClass, which we do want, just not this one
+    GroupAdd, DosGroup, ahk_class ConsoleWindowClass,,, i)Apntex
     GroupAdd, DosGroup, ahk_exe i)cmd.exe
     GroupAdd, DosGroup, ahk_exe i)PowerShell.exe
 
@@ -5669,7 +5689,7 @@ initHotStrings() {
 }
 
 initInternalVars() {
-    hs.VERSION := "1.20170606.1"
+    hs.VERSION := "1.20170614.1"
     hs.TITLE := "HotScript"
     hs.BASENAME := A_ScriptDir . "\" . hs.TITLE
 
@@ -7077,7 +7097,7 @@ numberSelectedPrompt() {
 
 output(text) {
     ListVars
-    WinWaitActive, ahk_class AutoHotkey
+    WinWaitActive, ahk_class AutoHotkey,, 1
     ControlSetText, Edit1, %text%
 }
 
@@ -7553,7 +7573,6 @@ runServices() {
 runTarget(target, workDir:="") {
     pid := Run(target, workDir)
     if (pid != "") {
-        WinWait, ahk_pid %pid%
         WinActivate, ahk_pid %pid%
     }
     return pid
@@ -7941,8 +7960,18 @@ showVariable(value:="") {
     output(type . " = " . toString(value))
 }
 
+showWindow(title:="") {
+    hWnd := getHwnd(title)
+    if (hWnd != "") {
+        WinShow, ahk_id %A_LoopField%
+    }
+}
+
 showWindowInfo(title:="") {
     hWnd := getHwnd(title)
+    if (!hWnd) {
+        return
+    }
     win := getWindowInfo(hWnd)
     maxLen := StrLen(win.processPath)
     if (maxLen < StrLen(win.title)) {
@@ -7988,6 +8017,18 @@ showWindowInfo(title:="") {
     WinInfo_Escape:
         Gui, WinInfo: Cancel
         return
+}
+
+sortByValue(arr, ignoreCase:=true) {
+    valueArr := {}
+    for key, value in arr {
+        valueArr[RegExReplace(value, "\s")] := value
+    }
+    sortedArr := {}
+    for key, value in valueArr {
+        sortedArr[A_Index] := value
+    }
+    return sortedArr
 }
 
 sortSelected(direction:="", ignoreCase:=true) {

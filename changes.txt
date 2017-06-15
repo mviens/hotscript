@@ -1,3 +1,30 @@
+Differences in 1.20170614.1
+===========================
+Functions
+    - NEW   : Added the following new functions:
+                - showWindow()
+                - sortByValue()
+    - CHANGE: If the specified window cannot be found, showWindowInfo() will no longer display a dialog,
+              because it just contained blank values anyway, which is not helpful.
+    - CHANGE: Increased the timeout of ClipWait() to 2 seconds. This may help with some computers having
+              issues with copy/paste functions.
+    - CHANGE: Changed Run() to wait (up to 2 seconds) for the program to become active before returning.
+    - CHANGE: Modified arrangeToGrid() to take an additional parameter to indicate if windows should be
+              sorted alphabetically by the window title.
+    - CHANGE: Modified arrangeToGrid() to allow for the first parameter (winMatch) to be an array
+              containing hWnd values or an object containing window title(s) as a key and hWnd value(s)
+              to be assigned to each key. This allows for passing in already known hWnd values. One use
+              for this could be writing a custom function to launch several applications, saving the hWnd
+              values into an array and passing them into arrangeToGrid().
+Miscellaneous
+    - CHANGE: As part of the DosGroup, any window created by Dell's Apntex.exe will now be ignored. This
+              application identifies itself as a ConsoleWindowClass which should be restricted to
+              DOS-like windows. It was causing things like the Win-D HotKey needing to be pressed twice,
+              so now it is ignored.
+    - CHANGE: Minor code cleanup for consistency.
+
+
+
 Differences in 1.20170606.1
 ===========================
 Functions
@@ -44,8 +71,8 @@ Notes
       with the monitor that Windows identifies as being the primary. Additionally, Windows maintains the
       order of the windows themselves (called z-order). The windows will be arranged according to that
       z-order. The z-order may be influenced by click on each of the windows to be arranged in the reverse
-      order of how you would like them to be arranged. This is because the last window touched is the first
-      to be acted upon.
+      order of how you would like them to be arranged. This is because the last window touched is the
+      first to be acted upon.
 
 
 Differences in 1.20170525.1
