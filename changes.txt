@@ -1,3 +1,13 @@
+Differences in 1.20170626.1
+===========================
+Functions
+    - CHANGE: Modified hotKeyAction() to be able to support AutoHotkey-style named keys. This allows
+              hotString() definitions to also use the named keys. An example is:
+                    hotString("@test", "Line 1{Enter 2}Line 3{Enter 2}Line{Tab 4}5{Enter}")
+HotStrings
+    - NEW   : Added new HotString for DOS "rd " which will add "/s " to it.
+
+
 Differences in 1.20170614.1
 ===========================
 Functions

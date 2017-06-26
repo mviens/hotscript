@@ -5332,7 +5332,7 @@ hotString(trigger, replace, mode:=1, clearTrigger:=true, condition:= "") {
                     Loop, % local$.count() {
                         str := StrReplace(str, "$" . A_Index, local$.value(A_Index))
                     }
-                    pasteText(str)
+                    SendInput, % str
                 }
             }
         }
@@ -5606,6 +5606,7 @@ initHotStrings() {
     }
     if (toBool(hs.config.user.enableHsDos)) {
         hotString("\bcd ", "/d ", mode.Regex, false, "isActiveDos")
+        hotString("\brd ", "/s ", mode.Regex, false, "isActiveDos")
     }
     if (toBool(hs.config.user.enableHsHtml)) {
         ; single
@@ -5689,7 +5690,7 @@ initHotStrings() {
 }
 
 initInternalVars() {
-    hs.VERSION := "1.20170614.1"
+    hs.VERSION := "1.20170626.1"
     hs.TITLE := "HotScript"
     hs.BASENAME := A_ScriptDir . "\" . hs.TITLE
 
@@ -6156,6 +6157,7 @@ initQuickHelp() {
         DOS HotStrings`t`t`t
         %colLine%
         cd`tcd /d`t`t`t`t
+        rd`trd /s`t`t`t`t
     )
     hsDosHelpDisabled := replaceEachLine(hsDosHelpEnabled, spacer)
     hsDosHelp := (hs.config.user.enableHsDos ? hsDosHelpEnabled : hsDosHelpDisabled)
