@@ -1,3 +1,29 @@
+Differences in 1.2017xxxx.1
+===========================
+HotKeys
+    - NEW   : Added HotKeys to resize (stretch) a window to an edge of the monitor. This greatly adds to
+              the customizable nature of resizing to a grid. With this new feature, it is possible to
+              move a window somewhere within the grid and then allow it to be resized in one direction
+              taking up the remainder of the height or width.
+                - Alt-Win-Up
+                - Alt-Win-Left
+                - Alt-Win-Right
+                - Alt-Win-Down
+Functions
+    - CHANGE: Modified getWindowInfo() to no longer require an hWnd parameter. It will now default to the
+              active window if no parameter is specified.
+    - CHANGE: Minor changes for Windows 10 adjustments when resizing windows into a grid or to an edge.
+              If the Windows taskbar is at the bottom (the default), then moving a window to the bottom
+              of the monitor would cause the resize area for that window to be unaccessible.
+    - CHANGE: When using Quick Resolution (Ctrl-Win-R), values are not saved and populated when invoking
+              it again. This allows for easily changing just one of the previously entered values with
+              need to enter both. The saved value is only during runtime. If HotScript is reloaded, the
+              values will not be retained.
+    - CHANGE: Fixed issue with not properly saving/restoring the CoordModeMouse value.
+Miscellaneous
+    - CHANGE: Minor code cleanup for consistency.
+
+
 Differences in 1.20170626.1
 ===========================
 Functions

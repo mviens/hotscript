@@ -1648,6 +1648,22 @@ hkWindowShowInfo() {
     showWindowInfo()
 }
 
+hkWindowStretchToEdgeBottom() {
+    stretchToEdge("bottom")
+}
+
+hkWindowStretchToEdgeLeft() {
+    stretchToEdge("left")
+}
+
+hkWindowStretchToEdgeRight() {
+    stretchToEdge("right")
+}
+
+hkWindowStretchToEdgeTop() {
+    stretchToEdge("top")
+}
+
 hkWindowToggleMinimized() {
     toggleMinimized()
 }
@@ -2363,7 +2379,7 @@ centerControls(title, guiName, hPadding:=10, vPadding:=5, spaceBetween:=30, cont
 }
 
 centerMouse(mode:="screen") {
-    origMode := A_CoordMouseMode
+    origMode := A_CoordModeMouse
     mode := setCase(mode, "L")
     if (mode == "window") {
         hWnd := getHwnd()
@@ -4226,7 +4242,7 @@ extractLocationAndResize() {
             newX += -6
             newY += -1
             newW += 16
-            newH += 9
+            newH += 8
         }
     }
     else {
@@ -4257,7 +4273,7 @@ extractLocationAndResize() {
             ; Windows 10 adjustments
             if (startsWith(A_OSVersion, "10")) {
                 newY += -1
-                newH += 9
+                newH += 7
             }
         }
         else if (self == "hkWindowResizeToWidth") {
@@ -4692,6 +4708,10 @@ getDefaultHotKeyDefs(type) {
         hk["hkWindowRight-01"] := "wheelright"
         hk["hkWindowRight-02"] := "#right"
         hk["hkWindowShowInfo"] := "#/"
+        hk["hkWindowStretchToEdgeBottom"] := "!#down"
+        hk["hkWindowStretchToEdgeLeft"] := "!#left"
+        hk["hkWindowStretchToEdgeRight"] := "!#right"
+        hk["hkWindowStretchToEdgeTop"] := "!#up"
         hk["hkWindowToggleMinimized"] := "^#m"
         hk["hkWindowToggleTransparency"] := "#t"
     }
@@ -4997,7 +5017,7 @@ getVarType(obj) {
     return result
 }
 
-getWindowInfo(hWnd) {
+getWindowInfo(hWnd:="") {
     static WS_EX_TOOLWINDOW    := 0x00000080
     static WS_EX_CONTROLPARENT := 0x00010000
     static WS_EX_APPWINDOW     := 0x00040000
@@ -5005,6 +5025,7 @@ getWindowInfo(hWnd) {
     static WS_VISIBLE          := 0x10000000
     static WS_CHILD            := 0x40000000
     static WS_POPUP            := 0x80000000
+    hWnd := getHwnd(hWnd)
     match := "ahk_id " . hWnd
     win := {}
     win.hWnd := hWnd
@@ -5560,8 +5581,8 @@ initHotStrings() {
         hotString("\b5\/6" . endChars, Chr(0x215A), mode.Regex,, "isNotActiveCalculator")
         hotString("\b7\/8" . endChars, Chr(0x215E), mode.Regex,, "isNotActiveCalculator")
         hotString("\b([a-z])L", "$1:", mode.Regex)
-        hotString("\brc(.)(\d{1,7})" . hs.const.END_CHARS_REGEX, "hsRepeatString", mode.Regex)
-        hotString("\brs(.*)~(\d{1,7})" . hs.const.END_CHARS_REGEX, "hsRepeatString", mode.Regex)
+        hotString("\brc(.)(\d{1,7})" . endChars, "hsRepeatString", mode.Regex)
+        hotString("\brs(.*)~(\d{1,7})" . endChars, "hsRepeatString", mode.Regex)
         hotString("@bullet", Chr(0x2022))
         hotString("@club", Chr(0x2663))
         hotString("@copy", Chr(0x00A9))
@@ -5690,7 +5711,7 @@ initHotStrings() {
 }
 
 initInternalVars() {
-    hs.VERSION := "1.20170626.1"
+    hs.VERSION := "1.20170705.1"
     hs.TITLE := "HotScript"
     hs.BASENAME := A_ScriptDir . "\" . hs.TITLE
 
@@ -5986,12 +6007,13 @@ initQuickHelp() {
         [C]-[[MW&#x21d1;&#x21d3;MW]]`t`tScroll left / right`t
         [W]-[[&#x21e7;&#x21e9;]]`t`tMinimize / Maximize`t
         [W]-[[&#x21e6;&#x21e8;]]~or~[[MW&#x21d0;&#x21d2;MW]]`tMove to prev/next mon.`t
+        [AW]-[[&#x21e7;&#x21e9;&#x21e6;&#x21e8;]]`tStretch to edge`t`t
         [CW]-[[&#x21e7;&#x21e9;&#x21e6;&#x21e8;]]`tMove to edge`t`t
         [SW]-&#x21e7;&#x21e9;`t`tResize to max height`t
         [SW]-&#x21e6;&#x21e8;`t`tResize to max width`t
         [SW]-[[&#x21e7;&#x21e9;&#x21e6;&#x21e8;]]`tResize to 1x2 / 2x1`t
         [CW]-[[NP047NP]]`t`tResize to 1x3`t`t
-        [SW]-[[&#x21e7;&#x21e9;]]-[[&#x21e6;&#x21e8;]]`tResize to 2x2`t`t
+        [SW]-[[&#x21e7;&#x21e9;]][[&#x21e6;&#x21e8;]]`tResize to 2x2`t`t
         [AW]-[[NP124578NP]]`tResize to 2x3`t`t
         [CW]-[[NP1-3NP]]`t`tResize to 3x1`t`t
         [SW]-[[NP1-6NP]]`t`tResize to 3x2`t`t
@@ -6930,7 +6952,7 @@ moveToEdge(edge:="T", hWnd:="") {
                 winX += 7
             }
             else if (equalsIgnoreCase(edge, "B")) {
-                winY += 7
+                winY += 6
             }
         }
         WinMove, ahk_id %hWnd%,, winX, winY, winW, winH
@@ -7468,8 +7490,15 @@ runQuickLookup() {
 }
 
 runQuickResolution() {
+    static savedWidth := 0
+    static savedHeight := 0
     global customResWidth
     global customResHeight
+    if (savedWidth == 0) {
+        WinGetPos, x, y, w, h, A
+        savedWidth := w
+        savedHeight := h
+    }
     for key, value in hs.config.user.options.resolutions {
         Menu, qResMenu, Add, %value%, doQuickResolution
     }
@@ -7491,18 +7520,24 @@ runQuickResolution() {
         customResWidth := Trim(customResWidth)
         customResHeight := Trim(customResHeight)
         if (customResWidth != "" || customResHeight != "") {
-            widthOK := RegexMatch(customResWidth, "^\d{1,4}$") && (customResWidth > 10)
-            heightOK := RegexMatch(customResHeight, "^\d{1,4}$") && (customResHeight > 10)
-            Sleep, 50
+            widthOK := RegexMatch(customResWidth, "^\d{1,5}$") && (customResWidth > 10)
+            heightOK := RegexMatch(customResHeight, "^\d{1,5}$") && (customResHeight > 10)
+            Sleep(100)
             WinGetPos, x, y, w, h, A
             if (customResWidth == "" && heightOK) {
                 resizeWindow(w, customResHeight,, false)
+                savedWidth := w
+                savedheight := customResHeight
             }
             else if (customResHeight == "" && widthOK) {
                 resizeWindow(customResWidth, h,, false)
+                savedWidth := customResWidth
+                savedheight := h
             }
             else if (widthOK && heightOK) {
                 resizeWindow(customResWidth, customResHeight,, false)
+                savedWidth := customResWidth
+                savedheight := customResHeight
             }
         }
         return
@@ -7520,8 +7555,10 @@ runQuickResolution() {
         Gui, CustomRes: Margin, 5
         Gui, CustomRes: Add, Text, y+20 section w75 +right, New Width:
         Gui, CustomRes: Add, Text, w75 +right, New Height:
-        Gui, CustomRes: Add, Edit, vcustomResWidth ys-3
-        Gui, CustomRes: Add, Edit, vcustomResHeight
+        Gui, CustomRes: Add, Edit, ys-3
+        Gui, CustomRes: Add, UpDown, vcustomResWidth Range100-50000 0x80, %savedWidth%
+        Gui, CustomRes: Add, Edit
+        Gui, CustomRes: Add, UpDown, vcustomResHeight Range50-50000 0x80, %savedHeight%
         Gui, CustomRes: Margin, 0
         Gui, CustomRes: Add, Text, x0 y+15 w245 h1 0x5
         Gui, CustomRes: Add, Button, gCustomRes_OK section xm default, &OK
@@ -8057,6 +8094,58 @@ stop() {
     msg := "Shutting down...`n`nSession Usage`n    HotKeys: " . hkSession . "`n    HotStrings: " . hsSession . "`n`nTotal Usage`n    HotKeys: " . hkTotal . "`n    HotStrings: " . hsTotal
     message(msg, hs.VERSION)
     ExitApp
+}
+
+stretchToEdge(direction, hWnd:="") {
+    direction := Trim(setCase(direction, "L"))
+    win := getWindowInfo(hWnd)
+    hWnd := win.hWnd
+    mon := hs.vars.monitors[win.monitor]
+    if (direction == "top") {
+        newX := win.x
+        newY := mon.workTop
+        newH := (win.height + (win.y - mon.workTop))
+        newW := win.width
+    }
+    else if (direction == "bottom") {
+        newX := win.x
+        newY := win.y
+        newH := (mon.workBottom - win.y)
+        newW := win.width
+    }
+    else if (direction == "left") {
+        newX := mon.workLeft
+        newY := win.y
+        newH := win.height
+        newW := (win.width + (win.x - mon.workLeft))
+    }
+    else if (direction == "right") {
+        newX := win.x
+        newY := win.y
+        newH := win.height
+        newW := (mon.workRight - win.x)
+    }
+    else {
+        return
+    }
+    if (startsWith(A_OSVersion, "10")) {
+        if (direction == "left") {
+            newX += -7
+            newW += 7
+        }
+        else if (direction == "right") {
+            newW += 6
+        }
+        else if (direction == "bottom") {
+            ; one less because otherwise it is impossible to reach the resize area of the window because the taskbar overlaps
+            ; TODO - this only works if the taskbar is at the bottom
+            ; more work needs to be done is the taskbar is on the left, right, or top
+            ; is it possible to detect where the taskbar is?
+            ; it seems so - class = "Shell_TrayWnd", then look at x,y,h,w (mine is w: 4096, height: 40, x: 0, y: 2120)
+            newH += 6
+        }
+    }
+    WinMove, ahk_id %hWnd%,, %newX%, %newY%, %newW%, %newH%
 }
 
 stripEol(str) {
@@ -8857,7 +8946,7 @@ zoomStart() {
             , Int , (zoomWindowH / zoomAmount)                      ; nHeightSrc
             , UInt, 0xCC0020)                                       ; dwRop (raster operation)
         if (zoomFollow) {
-            WinMove, zoomWindow, , (zoomMouseX - zoomWindowW / 2), (zoomMouseY - zoomWindowH / 2), %zoomWindowW%, %zoomWindowH%
+            WinMove, zoomWindow,, (zoomMouseX - zoomWindowW / 2), (zoomMouseY - zoomWindowH / 2), %zoomWindowW%, %zoomWindowH%
         }
         SetTimer("zoomRepaint", 10)
         return
