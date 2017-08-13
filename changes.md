@@ -1,9 +1,17 @@
-![](http://i.imgur.com/hMl5pXg.png)
+﻿![](http://i.imgur.com/hMl5pXg.png)
 
 # HotScript - Historical Changes
 Copyright &copy; 2013-2017
 
 ---
+# <a name="1.20170813.2">Version 1.20170813.2</a>
+
+## Miscellaneous
+
+<img src='https://img.shields.io/badge/-FIX&nbsp;&nbsp;-FF4136.svg?colorA=FF4136'/>
+
+> Fixed issue with the tray menu for `Historical changes` pointing to the wrong URL.
+
 # <a name="1.20170813.1">Version 1.20170813.1</a>
 
 ## HotKeys

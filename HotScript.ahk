@@ -5875,7 +5875,7 @@ initHotStrings() {
 }
 
 initInternalVars() {
-    hs.VERSION := "1.20170813.1"
+    hs.VERSION := "1.20170813.2"
     hs.TITLE := "HotScript"
     hs.BASENAME := A_ScriptDir . "\" . hs.TITLE
 
@@ -5956,7 +5956,7 @@ initInternalVars() {
     urls[hs.TITLE].chat := "https://gitter.im/hotscript/Lobby"
     urls[hs.TITLE].download := homeRaw . hs.TITLE . ".ahk"
     urls[hs.TITLE].forum := "https://hotscript.prophpbb.com/"
-    urls[hs.TITLE].history := homeRaw . "changes.md"
+    urls[hs.TITLE].history := urls[hs.TITLE].home . "/blob/master/changes.md"
     urls[hs.TITLE].version := homeRaw . "version.txt"
     myVars := {
         (LTrim Comments Join,
