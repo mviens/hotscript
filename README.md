@@ -1,6 +1,10 @@
-![](http://i.imgur.com/hMl5pXg.png)
+﻿![](http://i.imgur.com/hMl5pXg.png)
 
 # HotScript
+
+Copyright &copy; 2013-2017
+
+---
 
 HotScript adds more than 250 powerful features to Microsoft Windows, with full support for creating custom functionality. HotScript was created using [AutoHotKey](http://www.ahkscript.org) and was born out of the necessity to do more with less effort.
 
@@ -130,6 +134,3 @@ Donations are the best way to request new features or increase the priority of a
 
 **B**
 > Using a computer without HotScript is painful.
-
-### Copyright
-HotScript is copyrighted 2013-2017.
