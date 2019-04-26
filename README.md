@@ -1,19 +1,21 @@
-﻿![](http://i.imgur.com/hMl5pXg.png)
+﻿# HotScript
 
-# HotScript
+![Logo](http://i.imgur.com/hMl5pXg.png)
 
-Copyright &copy; 2013-2017
+Copyright &copy; 2013-2019
 
 ---
 
-HotScript adds more than 250 powerful features to Microsoft Windows, with full support for creating custom functionality. HotScript was created using [AutoHotKey](http://www.ahkscript.org) and was born out of the necessity to do more with less effort.
+HotScript adds more than 300 powerful features to Microsoft Windows, with full support for creating custom functionality. HotScript was created using [AutoHotKey](http://www.autohotkey.com) and was born out of the necessity to do more with less effort.
 
 ## Announcements
-**03/05/2017** - HotScript live chat is now available at: https://gitter.im/hotscript/Lobby
 
-**03/04/2017** - HotScript forums are now live at: http://hotscript.prophpbb.com/
+**04/17/2019** - HotScript is updated! This is a massive update in functionality and features that spans 20+ months of development. Because the significant amout of new features and bug fixes, even the changelog is going to require additional time to complete, but this version needs to be released. Partial information does exist in the changelog, but much more information is needed, especially about new features.
+
+This will likely be the last feature version of HotScript. If there are any critical bugs, they will be worked on, but my time with HotScript is winding down. In its place will be AutoPress... Stay tuned, but be patient! AutoPress will make HotScript look like Windows Notepad!
 
 ## Introduction
+
 HotScript will allow you to do more in less time, accurately and consistently. It will reduce mistakes. It will increase your productivity. You will be able to quickly and easily perform complex tasks and data transformation. Working with HotScript is very easy and natural. The more you embrace using it, the more you will find you don't want to use Windows without it.
 
 <table>
@@ -93,17 +95,17 @@ HotScript is free for personal use. If you wish to use it for business purposes,
 
 ## Contact
 
-Primary support for HotScript is via the forums, located at: http://hotscript.prophpbb.com/
-
-You may also try live chat at: https://gitter.im/hotscript/Lobby
+Primary support for HotScript is via email suppprt at the forums, located at: hotscript.help@gmail.com
 
 ## Status
 
-Documentation is being enhanced but is lagging behind the actual development of HotScript. We know it is important and are working on it. The current [user manual](UserManual.md) is outdated and will be replaced with a full wiki describing every feature of HotScript and will also include a fully documented API. Please check the forum for updates.
+Documentation is being enhanced but is greatly lagging behind the actual development of HotScript. We know it is important and are working on it. The current [user manual](UserManual.md) is outdated and will be replaced with a full wiki describing every feature of HotScript and will also include a fully documented API.
 
-### Roadmap 
+If you are willing to assist us with completing the documentation, please contact hotscript.help@gmail.com. This is a perfect task for the HotScript community to get involved with and reveal all of the capabilities that are currently "hidden".
 
-HotScript is continuously growing. The wishlist is huge, containing several hundred new features. 
+### Roadmap
+
+HotScript is continuously growing. The wishlist is huge, containing several hundred new features.
 
 ## Donate
 
@@ -111,26 +113,28 @@ Please consider donating towards the future development and support of HotScript
 
 Donations are the best way to request new features or increase the priority of a planned enhancement.
 
-<a href="https://www.paypal.me/hotscript" target="_blank">
+*10/23/2018:* _Donations are temporarily suspended due to a hacked PayPal account. Until this is resolved, please send an email to_ hotscript.help@gmail.com _to arrange alternate methods._
+
+<!--a href="https://www.paypal.me/hotscript" target="_blank">
     <br/><img src="https://img.shields.io/badge/Donate-PayPal-green.svg"/>
-</a>
+</a-->
 
 ## User Comments
 
-**Paul P.**
+#### Paul P.
 > The elegance of what you have built here is in the simplicity of being able to use it.
 
-**Dave V.**
+#### Dave V.
 > I can honestly say that if I have to go without HotScript I will be a very unhappy camper. The custom tasks that I have it do make my life so much simpler. Just being able to change to all caps or titles alone is worth having it. I use it every day, all day. It would be like telling me I can no longer drive and have to go back to horse and carriage.
 
-**Anonymous**
+#### Anonymous
 > The amount of time HotScript saves me during the week is remarkable.
 
-**J.P.**
+#### J.P.
 > I have waited for years for Microsoft to provide some of these features.
 
-**KB**
+#### KB
 > I use it ALL the time.  Why wouldn't you?
 
-**B**
+#### B
 > Using a computer without HotScript is painful.

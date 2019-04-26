@@ -1,7 +1,8 @@
-![](http://i.imgur.com/hMl5pXg.png)
 # HotScript User Manual - v1.20160406.3
 
-Copyright &copy; 2013-2017
+![HotScript logo](http://i.imgur.com/hMl5pXg.png)
+
+Copyright &copy; 2013-2019
 
 ---
 
@@ -9,16 +10,15 @@ Copyright &copy; 2013-2017
 
 This documentation is incomplete and should be considered a work-in-progress.
 
+If you are willing to assist us with completing the documentation, please contact hotscript.help@gmail.com. This is a perfect task for the HotScript community to get involved with and reveal all of the capabilities that are currently "hidden".
 
 ## Introduction
 
 HotScript will allow you to do more in less time, accurately and consistently. It will reduce mistakes. It will increase your productivity. You will be able to quickly and easily perform complex tasks and data transformation. Working with HotScript is very easy and natural. The more you embrace using it, the more you will find you don't want to use Windows without it.
 
-
 ## Features
 
 HotScript has a wide assortment of features and functionality already built in.  Because it would be impossible to predict what every user's need may be, HotScript was designed to allow a user to create their own functionality.  Any user-defined functions may be easily shared with other users and teams, allowing for consistent behavior and increased productivity for all.
-
 
 #### Automate Tasks
 
@@ -31,7 +31,6 @@ HotScript has a wide assortment of features and functionality already built in. 
 * Quickly search anything, anywhere
 * Automate any functionality within Windows
 
-
 #### Interact with and Control Windows
 
 * Move/resize windows with simple keystrokes
@@ -43,7 +42,6 @@ HotScript has a wide assortment of features and functionality already built in. 
 * Zoom any portion of the screen
 * Hide/restore any window
 
-
 #### Transform Text
 
 * Convert to UPPER/lower/Sentence/iNVERT/Title case
@@ -53,7 +51,6 @@ HotScript has a wide assortment of features and functionality already built in. 
 * Wrap in quotes, brackets or parenthesis
 * Wrap text to width or unwrap
 * Convert to or from HTML/XML tags
-
 
 #### Extend and Customize
 
@@ -65,14 +62,12 @@ HotScript has a wide assortment of features and functionality already built in. 
 * Fully user extendable and customizable
 * User-defined customizations are kept during upgrades
 
-
 ## Installation
 
 * Download and install <a href="https://autohotkey.com/download/ahk-install.exe">AutoHotKey</a>.
 * Download <a href="https://github.com/mviens/hotscript/raw/master/HotScript.ahk">HotScript.ahk</a>.  (Right-click this link and choose "Save as")
 * Create a separate folder for HotScript and move HotScript.ahk (the file downloaded above) into that folder.
 * Double-click HotScript.ahk to launch it for the first time. Some setup will automatically occur.
-
 
 ## Quick Start
 
@@ -88,14 +83,13 @@ If you are eager to get started and want to begin using HotScript immediately, t
 | Left / Right | Many keyboards have multiple of the same keys, like the `Shift` and `Alt` keys.  It is possible to configure HotScript to use a specific key, such as the left `Alt` key.  This is done by using the first letter of the desired side, such as `LAlt` or `RShift`. |
 | Directory / Folder | Used interchangeably, but typically `directory` is used when in a DOS window and `folder` is used when in Windows Explorer.  This is not completely rigid but is followed as much as possible.  They both mean the same thing. |
 
-#### Usage 
+#### Usage
 
 When HotScript is running, there will be no typical user interface or display -- this is normal.  Instead, there will be a new icon in the Windows System tray, which is a red and white chili pepper.
 
-Hovering over this icon will show both the version of HotScript as well as the version of AutoHotKey.  This icon may be right-clicked which will show some menu options. 
+Hovering over this icon will show both the version of HotScript as well as the version of AutoHotKey.  This icon may be right-clicked which will show some menu options.
 
 Press `Ctrl-Win-H` to show/hide the help screen.
-
 
 ## HotKeys
 
@@ -115,7 +109,6 @@ HotKeys of a related nature have been grouped into sections.  Any section may be
 | Transform | Transforms selected text in a particular manner. |
 | Windows | Movement and resizing of application windows. |
 
-
 ## Special window markers
 
 A few of HotScript's functions will prepend a special marker to the title of a window.  They are to help indicate that the window is in a particular state.  When the function is turned off, the marker will be removed.
@@ -126,7 +119,6 @@ A few of HotScript's functions will prepend a special marker to the title of a w
 | ![](http://i.imgur.com/zU2pnSB.png) | `Ctrl-Win-A` | Click-through | <a href="http://www.fileformat.info/info/unicode/char/16be/index.htm">Runic Letter Naudiz Nyd Naud N</a> |
 | ![](http://i.imgur.com/dRleqag.png) | n/a | Pinned | <a href="http://www.fileformat.info/info/unicode/char/1368/index.htm">Ethiopic Paragraph Separator</a> <br/><br/> *This is reserved for future functionality.* |
 | ![](http://i.imgur.com/VD3SYlF.png) | `Win-T` <br/> `Win--` <br/> `Win-+` <br/> `Win-MouseWheel` | Transparent | <a href="http://www.fileformat.info/info/unicode/char/2261/index.htm">Identical To</a> <br/><br/> In addition to the marker, the transparency percentage will also be displayed. |
-
 
 #### Action keys
 
@@ -149,7 +141,6 @@ The `Win` key is frequently used to execute actions because Windows is being ins
 | `Win-PrintScreen` | Launches Windows Snipping Tool. |  |
 | `Left-Ctrl` + `Right-Ctrl` | Launch Control Panel. | Control-Control = Control Panel |
 | `Alt-Apps` | Hides/Shows the icons on the Windows desktop. |  |
-
 
 #### DOS keys
 
@@ -179,7 +170,6 @@ The `Alt` key is frequently used to execute keys within DOS.  The expectation is
 | `Shift-Insert` | Pastes the text from the Windows Clipboard. | Common Windows action |
 | `Alt-X` | Sends: `"exit"` + `{Enter}` | X = eXit |
 
-
 #### HotScript keys
 
 There are no designated modifier keys assigned for HotScript because with so many other important functions, and a limited number of key combinations, the importance here is to use key not common to other applications or ones that may be highly desirable for users to create their own HotKeys.
@@ -204,7 +194,6 @@ There are no designated modifier keys assigned for HotScript because with so man
 | `Win-Pause` | Toggle HotScript between paused and enabled.  When paused, the only key that is still active is this one so that HotScript may be reenabled. |  |
 | `` Win-` `` | Launch <a href="https://technet.microsoft.com/en-us/sysinternals/debugview.aspx">DebugView</a>.  This is useful during debugging.  The output can be seen by making calls to `debug()`.| |
 
-
 #### Miscellaneous keys
 
 The Miscellaneous keys is a grouping of anything that doesn't fit into another category, so trying to use a common key modifier for this group would be rather pointless and very difficult.
@@ -224,7 +213,6 @@ The Miscellaneous keys is a grouping of anything that doesn't fit into another c
 | `Alt-Win-ARROW` | ARROW is `Up`, `Down`, `Left` or `Right`.  Moves the cursor one pixel in the direction of the arrow key.  Sometimes doing work that requires extreme precision if hard to do with the mouse, so this feature allows very specific mouse movement.|  |
 | `Ctrl-Alt-Win-ARROW` | ARROW is `Up`, `Down`, `Left` or `Right`.  Drags (click and hold) the cursor one pixel in the direction of the arrow key.  Sometimes doing work that requires extreme precision if hard to do with the mouse, so this feature allows very specific mouse movement. |  |
 
-
 #### Text keys
 
 | Key | Description | Memory Trigger |
@@ -233,7 +221,6 @@ The Miscellaneous keys is a grouping of anything that doesn't fit into another c
 | `Alt-Down` | Move the current line down. |  |
 | `Alt-Up` | Move the current line up. |  |
 | `Ctrl-Shift-Up` | Duplicates the current line. |  |
-
 
 #### Transform keys
 
@@ -283,7 +270,6 @@ The combination of `Ctrl` and `Shift` keys are frequently used transform selecte
 | `` |  |  |
 | `` |  |  |
 | `` |  |  |
-
 
 #### Windows keys
 
@@ -336,20 +322,17 @@ The combination of `Ctrl` and `Shift` keys are frequently used transform selecte
 | `` |  |  |
 | `` |  |  |
 
-
 ## HotStrings
 
 Some text...
 
-
 ## Help Screen
 
-Press `Ctrl-Win-H` to show/hide the help screen.  This shows the help screen in an always-on-top manner.  The window is centered on the active monitor and may not be moved using traditional means because it has no title bar.  The window may be moved using HotScript's window management keys.  
+Press `Ctrl-Win-H` to show/hide the help screen.  This shows the help screen in an always-on-top manner.  The window is centered on the active monitor and may not be moved using traditional means because it has no title bar.  The window may be moved using HotScript's window management keys.
 
 The help screen is divided into HotKeys and HotStrings.  To switch between them using only the keyboard, press `Ctrl-PageUp` or `Ctrl-PageDown`.  When the help screen is showing, it may be closed by press `Escape`.
 
 To momentarily show the help screen, press and hold `Win-H`.  This will show the help screen for as long as both keys are held.  This is useful when a quick glance is needed.
-
 
 #### Abbreviations
 
@@ -364,13 +347,12 @@ In order to save critical space, the modifier keys have been abbreviated.
 | [L] | Left |
 | [R] | Right |
 
-
 # TODO
-- Sections may move around because of available space 
-- Describe *special* items, like: KEY, TAG and {red-space} "&#160;"
-- Can right-click and print
-- HotScript (in the upper right) is a link
 
+* Sections may move around because of available space
+* Describe *special* items, like: KEY, TAG and {red-space} "&#160;"
+* Can right-click and print
+* HotScript (in the upper right) is a link
 
 ## Files
 
@@ -378,25 +360,24 @@ HotScript will automatically create several files when it is executed for the fi
 
 | File          | Description |
 | ------------- | ----------- |
-| HotScript.ico | This file is the icon image that is shown in the Window System Tray.  It is also used in any dialogs that are created by HotScript. The image is of a chili pepper and looks like this: <br/><br/> ![](http://i.imgur.com/F1Jv5Wj.png) <br/><br/> *This file will be created by HotScript if it does not exist and will be recreated by newer versions of HotScript.* |
+| HotScript.ico | This file is the icon image that is shown in the Window System Tray.  It is also used in any dialogs that are created by HotScript. The image is of a chili pepper and looks like this: <br/><br/> ![HotScript logo](http://i.imgur.com/F1Jv5Wj.png) <br/><br/> *This file will be created by HotScript if it does not exist and will be recreated by newer versions of HotScript.* |
 | HotScriptDefault.ini | This file contains the default values for all of the settings used by HotScript. <br/><br/> This file should **_never_** be edited by the user.  If you wish to change a value, copy the specific section/setting from this file into the `HotScriptUser.ini` file. <br/><br/> *This file will be created by HotScript if it does not exist and will be recreated by newer versions of HotScript.* |
 | HotScriptFunctions.ahk | This file should contain all user-defined functions. <br/><br/> *This file will be created by HotScript if it does not exist, but it will not be overwritten if it already exists.* |
+| HotScriptIncludes.ahk | This file should contain all references to scripts that should be included. <br/><br/> *This file will be created by HotScript if it does not exist, but it will not be overwritten if it already exists.* |
 | HotScriptKeys.ahk | This file should contain all user-specific HotKeys. <br/><br/> *This file will be created by HotScript if it does not exist, but it will not be overwritten if it already exists.* |
 | HotScriptStrings.ahk | This file should contain all user-specific HotStrings. <br/><br/> *This file will be created by HotScript if it does not exist, but it will not be overwritten if it already exists.* |
 | HotScriptUser.ini | This file contains all user-specific settings, allowing for upgrading to newer versions of HotScript without worrying about overwriting existing settings. <br/><br/> To override a setting defined in `HotScriptDefault.ini`, copy the relevant section/setting from there into this file and change the value. <br/><br/> *This file will be created by HotScript if it does not exist, but it will not be overwritten if it already exists.* |
 | HotScriptVariables.ahk | . <br/><br/> *This file will be created by HotScript if it does not exist, but it will not be overwritten if it already exists.* |
 
 common
-- Any functions available within HotScript are available for use here, too.  
-- For changes to take effect, HotScript must be reloaded. 
+* Any functions available within HotScript are available for use here, too.
+* For changes to take effect, HotScript must be reloaded.
 
 Creates auto-start shortcut...
-
 
 ## Configuration
 
 Some text...
-
 
 ## API
 
@@ -410,30 +391,26 @@ StrLen(myStr)
 
 Some text...
 
-
 ## Known Issues
 
 Some text...
-
 
 ## Future Enhancements
 
 Some text...
 
-
 ## Contact
 
 If you have questions, need assistance or would like to request new functionality, please send email to <a href="mailto:hotscript.help@gmail.com?Subject=Question%20about%20HotScript">hotscript.help@gmail.com</a>.
-
 
 ### Professional Services
 
 There is no one better to help you with development of custom functionality and modules than the very people who have created HotScript.  Our team is available to help you with the following:
 
-- Development of custom automation solutions
-- Implement new functionality
-- Create reusable modules for distribution to 
-- Training on HotScript
-- Analysis of user workflow and identifying areas for productivity enhancement 
-- Debugging of user-created functionality
-- Priority technical support
+* Development of custom automation solutions
+* Implement new functionality
+* Create reusable modules for distribution
+* Training on HotScript
+* Analysis of user workflow and identifying areas for productivity enhancement
+* Debugging of user-created functionality
+* Priority technical support
